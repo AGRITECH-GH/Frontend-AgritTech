@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X } from "lucide-react";
+import Footer from "@/components/Footer";
 import {
   User,
   Mail,
@@ -67,6 +69,7 @@ export default function SignUp() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   /* ── Validation ── */
   const validate = () => {
@@ -108,40 +111,80 @@ export default function SignUp() {
       style={{ backgroundColor: "#f0f2ec" }}
     >
       {/* ── Navbar ── */}
-      <nav className="bg-white/90 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+      <nav className="bg-white border-b border-border sticky top-0 z-50">
+        <div className="container flex h-12 items-center justify-between md:h-14">
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center gap-2 font-semibold text-gray-900"
+            className="flex items-center gap-1.5 text-base font-semibold text-foreground"
           >
-            <img src={logo} alt="AgriTech logo" className="h-6 w-6" />
-            <span>
-              Agri<span className="text-green-500">Tech</span>
-            </span>
+            <img src={logo} alt="AgriTech logo" className="h-6 w-6 shrink-0" />
+            <span>AgriTech</span>
           </Link>
 
-          {/* Nav links */}
-          <div className="hidden md:flex items-center gap-8 text-sm text-gray-600">
-            <a href="#" className="hover:text-gray-900 transition-colors">
-              Features
-            </a>
-            <a href="#" className="hover:text-gray-900 transition-colors">
-              Pricing
-            </a>
-            <a href="#" className="hover:text-gray-900 transition-colors">
-              Support
-            </a>
+          {/* Desktop: nav links + Sign In */}
+          <div className="hidden md:flex items-center gap-8">
+            <div className="flex items-center gap-8">
+              {["Features", "Pricing", "Support"].map((label) => (
+                <a
+                  key={label}
+                  href="#"
+                  className="text-base font-medium text-foreground transition-colors hover:text-primary"
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+            <Link
+              to="/"
+              className="text-sm font-bold px-5 py-2 rounded-full bg-green-100 text-gray-900 hover:bg-green-200 transition-colors"
+            >
+              Sign In
+            </Link>
           </div>
 
-          {/* Sign In button */}
-          <Link
-            to="/"
-            className="text-sm font-semibold px-4 py-1.5 rounded-full border border-gray-800 text-gray-900 hover:bg-gray-50 transition-colors"
+          {/* Mobile toggle */}
+          <button
+            className="rounded-full border border-border/70 bg-white p-2 text-foreground shadow-sm md:hidden"
+            onClick={() => setMenuOpen((prev) => !prev)}
           >
-            Sign In
-          </Link>
+            {menuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </button>
         </div>
+
+        {/* Mobile menu */}
+        <motion.div
+          initial={false}
+          animate={menuOpen ? "open" : "closed"}
+          variants={{
+            open: { height: "auto", opacity: 1 },
+            closed: { height: 0, opacity: 0 },
+          }}
+          transition={transition}
+          className="overflow-hidden border-t border-border/60 bg-white md:hidden"
+        >
+          <div className="container flex flex-col gap-4 py-4">
+            {["Features", "Pricing", "Support"].map((label) => (
+              <a
+                key={label}
+                href="#"
+                className="text-sm font-medium text-muted hover:text-foreground"
+              >
+                {label}
+              </a>
+            ))}
+            <Link
+              to="/"
+              className="mt-2 text-sm font-bold px-5 py-2 rounded-full bg-green-100 text-center text-gray-900 hover:bg-green-200 transition-colors"
+            >
+              Sign In
+            </Link>
+          </div>
+        </motion.div>
       </nav>
 
       {/* ── Main content ── */}
@@ -431,10 +474,7 @@ export default function SignUp() {
         </AnimatePresence>
       </main>
 
-      {/* ── Footer ── */}
-      <footer className="text-center text-xs text-gray-400 py-5">
-        © 2024 Acme Web Application. All rights reserved.
-      </footer>
+      <Footer />
     </div>
   );
 }

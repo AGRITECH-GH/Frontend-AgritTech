@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, animate } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ const scrollToSection = (id) => {
 };
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isLight, setIsLight] = useState(false);
@@ -123,7 +125,9 @@ const Navbar = () => {
           >
             Login
           </Button>
-          <Button size="sm">Sign Up</Button>
+          <Button size="sm" onClick={() => navigate("/signup")}>
+            Sign Up
+          </Button>
         </div>
 
         {/* Mobile toggle */}
@@ -162,10 +166,15 @@ const Navbar = () => {
               variant="ghost"
               size="sm"
               className="flex-1 text-muted hover:text-foreground"
+              onClick={() => navigate("/signup")}
             >
               Login
             </Button>
-            <Button size="sm" className="flex-1">
+            <Button
+              size="sm"
+              className="flex-1"
+              onClick={() => navigate("/signup")}
+            >
               Sign Up
             </Button>
           </div>

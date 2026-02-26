@@ -6,6 +6,7 @@ import StakeholdersSection from "@/components/StakeholdersSection";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
 import SignUp from "@/pages/SignUp";
+import NotFound from "@/pages/NotFound";
 
 function HomePage() {
   return (
@@ -27,6 +28,7 @@ function App() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/signup" element={<SignUp />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

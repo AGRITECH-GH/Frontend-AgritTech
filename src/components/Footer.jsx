@@ -2,7 +2,7 @@ import logo from "@/assets/logo.svg";
 
 const Footer = () => {
   return (
-    <footer className="border-t border-border bg-white py-10">
+    <footer className="border-t border-border bg-white py-4">
       <div className="container flex flex-col items-center justify-between gap-6 text-xs text-muted md:flex-row">
         <button
           type="button"

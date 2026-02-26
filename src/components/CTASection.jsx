@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ctaImg from "@/assets/CTACard.png";
 import { transition } from "@/motionConfig";
 
 const CTASection = () => {
+  const navigate = useNavigate();
   return (
     <section
       id="pricing"
@@ -37,6 +39,7 @@ const CTASection = () => {
               <Button
                 size="lg"
                 className="px-7 text-sm font-semibold md:text-base"
+                onClick={() => navigate("/signup")}
               >
                 Create Account
               </Button>
