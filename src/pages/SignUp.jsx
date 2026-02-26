@@ -463,7 +463,7 @@ export default function SignUp() {
               >
                 Already have an account?{" "}
                 <Link
-                  to="/"
+                  onClick={() => navigate("/login")}
                   className="text-green-600 font-bold hover:underline"
                 >
                   Log In

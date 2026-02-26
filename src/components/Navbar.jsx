@@ -122,6 +122,7 @@ const Navbar = () => {
             variant="ghost"
             size="sm"
             className="text-base text-foreground transition-colors hover:text-primary"
+            onClick={() => navigate("/login")}
           >
             Login
           </Button>
