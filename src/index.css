@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont,
+      "SF Pro Text", sans-serif;
+    color: #111827;
+    background-color: #ffffff;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-surface text-foreground;
+  }
+}
+
+@layer components {
+  .section-padding {
+    @apply py-20 md:py-28;
+  }
+
+  .section-header {
+    @apply flex flex-col gap-4 md:flex-row md:items-end md:justify-between;
+  }
+
+  .section-title {
+    @apply font-heading text-2xl font-semibold tracking-tight text-foreground md:text-3xl;
+  }
+
+  .section-subtitle {
+    @apply max-w-md text-sm text-muted md:text-base;
+  }
+
+  .badge-soft {
+    @apply inline-flex items-center gap-2 rounded-full border border-emerald-200/60 bg-emerald-500/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-emerald-300;
+  }
+
+  .card-elevated {
+    @apply rounded-3xl border border-border/70 bg-white/80 p-6 shadow-soft transition-all duration-500 hover:-translate-y-1 hover:shadow-soft-lg;
+  }
+
+  .glass-panel {
+    @apply relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-soft-lg backdrop-blur-2xl;
+  }
+}
+
