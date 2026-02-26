@@ -136,7 +136,7 @@ export default function SignUp() {
               ))}
             </div>
             <Link
-              to="/"
+              to="/login"
               className="text-sm font-bold px-5 py-2 rounded-full bg-green-100 text-gray-900 hover:bg-green-200 transition-colors"
             >
               Sign In
@@ -178,7 +178,7 @@ export default function SignUp() {
               </a>
             ))}
             <Link
-              to="/"
+              to="/login"
               className="mt-2 text-sm font-bold px-5 py-2 rounded-full bg-green-100 text-center text-gray-900 hover:bg-green-200 transition-colors"
             >
               Sign In

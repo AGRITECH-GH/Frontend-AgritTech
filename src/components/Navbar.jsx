@@ -166,7 +166,7 @@ const Navbar = () => {
               variant="ghost"
               size="sm"
               className="flex-1 text-muted hover:text-foreground"
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate("/login")}
             >
               Login
             </Button>
