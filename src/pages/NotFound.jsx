@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { SearchX } from "lucide-react";
-import Footer from "@/components/Footer";
 
 export default function NotFound() {
   return (
@@ -45,8 +44,6 @@ export default function NotFound() {
           .
         </p>
       </div>
-
-      <Footer />
     </>
   );
 }

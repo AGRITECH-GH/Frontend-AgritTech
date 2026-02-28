@@ -8,6 +8,10 @@ import Footer from "@/components/Footer";
 import SignUp from "@/pages/SignUp";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/NotFound";
+import Dashboard from "@/pages/Dashboard";
+import AgentDashboard from "@/pages/AgentDashboard";
+import AdminDashboard from "@/pages/AdminDashboard";
+import Ledger from "@/pages/Ledger";
 
 function HomePage() {
   return (
@@ -30,6 +34,10 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/farmer/dashboard" element={<Dashboard />} />
+      <Route path="/farmer/ledger" element={<Ledger />} />
+      <Route path="/agent/dashboard" element={<AgentDashboard />} />
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
