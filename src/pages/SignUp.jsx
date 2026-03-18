@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Footer from "@/components/Footer";
+import { useSignUp } from "@clerk/react";
 import {
   User,
   Mail,
@@ -12,6 +13,7 @@ import {
   Sprout,
   Handshake,
   ShoppingBasket,
+  ArrowRight,
 } from "lucide-react";
 import logo from "@/assets/logo.svg";
 import { transition } from "@/motionConfig";
@@ -62,6 +64,8 @@ const itemVariants = {
 
 /* ─── Main component ─── */
 export default function SignUp() {
+  const { signUp, isLoaded } = useSignUp();
+  const navigate = useNavigate();
   const [role, setRole] = useState("Farmer");
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
@@ -70,6 +74,11 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // ── Email verification stage ──
+  const [verifying, setVerifying] = useState(false);
+  const [verifyCode, setVerifyCode] = useState("");
+  const [verifyError, setVerifyError] = useState("");
 
   /* ── Validation ── */
   const validate = () => {
@@ -90,6 +99,7 @@ export default function SignUp() {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
+  /* Stage 1 — create account & send verification email */
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
@@ -97,12 +107,66 @@ export default function SignUp() {
       setErrors(newErrors);
       return;
     }
+    if (!isLoaded) return;
     setErrors({});
     setLoading(true);
-    /* Simulated async submission */
-    await new Promise((r) => setTimeout(r, 1500));
-    setLoading(false);
-    setSuccess(true);
+    try {
+      await signUp.create({
+        firstName: form.name.split(" ")[0],
+        lastName: form.name.split(" ").slice(1).join(" ") || undefined,
+        emailAddress: form.email,
+        password: form.password,
+        unsafeMetadata: { role },
+      });
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      // Move to the code-entry stage
+      setVerifying(true);
+    } catch (err) {
+      const msg =
+        err?.errors?.[0]?.longMessage ??
+        err?.errors?.[0]?.message ??
+        "Sign-up failed. Please try again.";
+      setErrors({ password: msg });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* Stage 2 — verify the emailed code */
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    if (!isLoaded || !verifyCode.trim()) {
+      setVerifyError("Please enter the code sent to your email.");
+      return;
+    }
+    setLoading(true);
+    setVerifyError("");
+    try {
+      const result = await signUp.attemptEmailAddressVerification({
+        code: verifyCode.trim(),
+      });
+      if (result.status === "complete") {
+        setSuccess(true);
+        setTimeout(() => navigate("/farmer/dashboard"), 900);
+      }
+    } catch (err) {
+      const msg =
+        err?.errors?.[0]?.longMessage ??
+        err?.errors?.[0]?.message ??
+        "Invalid code. Please try again.";
+      setVerifyError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    if (!isLoaded) return;
+    await signUp.authenticateWithRedirect({
+      strategy: "oauth_google",
+      redirectUrl: "/sso-callback",
+      redirectUrlComplete: "/farmer/dashboard",
+    });
   };
 
   return (
@@ -217,6 +281,85 @@ export default function SignUp() {
                 Go to Home
               </Link>
             </motion.div>
+          ) : verifying ? (
+            /* ── Verify email code stage ── */
+            <motion.div
+              key="verify"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={transition}
+              className="bg-white rounded-2xl shadow-sm p-10 w-full max-w-md"
+            >
+              <div className="flex justify-center mb-5">
+                <span className="bg-green-100 text-green-600 rounded-full p-4">
+                  <Mail size={28} />
+                </span>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
+                Check your email
+              </h2>
+              <p className="text-sm text-gray-500 text-center mb-6">
+                We sent a 6-digit code to <strong>{form.email}</strong>. Enter
+                it below to verify your account.
+              </p>
+              <form onSubmit={handleVerify} noValidate className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Verification Code
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={verifyCode}
+                    onChange={(e) => {
+                      setVerifyCode(e.target.value);
+                      setVerifyError("");
+                    }}
+                    placeholder="123456"
+                    className={[
+                      "w-full px-4 py-3 rounded-2xl border text-sm bg-gray-50 outline-none transition-colors text-center tracking-[0.4em] font-mono text-lg",
+                      verifyError
+                        ? "border-red-400 focus:border-red-500 bg-red-50"
+                        : "border-gray-200 focus:border-green-400",
+                    ].join(" ")}
+                    autoFocus
+                  />
+                  {verifyError && (
+                    <p className="text-xs text-red-500 mt-1.5">{verifyError}</p>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3.5 rounded-full bg-green-500 hover:bg-green-600 active:bg-green-700 disabled:opacity-70 transition-colors text-white font-bold text-sm flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      </svg>
+                      Verifying…
+                    </>
+                  ) : (
+                    <>
+                      Verify Email <ArrowRight size={16} strokeWidth={2.5} />
+                    </>
+                  )}
+                </button>
+                <p className="text-center text-xs text-gray-400 mt-2">
+                  Didn&apos;t receive it?{" "}
+                  <button
+                    type="button"
+                    onClick={() => signUp.prepareEmailAddressVerification({ strategy: "email_code" })}
+                    className="text-green-500 font-semibold hover:underline"
+                  >
+                    Resend code
+                  </button>
+                </p>
+              </form>
+            </motion.div>
           ) : (
             <motion.div
               key="form"
@@ -239,6 +382,7 @@ export default function SignUp() {
               <motion.button
                 variants={itemVariants}
                 type="button"
+                onClick={handleGoogleSignUp}
                 className="w-full flex items-center justify-center gap-3 py-2.5 rounded-full border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors mb-5"
               >
                 <GoogleIcon />
@@ -463,7 +607,7 @@ export default function SignUp() {
               >
                 Already have an account?{" "}
                 <Link
-                  onClick={() => navigate("/login")}
+                  to="/login"
                   className="text-green-600 font-bold hover:underline"
                 >
                   Log In

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, ArrowRight, Sprout } from "lucide-react";
+import { useSignIn } from "@clerk/react";
 import logo from "@/assets/logo.svg";
 import signInBg from "@/assets/SignIn.png";
 import { transition } from "@/motionConfig";
@@ -67,6 +68,8 @@ const Spinner = () => (
 );
 
 export default function Login() {
+  const { signIn, isLoaded } = useSignIn();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
@@ -96,11 +99,36 @@ export default function Login() {
       setErrors(newErrors);
       return;
     }
+    if (!isLoaded) return;
     setErrors({});
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setLoading(false);
-    setSuccess(true);
+    try {
+      const result = await signIn.create({
+        identifier: form.email,
+        password: form.password,
+      });
+      if (result.status === "complete") {
+        setSuccess(true);
+        // Brief success flash then redirect
+        setTimeout(() => navigate("/farmer/dashboard"), 800);
+      }
+    } catch (err) {
+      const msg = err?.errors?.[0]?.longMessage
+        ?? err?.errors?.[0]?.message
+        ?? "Sign-in failed. Please check your credentials.";
+      setErrors({ password: msg });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (!isLoaded) return;
+    await signIn.authenticateWithRedirect({
+      strategy: "oauth_google",
+      redirectUrl: "/sso-callback",
+      redirectUrlComplete: "/farmer/dashboard",
+    });
   };
 
   return (
@@ -328,6 +356,7 @@ export default function Login() {
                 <motion.button
                   variants={itemVariants}
                   type="button"
+                  onClick={handleGoogleSignIn}
                   className="w-full flex items-center justify-center gap-3 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
                 >
                   <GoogleIcon />
