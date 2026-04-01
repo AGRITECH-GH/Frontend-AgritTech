@@ -115,6 +115,7 @@ export default function Login() {
       setTimeout(() => {
         if (role === "ADMIN") navigate("/admin/dashboard");
         else if (role === "AGENT") navigate("/agent/dashboard");
+        else if (role === "BUYER") navigate("/marketplace");
         else navigate("/farmer/dashboard");
       }, 800);
     } catch (err) {
@@ -296,9 +297,15 @@ export default function Login() {
                         type="button"
                         onClick={() => setShowPassword((v) => !v)}
                         className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
                       >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        {showPassword ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
                       </button>
                     </div>
                     {errors.password && (

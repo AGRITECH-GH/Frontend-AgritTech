@@ -31,6 +31,9 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
       if (currentRole === "AGENT") {
         return <Navigate to="/agent/dashboard" replace />;
       }
+      if (currentRole === "BUYER") {
+        return <Navigate to="/marketplace" replace />;
+      }
       return <Navigate to="/farmer/dashboard" replace />;
     }
   }

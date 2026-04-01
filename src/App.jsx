@@ -23,6 +23,8 @@ const Ledger = lazy(() => import("@/pages/Ledger"));
 const BarterProposals = lazy(() => import("@/pages/BarterProposals"));
 const Inventory = lazy(() => import("@/pages/Inventory"));
 const AddProduct = lazy(() => import("@/pages/AddProduct"));
+const Marketplace = lazy(() => import("@/pages/Marketplace"));
+const MarketplaceDetails = lazy(() => import("@/pages/MarketplaceDetails"));
 
 function HomePage() {
   return (
@@ -48,6 +50,24 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
+
+          {/* Buyer routes - protected */}
+          <Route
+            path="/marketplace"
+            element={
+              <ProtectedRoute allowedRoles={["BUYER"]}>
+                <Marketplace />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/marketplace/:id"
+            element={
+              <ProtectedRoute allowedRoles={["BUYER"]}>
+                <MarketplaceDetails />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Farmer routes - protected */}
           <Route

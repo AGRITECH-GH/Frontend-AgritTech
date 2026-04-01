@@ -27,7 +27,7 @@ const scrollToSection = (id) => {
   });
 };
 
-const Navbar = () => {
+const Navbar = ({ minimal = false }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -104,83 +104,91 @@ const Navbar = () => {
         </button>
 
         {/* Desktop nav */}
-        <div className="hidden items-center gap-8 md:flex">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => handleNavClick(item.id)}
-              className="text-base font-medium text-foreground transition-colors hover:text-primary"
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        {!minimal && (
+          <div className="hidden items-center gap-8 md:flex">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleNavClick(item.id)}
+                className="text-base font-medium text-foreground transition-colors hover:text-primary"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        )}
 
-        <div className="hidden items-center gap-3 md:flex">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-base text-foreground transition-colors hover:text-primary"
-            onClick={() => navigate("/login")}
-          >
-            Login
-          </Button>
-          <Button size="sm" onClick={() => navigate("/signup")}>
-            Sign Up
-          </Button>
-        </div>
-
-        {/* Mobile toggle */}
-        <button
-          className="rounded-full border border-border/70 bg-white/70 p-2 text-foreground shadow-sm backdrop-blur md:hidden"
-          onClick={() => setOpen((prev) => !prev)}
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      <motion.div
-        initial={false}
-        animate={open ? "open" : "closed"}
-        variants={{
-          open: { height: "auto", opacity: 1 },
-          closed: { height: 0, opacity: 0 },
-        }}
-        transition={transition}
-        className="overflow-hidden border-t border-border/60 bg-white/90 backdrop-blur md:hidden"
-      >
-        <div className="container flex flex-col gap-4 py-4">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => handleNavClick(item.id)}
-              className="text-left text-sm font-medium text-muted hover:text-foreground"
-            >
-              {item.label}
-            </button>
-          ))}
-          <div className="mt-2 flex gap-3">
+        {!minimal && (
+          <div className="hidden items-center gap-3 md:flex">
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 text-muted hover:text-foreground"
+              className="text-base text-foreground transition-colors hover:text-primary"
               onClick={() => navigate("/login")}
             >
               Login
             </Button>
-            <Button
-              size="sm"
-              className="flex-1"
-              onClick={() => navigate("/signup")}
-            >
+            <Button size="sm" onClick={() => navigate("/signup")}>
               Sign Up
             </Button>
           </div>
-        </div>
-      </motion.div>
+        )}
+
+        {/* Mobile toggle - only show if not minimal */}
+        {!minimal && (
+          <button
+            className="rounded-full border border-border/70 bg-white/70 p-2 text-foreground shadow-sm backdrop-blur md:hidden"
+            onClick={() => setOpen((prev) => !prev)}
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        )}
+      </div>
+
+      {/* Mobile menu */}
+      {!minimal && (
+        <motion.div
+          initial={false}
+          animate={open ? "open" : "closed"}
+          variants={{
+            open: { height: "auto", opacity: 1 },
+            closed: { height: 0, opacity: 0 },
+          }}
+          transition={transition}
+          className="overflow-hidden border-t border-border/60 bg-white/90 backdrop-blur md:hidden"
+        >
+          <div className="container flex flex-col gap-4 py-4">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleNavClick(item.id)}
+                className="text-left text-sm font-medium text-muted hover:text-foreground"
+              >
+                {item.label}
+              </button>
+            ))}
+            <div className="mt-2 flex gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 text-muted hover:text-foreground"
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1"
+                onClick={() => navigate("/signup")}
+              >
+                Sign Up
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </motion.nav>
   );
 };

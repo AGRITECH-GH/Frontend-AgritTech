@@ -183,6 +183,7 @@ export default function SignUp() {
       setTimeout(() => {
         if (normalizedRole === "ADMIN") navigate("/admin/dashboard");
         else if (isAgentRole) navigate("/agent/dashboard");
+        else if (normalizedRole === "BUYER") navigate("/marketplace");
         else navigate("/farmer/dashboard");
       }, 900);
     } catch (err) {
