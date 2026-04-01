@@ -1,103 +1,281 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { adminService, listingsService } from "@/lib";
 
 // ---------------------------------------------------------------------------
 // Mock data – replace with API calls when backend is ready
 // ---------------------------------------------------------------------------
 
-const MOCK_ADMIN = {
+const DEFAULT_ADMIN = {
   name: "Super Admin",
   email: "admin@agrimarket.io",
   avatarUrl: null,
 };
 
-const MOCK_STATS = [
+const DEFAULT_STATS = [
   {
     id: "users",
     label: "Total Users",
-    value: "12,482",
+    value: "0",
     icon: "users",
-    trend: "↑ +12%",
-    trendType: "positive",
+    trend: null,
+    trendType: null,
   },
   {
     id: "listings",
     label: "Active Listings",
-    value: "3,892",
+    value: "0",
     icon: "tag",
-    trend: "↑ +8%",
-    trendType: "positive",
+    trend: null,
+    trendType: null,
   },
   {
     id: "revenue",
     label: "Platform Revenue",
-    value: "$54,210.00",
+    value: "₵0.00",
     icon: "dollar",
-    trend: "↑ +15.3%",
-    trendType: "positive",
+    trend: null,
+    trendType: null,
   },
 ];
 
-const MOCK_CHART_DATA = [
-  { day: "Mon", current: 42, previous: 30 },
-  { day: "Tue", current: 68, previous: 50 },
-  { day: "Wed", current: 55, previous: 70 },
-  { day: "Thu", current: 90, previous: 60 },
-  { day: "Fri", current: 75, previous: 55 },
-  { day: "Sat", current: 38, previous: 45 },
-  { day: "Sun", current: 25, previous: 35 },
-];
-
-const MOCK_REGIONAL_FOCUS = {
-  badge: "REGIONAL FOCUS",
-  title: "Expanding Northern Region",
-  description:
-    "Farmer onboarding in the Northern Region has increased by 40% this quarter. Consider allocating more server resources for weekend peak loads.",
-  imageUrl:
-    "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80",
+const toNumber = (value) => {
+  const normalized = Number(value);
+  return Number.isFinite(normalized) ? normalized : 0;
 };
 
-const MOCK_USERS = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    role: "FARMER",
-    dateJoined: "Oct 12, 2023",
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "Anne Smith",
-    email: "anne.s@provider.net",
-    role: "BUYER",
-    dateJoined: "Oct 14, 2023",
-    status: "active",
-  },
-  {
-    id: 3,
-    name: "Robert King",
-    email: "rking@farmco.com",
-    role: "FARMER",
-    dateJoined: "Oct 15, 2023",
-    status: "suspended",
-  },
-  {
-    id: 4,
-    name: "Grace Mensah",
-    email: "grace.m@agri.gh",
-    role: "AGENT",
-    dateJoined: "Nov 01, 2023",
-    status: "active",
-  },
-  {
-    id: 5,
-    name: "Kwame Adu",
-    email: "kwame.adu@farm.gh",
-    role: "FARMER",
-    dateJoined: "Nov 18, 2023",
-    status: "active",
-  },
+const formatInteger = (value) => toNumber(value).toLocaleString();
+const formatCurrency = (value) =>
+  `₵${toNumber(value).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+const normalizeStatsPayload = (response) => {
+  const payload = response?.stats || response?.data?.stats || response || {};
+
+  const totalUsers =
+    payload.totalUsers ??
+    payload.users ??
+    payload.userCount ??
+    payload.totalUser;
+  const activeListings =
+    payload.activeListings ??
+    payload.totalListings ??
+    payload.listings ??
+    payload.listingCount;
+  const revenue =
+    payload.platformRevenue ??
+    payload.revenue ??
+    payload.totalRevenue ??
+    payload.grossRevenue;
+
+  return [
+    {
+      id: "users",
+      label: "Total Users",
+      value: formatInteger(totalUsers),
+      icon: "users",
+      trend: null,
+      trendType: null,
+    },
+    {
+      id: "listings",
+      label: "Active Listings",
+      value: formatInteger(activeListings),
+      icon: "tag",
+      trend: null,
+      trendType: null,
+    },
+    {
+      id: "revenue",
+      label: "Platform Revenue",
+      value: formatCurrency(revenue),
+      icon: "dollar",
+      trend: null,
+      trendType: null,
+    },
+  ];
+};
+
+const DEFAULT_CHART_DATA = [
+  { day: "Mon", current: 0, previous: 0 },
+  { day: "Tue", current: 0, previous: 0 },
+  { day: "Wed", current: 0, previous: 0 },
+  { day: "Thu", current: 0, previous: 0 },
+  { day: "Fri", current: 0, previous: 0 },
+  { day: "Sat", current: 0, previous: 0 },
+  { day: "Sun", current: 0, previous: 0 },
 ];
+
+const DEFAULT_REGIONAL_FOCUS = {
+  badge: "REGIONAL FOCUS",
+  title: "No regional listing activity yet",
+  description:
+    "Regional insights will appear after listings include location data.",
+  imageUrl: null,
+};
+
+const extractUsers = (response) => {
+  if (Array.isArray(response)) return response;
+  if (!response || typeof response !== "object") return [];
+
+  const candidates = [
+    response.users,
+    response.items,
+    response.data?.users,
+    response.data?.items,
+    response.data,
+  ];
+
+  return candidates.find(Array.isArray) || [];
+};
+
+const normalizeUser = (user, index) => {
+  const activeFromIsActive =
+    typeof user.isActive === "boolean"
+      ? user.isActive
+      : typeof user.is_active === "boolean"
+        ? user.is_active
+        : undefined;
+  const activeFromStatus =
+    typeof user.status === "string"
+      ? user.status.toLowerCase() === "active"
+      : undefined;
+  const isActive =
+    activeFromIsActive !== undefined
+      ? activeFromIsActive
+      : activeFromStatus !== undefined
+        ? activeFromStatus
+        : false;
+
+  const joinedAt =
+    user.createdAt ||
+    user.created_at ||
+    user.dateJoined ||
+    user.joinedAt ||
+    null;
+  const dateJoined = joinedAt
+    ? new Date(joinedAt).toLocaleDateString()
+    : "Unknown";
+
+  return {
+    id: user.id || user._id || `user-${index}`,
+    name:
+      user.fullName ||
+      user.full_name ||
+      user.name ||
+      user.username ||
+      "Unknown User",
+    email: user.email || "No email",
+    role: user.role || "UNKNOWN",
+    dateJoined,
+    status: isActive ? "active" : "suspended",
+  };
+};
+
+const getListingImageUrl = (listing) => {
+  const firstImage = Array.isArray(listing?.images) ? listing.images[0] : null;
+
+  if (typeof firstImage === "string") return firstImage;
+  if (firstImage?.url) return firstImage.url;
+  if (listing?.imageUrl) return listing.imageUrl;
+  if (listing?.image) return listing.image;
+
+  return null;
+};
+
+const getWeekStart = (baseDate) => {
+  const date = new Date(baseDate);
+  const day = date.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() + diff);
+  return date;
+};
+
+const buildChartDataFromListings = (listings) => {
+  if (!Array.isArray(listings) || listings.length === 0) {
+    return DEFAULT_CHART_DATA;
+  }
+
+  const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const current = [0, 0, 0, 0, 0, 0, 0];
+  const previous = [0, 0, 0, 0, 0, 0, 0];
+
+  const now = new Date();
+  const currentWeekStart = getWeekStart(now);
+  const previousWeekStart = new Date(currentWeekStart);
+  previousWeekStart.setDate(previousWeekStart.getDate() - 7);
+
+  listings.forEach((listing) => {
+    const createdAt = new Date(
+      listing.createdAt ||
+        listing.created_at ||
+        listing.updatedAt ||
+        listing.updated_at ||
+        listing.dateCreated ||
+        "",
+    );
+
+    if (Number.isNaN(createdAt.getTime())) return;
+
+    const normalizedDayIndex = (createdAt.getDay() + 6) % 7;
+
+    if (createdAt >= currentWeekStart) {
+      current[normalizedDayIndex] += 1;
+      return;
+    }
+
+    if (createdAt >= previousWeekStart && createdAt < currentWeekStart) {
+      previous[normalizedDayIndex] += 1;
+    }
+  });
+
+  return labels.map((day, index) => ({
+    day,
+    current: current[index],
+    previous: previous[index],
+  }));
+};
+
+const buildRegionalFocusFromListings = (listings) => {
+  if (!Array.isArray(listings) || listings.length === 0) {
+    return DEFAULT_REGIONAL_FOCUS;
+  }
+
+  const locationCounts = listings.reduce((acc, listing) => {
+    const location = listing.location?.trim();
+    if (!location) return acc;
+    acc[location] = (acc[location] || 0) + 1;
+    return acc;
+  }, {});
+
+  const rankedLocations = Object.entries(locationCounts).sort(
+    (a, b) => b[1] - a[1],
+  );
+
+  if (rankedLocations.length === 0) {
+    return DEFAULT_REGIONAL_FOCUS;
+  }
+
+  const [topLocation, topCount] = rankedLocations[0];
+  const secondCount = rankedLocations[1]?.[1] || 0;
+  const delta = topCount - secondCount;
+
+  const topLocationListing = listings.find(
+    (listing) => listing.location?.trim() === topLocation,
+  );
+
+  return {
+    badge: "REGIONAL FOCUS",
+    title: `Top Listing Region: ${topLocation}`,
+    description:
+      delta > 0
+        ? `${topLocation} leads with ${topCount} listings, ${delta} ahead of the next location.`
+        : `${topLocation} has ${topCount} listings and is tied with other regions.`,
+    imageUrl: getListingImageUrl(topLocationListing),
+  };
+};
 
 const PAGE_SIZE = 3;
 
@@ -106,14 +284,15 @@ const PAGE_SIZE = 3;
 // ---------------------------------------------------------------------------
 
 export function useAdminDashboard() {
-  const [admin] = useState(MOCK_ADMIN);
-  const [stats] = useState(MOCK_STATS);
-  const [chartData] = useState(MOCK_CHART_DATA);
-  const [regionalFocus] = useState(MOCK_REGIONAL_FOCUS);
-  const [users, setUsers] = useState(MOCK_USERS);
+  const [admin] = useState(DEFAULT_ADMIN);
+  const [stats, setStats] = useState(DEFAULT_STATS);
+  const [chartData, setChartData] = useState(DEFAULT_CHART_DATA);
+  const [regionalFocus, setRegionalFocus] = useState(DEFAULT_REGIONAL_FOCUS);
+  const [users, setUsers] = useState([]);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [statsError, setStatsError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange] = useState("Last 30 Days");
-  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredUsers = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -126,12 +305,90 @@ export function useAdminDashboard() {
     );
   }, [users, searchQuery]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+
   const totalUsers = filteredUsers.length;
-  const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(totalUsers / PAGE_SIZE));
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchAdminData = async () => {
+      setLoadingStats(true);
+      setStatsError(null);
+
+      try {
+        const [statsResult, usersResult, listingsResult] =
+          await Promise.allSettled([
+            adminService.getDashboardStats(),
+            adminService.getAllUsers({ page: 1, limit: 200 }),
+            listingsService.getListings({ page: 1, limit: 200 }),
+          ]);
+
+        if (cancelled) return;
+
+        if (statsResult.status === "fulfilled") {
+          setStats(normalizeStatsPayload(statsResult.value));
+        } else {
+          console.error("Failed to fetch admin stats:", statsResult.reason);
+          setStats(DEFAULT_STATS);
+        }
+
+        if (usersResult.status === "fulfilled") {
+          setUsers(extractUsers(usersResult.value).map(normalizeUser));
+        } else {
+          console.error("Failed to fetch admin users:", usersResult.reason);
+          setUsers([]);
+        }
+
+        const listings =
+          listingsResult.status === "fulfilled" &&
+          Array.isArray(listingsResult.value?.listings)
+            ? listingsResult.value.listings
+            : [];
+        if (listingsResult.status !== "fulfilled") {
+          console.error(
+            "Failed to fetch listings for admin activity:",
+            listingsResult.reason,
+          );
+        }
+
+        setChartData(buildChartDataFromListings(listings));
+        setRegionalFocus(buildRegionalFocusFromListings(listings));
+
+        if (
+          statsResult.status !== "fulfilled" &&
+          usersResult.status !== "fulfilled" &&
+          listingsResult.status !== "fulfilled"
+        ) {
+          setStatsError("Failed to load admin dashboard data.");
+        }
+      } catch (err) {
+        console.error("Failed to fetch admin dashboard data:", err);
+        if (!cancelled) {
+          setStatsError(err.message || "Failed to load admin dashboard data.");
+          setStats(DEFAULT_STATS);
+          setUsers([]);
+          setChartData(DEFAULT_CHART_DATA);
+          setRegionalFocus(DEFAULT_REGIONAL_FOCUS);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingStats(false);
+        }
+      }
+    };
+
+    fetchAdminData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const toggleUserStatus = (id) => {
     setUsers((prev) =>
@@ -161,6 +418,8 @@ export function useAdminDashboard() {
   return {
     admin,
     stats,
+    loadingStats,
+    statsError,
     chartData,
     regionalFocus,
     paginatedUsers,

@@ -12,13 +12,13 @@ const MOCK_STATS = [
   {
     id: "sales",
     label: "Total Sales (Monthly)",
-    value: "$12,450.00",
+    value: "₵12,450.00",
     icon: "sales",
   },
   {
     id: "pending",
     label: "Pending Payments",
-    value: "$1,840.50",
+    value: "₵1,840.50",
     icon: "pending",
   },
   {
@@ -215,7 +215,7 @@ export function useLedger() {
     doc.text(`Period: ${formattedDateRange}`, 14, 26);
     doc.text(`Farmer: ${user.name}`, 14, 32);
     doc.text(
-      `Total: $${totalFiltered.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+      `Total: ₵${totalFiltered.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
       14,
       38,
     );
@@ -228,7 +228,7 @@ export function useLedger() {
       t.name,
       t.trxId,
       t.quantity,
-      `$${t.totalPrice.toFixed(2)}`,
+      `₵${t.totalPrice.toFixed(2)}`,
       t.status.toUpperCase(),
     ]);
 

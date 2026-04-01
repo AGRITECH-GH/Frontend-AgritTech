@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import TechnologySection from "@/components/TechnologySection";
@@ -15,6 +16,9 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const AgentDashboard = lazy(() => import("@/pages/AgentDashboard"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const AdminListings = lazy(() => import("@/pages/AdminListings"));
+const AdminUsers = lazy(() => import("@/pages/AdminUsers"));
+const AdminRevenue = lazy(() => import("@/pages/AdminRevenue"));
 const Ledger = lazy(() => import("@/pages/Ledger"));
 const BarterProposals = lazy(() => import("@/pages/BarterProposals"));
 const Inventory = lazy(() => import("@/pages/Inventory"));
@@ -37,60 +41,103 @@ function HomePage() {
 
 function App() {
   return (
-    <Suspense fallback={<Loader />}>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<Login />} />
+    <AuthProvider>
+      <Suspense fallback={<Loader />}>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/login" element={<Login />} />
 
-        {/* Protected routes */}
-        <Route
-          path="/farmer/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/farmer/ledger" element={<Ledger />} />
-        <Route
-          path="/farmer/inventory"
-          element={
-            <ProtectedRoute>
-              <Inventory />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/farmer/inventory/add-product"
-          element={
-            <ProtectedRoute>
-              <AddProduct />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/agent/dashboard"
-          element={
-            <ProtectedRoute>
-              <AgentDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/farmer/proposals" element={<BarterProposals />} />
+          {/* Farmer routes - protected */}
+          <Route
+            path="/farmer/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["FARMER"]}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/farmer/ledger"
+            element={
+              <ProtectedRoute allowedRoles={["FARMER"]}>
+                <Ledger />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/farmer/inventory"
+            element={
+              <ProtectedRoute allowedRoles={["FARMER"]}>
+                <Inventory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/farmer/inventory/add-product"
+            element={
+              <ProtectedRoute allowedRoles={["FARMER"]}>
+                <AddProduct />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/farmer/proposals"
+            element={
+              <ProtectedRoute allowedRoles={["FARMER"]}>
+                <BarterProposals />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+          {/* Agent routes - protected */}
+          <Route
+            path="/agent/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["AGENT"]}>
+                <AgentDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin routes - protected */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/listings"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminListings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminUsers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/revenue"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminRevenue />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </AuthProvider>
   );
 }
 

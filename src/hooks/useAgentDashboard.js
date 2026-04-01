@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { agentsService } from "@/lib";
 
 // ---------------------------------------------------------------------------
 // Mock data – swap fetch() calls in place of useState initialisers when ready
@@ -14,7 +15,7 @@ const MOCK_STATS = [
   {
     id: "commission",
     label: "Total Earned Commission",
-    value: "$4,852.40",
+    value: "₵4,852.40",
     icon: "dollar",
     trend: "↑ +12.5% this month",
     trendType: "positive",
@@ -30,7 +31,7 @@ const MOCK_STATS = [
   {
     id: "payouts",
     label: "Pending Payouts",
-    value: "$320.15",
+    value: "₵320.15",
     icon: "clock",
     trend: "⏱ Processing (ETA 2 days)",
     trendType: "warning",
@@ -59,7 +60,7 @@ const MOCK_FARMERS = [
     location: "Enugu North",
     status: "verified",
     lastActivity: "2 hrs ago",
-    totalCommission: "$1,240.50",
+    totalCommission: "₵1,240.50",
     avatarUrl: null,
   },
   {
@@ -69,7 +70,7 @@ const MOCK_FARMERS = [
     location: "Western Cape",
     status: "verified",
     lastActivity: "Yesterday",
-    totalCommission: "$892.20",
+    totalCommission: "₵892.20",
     avatarUrl: null,
   },
   {
@@ -79,7 +80,7 @@ const MOCK_FARMERS = [
     location: "Kano City Hub",
     status: "processing",
     lastActivity: "4 days ago",
-    totalCommission: "$145.00",
+    totalCommission: "₵145.00",
     avatarUrl: null,
   },
   {
@@ -89,7 +90,7 @@ const MOCK_FARMERS = [
     location: "Accra Region",
     status: "verified",
     lastActivity: "3 hrs ago",
-    totalCommission: "$2,102.75",
+    totalCommission: "₵2,102.75",
     avatarUrl: null,
   },
   {
@@ -99,7 +100,7 @@ const MOCK_FARMERS = [
     location: "Durban South",
     status: "pending",
     lastActivity: "1 week ago",
-    totalCommission: "$0.00",
+    totalCommission: "₵0.00",
     avatarUrl: null,
   },
 ];
@@ -113,8 +114,114 @@ export function useAgentDashboard() {
   const [stats] = useState(MOCK_STATS);
   const [commissionTiers] = useState(MOCK_COMMISSION_TIERS);
   const [hubActivity] = useState(MOCK_HUB_ACTIVITY);
-  const [farmers] = useState(MOCK_FARMERS);
+  const [farmers, setFarmers] = useState(MOCK_FARMERS);
   const [searchQuery, setSearchQuery] = useState("");
+  const [registeringFarmer, setRegisteringFarmer] = useState(false);
+  const [loadingFarmers, setLoadingFarmers] = useState(false);
+  const [farmersLoadError, setFarmersLoadError] = useState("");
+
+  const formatRegistrationDate = () =>
+    new Date().toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
+
+  const normalizeFarmer = (payload, fallbackData) => {
+    const source = payload?.farmer || payload?.data || payload || {};
+    const fullName = source.fullName || source.name || fallbackData.fullName;
+    const region = source.region || source.location || fallbackData.region;
+    const rawStatus = (source.status || "pending").toLowerCase();
+
+    return {
+      id: source.id || source._id || `temp-${Date.now()}`,
+      name: fullName,
+      registeredDate: formatRegistrationDate(),
+      location: region,
+      status: ["verified", "processing", "pending"].includes(rawStatus)
+        ? rawStatus
+        : "pending",
+      lastActivity: "Just now",
+      totalCommission: "₵0.00",
+      avatarUrl: source.avatarUrl || null,
+    };
+  };
+
+  const normalizeFarmersList = (payload) => {
+    const rawList =
+      payload?.farmers ||
+      payload?.data?.farmers ||
+      payload?.data ||
+      (Array.isArray(payload) ? payload : []);
+
+    if (!Array.isArray(rawList) || rawList.length === 0) {
+      return [];
+    }
+
+    return rawList.map((farmer, index) => {
+      const source = farmer || {};
+      const rawStatus = (source.status || "pending").toLowerCase();
+
+      return {
+        id: source.id || source._id || `farmer-${Date.now()}-${index}`,
+        name: source.fullName || source.name || "Unknown Farmer",
+        registeredDate:
+          source.registeredDate ||
+          source.createdAt ||
+          source.created_on ||
+          formatRegistrationDate(),
+        location: source.region || source.location || "Unknown Region",
+        status: ["verified", "processing", "pending"].includes(rawStatus)
+          ? rawStatus
+          : "pending",
+        lastActivity:
+          source.lastActivity ||
+          source.updatedAt ||
+          source.lastSeen ||
+          "Recently active",
+        totalCommission: source.totalCommission || "₵0.00",
+        avatarUrl: source.avatarUrl || null,
+      };
+    });
+  };
+
+  useEffect(() => {
+    if (import.meta.env.MODE === "test") {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadFarmers = async () => {
+      setLoadingFarmers(true);
+      setFarmersLoadError("");
+
+      try {
+        const response = await agentsService.getMyFarmers();
+        if (cancelled) return;
+
+        const normalized = normalizeFarmersList(response);
+        if (normalized.length > 0) {
+          setFarmers(normalized);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setFarmersLoadError(
+          err?.message || "Unable to load your farmers right now.",
+        );
+      } finally {
+        if (!cancelled) {
+          setLoadingFarmers(false);
+        }
+      }
+    };
+
+    loadFarmers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredFarmers = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -127,9 +234,30 @@ export function useAgentDashboard() {
     );
   }, [farmers, searchQuery]);
 
-  const onRegisterFarmer = () => {
-    // TODO: navigate to /agent/register-farmer
-    console.log("Register new farmer");
+  const registerFarmer = async (farmerData) => {
+    setRegisteringFarmer(true);
+    try {
+      const response = await agentsService.registerFarmer(farmerData);
+      const newFarmer = normalizeFarmer(response, farmerData);
+      setFarmers((prev) => [newFarmer, ...prev]);
+      setFarmersLoadError("");
+      return {
+        success: true,
+        message: "Farmer registered successfully.",
+      };
+    } catch (err) {
+      console.error("Failed to register farmer:", err);
+      const friendlyMessage =
+        err?.message === "Agent profile not found"
+          ? "Complete your agent profile setup before registering farmers."
+          : err?.message || "Unable to register farmer at the moment.";
+      return {
+        success: false,
+        message: friendlyMessage,
+      };
+    } finally {
+      setRegisteringFarmer(false);
+    }
   };
 
   const onExportData = () => {
@@ -150,7 +278,10 @@ export function useAgentDashboard() {
     farmers: filteredFarmers,
     searchQuery,
     setSearchQuery,
-    onRegisterFarmer,
+    registerFarmer,
+    registeringFarmer,
+    loadingFarmers,
+    farmersLoadError,
     onExportData,
     onFarmerAction,
   };

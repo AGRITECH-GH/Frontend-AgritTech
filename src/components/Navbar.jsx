@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { motion, animate } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Show, UserButton } from "@clerk/react";
 import logo from "@/assets/logo.svg";
 import { transition } from "@/motionConfig";
 
@@ -87,10 +86,11 @@ const Navbar = () => {
       initial={{ y: -24, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={transition}
-      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${scrolled
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+        scrolled
           ? "border-b border-white/10 bg-white/10 shadow-soft backdrop-blur-xl"
           : "bg-transparent"
-        }`}
+      }`}
     >
       <div className="container flex h-16 items-center justify-between md:h-20">
         <button
@@ -118,22 +118,17 @@ const Navbar = () => {
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Show when="signed-in">
-            <UserButton afterSignOutUrl="/" />
-          </Show>
-          <Show when="signed-out">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-base text-foreground transition-colors hover:text-primary"
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </Button>
-            <Button size="sm" onClick={() => navigate("/signup")}>
-              Sign Up
-            </Button>
-          </Show>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-base text-foreground transition-colors hover:text-primary"
+            onClick={() => navigate("/login")}
+          >
+            Login
+          </Button>
+          <Button size="sm" onClick={() => navigate("/signup")}>
+            Sign Up
+          </Button>
         </div>
 
         {/* Mobile toggle */}
@@ -168,26 +163,21 @@ const Navbar = () => {
             </button>
           ))}
           <div className="mt-2 flex gap-3">
-            <Show when="signed-in">
-              <UserButton afterSignOutUrl="/" />
-            </Show>
-            <Show when="signed-out">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex-1 text-muted hover:text-foreground"
-                onClick={() => navigate("/login")}
-              >
-                Login
-              </Button>
-              <Button
-                size="sm"
-                className="flex-1"
-                onClick={() => navigate("/signup")}
-              >
-                Sign Up
-              </Button>
-            </Show>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 text-muted hover:text-foreground"
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </Button>
+            <Button
+              size="sm"
+              className="flex-1"
+              onClick={() => navigate("/signup")}
+            >
+              Sign Up
+            </Button>
           </div>
         </div>
       </motion.div>

@@ -1,5 +1,6 @@
 import { Search, Calendar } from "lucide-react";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
+import { useAuth } from "@/context/AuthContext";
 import AdminLayout from "@/components/admin/AdminLayout";
 import StatCard from "@/components/dashboard/StatCard";
 import ListingActivityChart from "@/components/admin/ListingActivityChart";
@@ -7,9 +8,11 @@ import RegionalFocusCard from "@/components/admin/RegionalFocusCard";
 import UserManagementTable from "@/components/admin/UserManagementTable";
 
 const AdminDashboard = () => {
+  const { user: authUser } = useAuth();
   const {
     admin,
     stats,
+    statsError,
     chartData,
     regionalFocus,
     paginatedUsers,
@@ -26,8 +29,20 @@ const AdminDashboard = () => {
     onReviewRegion,
   } = useAdminDashboard();
 
+  const sidebarAdmin = {
+    name:
+      authUser?.fullName ||
+      authUser?.name ||
+      authUser?.username ||
+      admin?.name ||
+      "Admin",
+    email: authUser?.email || admin?.email || "",
+    avatarUrl:
+      authUser?.avatarUrl || authUser?.profileImage || admin?.avatarUrl || null,
+  };
+
   return (
-    <AdminLayout admin={admin}>
+    <AdminLayout admin={sidebarAdmin}>
       <main className="flex-1 px-6 py-6 lg:px-8 lg:py-8">
         {/* ── Page header ── */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -78,6 +93,12 @@ const AdminDashboard = () => {
         </div>
 
         {/* ── Stats row ── */}
+        {statsError && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            {statsError}
+          </div>
+        )}
+
         <div className="mb-6 flex flex-col gap-4 sm:flex-row">
           {stats.map((stat) => (
             <StatCard

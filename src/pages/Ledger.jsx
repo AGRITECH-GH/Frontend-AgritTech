@@ -1,11 +1,13 @@
 import { FileDown } from "lucide-react";
 import { useLedger } from "@/hooks/useLedger";
+import { useAuth } from "@/context/AuthContext";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import LedgerStatCard from "@/components/ledger/LedgerStatCard";
 import TransactionsTable from "@/components/ledger/TransactionsTable";
 import Footer from "@/components/Footer";
 
 const Ledger = () => {
+  const { user: authUser } = useAuth();
   const {
     user,
     stats,
@@ -23,9 +25,19 @@ const Ledger = () => {
     onDownloadPDF,
   } = useLedger();
 
+  const displayName =
+    authUser?.name ||
+    authUser?.fullName ||
+    user?.name ||
+    user?.fullName ||
+    "Farmer Joe";
+  const navbarUser = {
+    name: displayName,
+    avatarUrl: authUser?.avatarUrl || user?.avatarUrl || null,
+  };
   return (
     <div className="min-h-screen bg-surface">
-      <DashboardNavbar user={user} />
+      <DashboardNavbar user={navbarUser} />
 
       <main className="container py-6 lg:py-8">
         {/* ── Page header ── */}
@@ -81,7 +93,7 @@ const Ledger = () => {
           <p className="text-sm text-muted">Total Filtered Period:</p>
           <div className="inline-block">
             <p className="text-3xl font-bold text-primary">
-              <span className="mr-1 text-lg font-semibold text-muted">$</span>
+              <span className="mr-1 text-lg font-semibold text-muted">₵</span>
               {totalFiltered.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
               })}

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, ArrowRight, Sprout } from "lucide-react";
-import { useSignIn } from "@clerk/react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Sprout } from "lucide-react";
 import logo from "@/assets/logo.svg";
 import signInBg from "@/assets/SignIn.png";
 import { transition } from "@/motionConfig";
+import { useAuth } from "@/context/AuthContext";
+import { authService } from "@/lib";
 
 /* ─── Google "G" SVG ─── */
 const GoogleIcon = () => (
@@ -68,7 +69,7 @@ const Spinner = () => (
 );
 
 export default function Login() {
-  const { signIn, isLoaded } = useSignIn();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
@@ -76,6 +77,10 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  const handleGoogleAuth = () => {
+    authService.signInWithGoogle();
+  };
 
   /* ── Validation ── */
   const validate = () => {
@@ -99,36 +104,27 @@ export default function Login() {
       setErrors(newErrors);
       return;
     }
-    if (!isLoaded) return;
     setErrors({});
     setLoading(true);
     try {
-      const result = await signIn.create({
-        identifier: form.email,
-        password: form.password,
-      });
-      if (result.status === "complete") {
-        setSuccess(true);
-        // Brief success flash then redirect
-        setTimeout(() => navigate("/farmer/dashboard"), 800);
-      }
+      const response = await login(form.email, form.password, remember);
+      setSuccess(true);
+
+      // Route based on role
+      const { role } = response.user;
+      setTimeout(() => {
+        if (role === "ADMIN") navigate("/admin/dashboard");
+        else if (role === "AGENT") navigate("/agent/dashboard");
+        else navigate("/farmer/dashboard");
+      }, 800);
     } catch (err) {
-      const msg = err?.errors?.[0]?.longMessage
-        ?? err?.errors?.[0]?.message
-        ?? "Sign-in failed. Please check your credentials.";
-      setErrors({ password: msg });
+      setErrors({
+        password:
+          err.message || "Sign-in failed. Please check your credentials.",
+      });
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleSignIn = async () => {
-    if (!isLoaded) return;
-    await signIn.authenticateWithRedirect({
-      strategy: "oauth_google",
-      redirectUrl: "/sso-callback",
-      redirectUrlComplete: "/farmer/dashboard",
-    });
   };
 
   return (
@@ -290,12 +286,20 @@ export default function Login() {
                         placeholder="••••••••"
                         autoComplete="current-password"
                         className={[
-                          "w-full pl-10 pr-4 py-3 rounded-2xl border text-sm bg-gray-50 outline-none transition-colors placeholder:text-gray-400",
+                          "w-full pl-10 pr-10 py-3 rounded-2xl border text-sm bg-gray-50 outline-none transition-colors placeholder:text-gray-400",
                           errors.password
                             ? "border-red-400 focus:border-red-500 bg-red-50"
                             : "border-gray-200 focus:border-green-400",
                         ].join(" ")}
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((v) => !v)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
                     </div>
                     {errors.password && (
                       <p className="text-xs text-red-500 mt-1.5">
@@ -352,15 +356,14 @@ export default function Login() {
                   <span className="flex-1 h-px bg-gray-200" />
                 </motion.div>
 
-                {/* ── Google ── */}
                 <motion.button
                   variants={itemVariants}
                   type="button"
-                  onClick={handleGoogleSignIn}
-                  className="w-full flex items-center justify-center gap-3 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                  onClick={handleGoogleAuth}
+                  className="mb-5 flex w-full items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50"
                 >
                   <GoogleIcon />
-                  Google
+                  Continue with Google
                 </motion.button>
 
                 {/* ── Sign up link ── */}

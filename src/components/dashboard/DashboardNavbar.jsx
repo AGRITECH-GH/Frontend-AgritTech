@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
-import { Search, User, Menu, X } from "lucide-react";
+import { Search, User, Menu, X, ChevronDown, LogOut } from "lucide-react";
 import logo from "@/assets/logo.svg";
+import { useAuth } from "@/context/AuthContext";
 
 const defaultNavLinks = [
   { label: "Dashboard", to: "/farmer/dashboard" },
@@ -24,13 +25,64 @@ const DashboardNavbar = ({
   searchPlaceholder = "Search for crops, livestock, or farm supplies...",
 }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const profileMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
     // TODO: wire up search API / navigation
     console.log("Search:", searchValue);
+  };
+
+  const handleLogout = useCallback(async () => {
+    setIsLoggingOut(true);
+    setProfileMenuOpen(false);
+
+    try {
+      console.log("Starting logout...");
+      await logout();
+      console.log("Logout completed, redirecting to login");
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+      navigate("/login", { replace: true });
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }, [logout, navigate]);
+
+  const handleViewProfile = () => {
+    setProfileMenuOpen(false);
+    navigate("/profile");
   };
 
   return (
@@ -39,11 +91,13 @@ const DashboardNavbar = ({
         {/* Logo */}
         <button
           type="button"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/farmer/dashboard")}
           className="flex shrink-0 items-center gap-1.5 text-base font-semibold text-foreground"
         >
           <img src={logo} alt="AgriTech logo" className="h-6 w-6" />
-          <span>AgriTech</span>
+          <span>
+            Agri<span className="text-green-600">Tech</span>
+          </span>
         </button>
 
         {/* Search */}
@@ -88,30 +142,67 @@ const DashboardNavbar = ({
 
         {/* Right controls */}
         <div className="flex shrink-0 items-center gap-3">
-          {/* Avatar + User name */}
-          <button
-            type="button"
-            onClick={() => navigate("/profile")}
-            className="flex items-center gap-2 rounded-full pr-2 transition-opacity hover:opacity-80"
-            aria-label="Profile"
-          >
-            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-amber-100 text-foreground transition-opacity">
-              {user?.avatarUrl ? (
-                <img
-                  src={user.avatarUrl}
-                  alt={user.name}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <User className="h-5 w-5" />
+          {/* Avatar + User menu */}
+          <div className="relative" ref={profileMenuRef}>
+            <button
+              type="button"
+              onClick={() => setProfileMenuOpen((v) => !v)}
+              className="flex items-center gap-2 rounded-full pr-2 transition-opacity hover:opacity-80"
+              aria-label="Profile menu"
+              aria-haspopup="menu"
+              aria-expanded={profileMenuOpen}
+            >
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-amber-100 text-foreground transition-opacity">
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <User className="h-5 w-5" />
+                )}
+              </div>
+              {user?.name && (
+                <span className="text-sm font-medium text-foreground">
+                  {user.name}
+                </span>
               )}
-            </div>
-            {user?.name && (
-              <span className="text-sm font-medium text-foreground">
-                {user.name}
-              </span>
+              <ChevronDown
+                className={`h-4 w-4 text-muted transition-transform ${
+                  profileMenuOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {profileMenuOpen && (
+              <div
+                className="absolute right-0 top-full z-50 mt-2 w-44 rounded-xl border border-border/70 bg-white p-1.5 shadow-lg"
+                role="menu"
+                aria-label="Profile actions"
+              >
+                <button
+                  type="button"
+                  onClick={handleViewProfile}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-surface"
+                  role="menuitem"
+                >
+                  <User className="h-4 w-4" />
+                  View Profile
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
+                  role="menuitem"
+                >
+                  <LogOut className="h-4 w-4" />
+                  {isLoggingOut ? "Logging out..." : "Log out"}
+                </button>
+              </div>
             )}
-          </button>
+          </div>
 
           {/* Mobile hamburger */}
           <button
