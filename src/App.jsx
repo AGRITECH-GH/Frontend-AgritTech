@@ -22,12 +22,18 @@ const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const AdminListings = lazy(() => import("@/pages/AdminListings"));
 const AdminUsers = lazy(() => import("@/pages/AdminUsers"));
 const AdminRevenue = lazy(() => import("@/pages/AdminRevenue"));
+const AdminSettings = lazy(() => import("@/pages/AdminSettings"));
 const Ledger = lazy(() => import("@/pages/Ledger"));
 const BarterProposals = lazy(() => import("@/pages/BarterProposals"));
 const Inventory = lazy(() => import("@/pages/Inventory"));
 const AddProduct = lazy(() => import("@/pages/AddProduct"));
 const Marketplace = lazy(() => import("@/pages/Marketplace"));
 const MarketplaceDetails = lazy(() => import("@/pages/MarketplaceDetails"));
+const Cart = lazy(() => import("@/pages/Cart"));
+const Checkout = lazy(() => import("@/pages/Checkout"));
+const Orders = lazy(() => import("@/pages/Orders"));
+const PaymentReturn = lazy(() => import("@/pages/PaymentReturn"));
+const Profile = lazy(() => import("@/pages/Profile"));
 
 function HomePage() {
   return (
@@ -56,6 +62,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/payments/return" element={<PaymentReturn />} />
 
           {/* Buyer routes - protected */}
           <Route
@@ -71,6 +78,38 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["BUYER"]}>
                 <MarketplaceDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute allowedRoles={["BUYER"]}>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute allowedRoles={["BUYER"]}>
+                <Checkout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute>
+                <Orders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders/:id"
+            element={
+              <ProtectedRoute>
+                <Orders />
               </ProtectedRoute>
             }
           />
@@ -127,6 +166,16 @@ function App() {
             }
           />
 
+          {/* Profile route - protected */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Admin routes - protected */}
           <Route
             path="/admin/dashboard"
@@ -157,6 +206,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["ADMIN"]}>
                 <AdminRevenue />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/settings"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminSettings />
               </ProtectedRoute>
             }
           />

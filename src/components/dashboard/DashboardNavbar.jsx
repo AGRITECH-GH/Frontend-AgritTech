@@ -192,6 +192,18 @@ const DashboardNavbar = ({
                 </button>
                 <button
                   type="button"
+                  onClick={() => {
+                    setProfileMenuOpen(false);
+                    navigate("/orders");
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-surface"
+                  role="menuitem"
+                >
+                  <Search className="h-4 w-4" />
+                  My Orders
+                </button>
+                <button
+                  type="button"
                   onClick={handleLogout}
                   disabled={isLoggingOut}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"

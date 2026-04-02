@@ -372,7 +372,7 @@ const MarketplaceDetails = () => {
                       Added to cart!
                     </div>
                     <Link
-                      to="/marketplace"
+                      to="/cart"
                       className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-green-700"
                     >
                       <ShoppingCart className="h-3.5 w-3.5" />
@@ -631,7 +631,7 @@ const MarketplaceDetails = () => {
                 <p className="text-xs text-muted">Item added successfully.</p>
               </div>
               <Link
-                to="/marketplace"
+                to="/cart"
                 className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-green-700"
               >
                 <ShoppingCart className="h-3.5 w-3.5" />

@@ -228,7 +228,7 @@ const Navbar = ({ minimal = false }) => {
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
               {/* Cart */}
               <button
-                onClick={() => navigate("/marketplace")}
+                onClick={() => navigate("/cart")}
                 className="relative flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10"
                 aria-label="Cart"
               >
@@ -269,12 +269,22 @@ const Navbar = ({ minimal = false }) => {
                       <button
                         onClick={() => {
                           setUserMenuOpen(false);
-                          navigate("/marketplace");
+                          navigate("/profile");
                         }}
                         className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-[#f5f6f1]"
                       >
                         <User className="h-4 w-4 text-muted" />
                         My Account
+                      </button>
+                      <button
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate("/orders");
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-[#f5f6f1]"
+                      >
+                        <ShoppingCart className="h-4 w-4 text-muted" />
+                        My Orders
                       </button>
                       <button
                         onClick={handleLogout}
