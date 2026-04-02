@@ -238,7 +238,7 @@ const AdminUsers = () => {
 
   return (
     <AdminLayout admin={sidebarAdmin}>
-      <main className="flex-1 px-6 py-6 lg:px-8 lg:py-8">
+      <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         <div className="mb-6 pl-12 lg:pl-0">
           <h1 className="text-2xl font-bold text-foreground">
             User Management

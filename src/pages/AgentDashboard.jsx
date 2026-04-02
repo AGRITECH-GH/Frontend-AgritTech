@@ -65,7 +65,7 @@ const AgentDashboard = () => {
 
   return (
     <AgentLayout agent={sidebarAgent}>
-      <main className="flex-1 overflow-auto px-6 py-6 lg:px-8 lg:py-8">
+      <main className="flex-1 overflow-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         {/* ── Page header ── */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="pl-12 lg:pl-0">
@@ -77,11 +77,11 @@ const AgentDashboard = () => {
             </p>
           </div>
 
-          <div className="flex shrink-0 gap-3">
+          <div className="flex w-full shrink-0 flex-wrap gap-3 sm:w-auto">
             <button
               type="button"
               onClick={onExportData}
-              className="flex items-center gap-2 rounded-xl border border-border bg-white px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-surface"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-white px-4 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-surface sm:flex-none"
             >
               <Download className="h-4 w-4" />
               Export Data
@@ -89,7 +89,7 @@ const AgentDashboard = () => {
             <button
               type="button"
               onClick={() => setIsRegisterModalOpen(true)}
-              className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 sm:flex-none"
             >
               <UserPlus className="h-4 w-4" />
               Register New Farmer

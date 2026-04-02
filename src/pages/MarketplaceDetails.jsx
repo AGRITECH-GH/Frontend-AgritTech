@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronRight,
   MessageCircle,
@@ -11,6 +12,7 @@ import {
   Eye,
   Shield,
   Award,
+  X,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -86,6 +88,7 @@ const MarketplaceDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [cartAdded, setCartAdded] = useState(false);
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
@@ -163,6 +166,8 @@ const MarketplaceDetails = () => {
         quantity: Number(quantity) || 1,
       });
       setMessage({ type: "success", text: "Item added to cart successfully." });
+      setCartAdded(true);
+      setTimeout(() => setCartAdded(false), 4000);
     } catch (err) {
       console.error("Failed to add item to cart:", err);
       setMessage({
@@ -235,7 +240,7 @@ const MarketplaceDetails = () => {
             </nav>
 
             {/* Main Grid: Image Gallery + Product Info */}
-            <div className="grid gap-8 rounded-3xl border border-border/60 bg-white p-6 shadow-sm md:grid-cols-[1.2fr_1fr]">
+            <div className="grid gap-6 rounded-3xl border border-border/60 bg-white p-4 shadow-sm sm:p-6 md:grid-cols-[1.2fr_1fr]">
               {/* Left: Image Gallery */}
               <div className="space-y-4">
                 {/* Main Image */}
@@ -346,7 +351,7 @@ const MarketplaceDetails = () => {
                     className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg flex items-center justify-center"
                   >
                     <ShoppingCart className="mr-2 h-4 w-4" />
-                    {isAddingToCart ? "Adding to Cart..." : "Buy Now"}
+                    {isAddingToCart ? "Adding to Cart..." : "Add to Cart"}
                   </Button>
 
                   <button
@@ -359,15 +364,28 @@ const MarketplaceDetails = () => {
                   </button>
                 </div>
 
-                {/* Message Display */}
-                {message && (
+                {/* Cart confirmation banner */}
+                {cartAdded && (
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+                    <div className="flex items-center gap-2 text-sm font-medium text-green-700">
+                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                      Added to cart!
+                    </div>
+                    <Link
+                      to="/marketplace"
+                      className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-green-700"
+                    >
+                      <ShoppingCart className="h-3.5 w-3.5" />
+                      View Cart
+                    </Link>
+                  </div>
+                )}
+                {message && message.type !== "success" && (
                   <div
                     className={`rounded-lg border p-3 text-sm ${
-                      message.type === "success"
-                        ? "border-green-200 bg-green-50 text-green-700"
-                        : message.type === "error"
-                          ? "border-red-200 bg-red-50 text-red-700"
-                          : "border-blue-200 bg-blue-50 text-blue-700"
+                      message.type === "error"
+                        ? "border-red-200 bg-red-50 text-red-700"
+                        : "border-blue-200 bg-blue-50 text-blue-700"
                     }`}
                   >
                     {message.text}
@@ -389,7 +407,7 @@ const MarketplaceDetails = () => {
             </div>
 
             {/* Seller Card */}
-            <div className="mt-8 rounded-2xl border border-border/60 bg-white p-6 shadow-sm">
+            <div className="mt-8 rounded-2xl border border-border/60 bg-white p-4 shadow-sm sm:p-6">
               <h2 className="text-lg font-bold text-foreground mb-4">
                 Seller Information
               </h2>
@@ -443,7 +461,7 @@ const MarketplaceDetails = () => {
             </div>
 
             {/* Specifications Section */}
-            <div className="mt-8 rounded-2xl border border-border/60 bg-white p-6 shadow-sm">
+            <div className="mt-8 rounded-2xl border border-border/60 bg-white p-4 shadow-sm sm:p-6">
               <h2 className="text-lg font-bold text-foreground mb-4">
                 Product Specifications
               </h2>
@@ -526,7 +544,7 @@ const MarketplaceDetails = () => {
             </div>
 
             {/* Description Section */}
-            <div className="mt-8 rounded-2xl border border-border/60 bg-white p-6 shadow-sm">
+            <div className="mt-8 rounded-2xl border border-border/60 bg-white p-4 shadow-sm sm:p-6">
               <h2 className="text-lg font-bold text-foreground mb-4">
                 Description
               </h2>
@@ -536,7 +554,7 @@ const MarketplaceDetails = () => {
             </div>
 
             {/* Similar Products Section */}
-            <div className="mt-8 rounded-2xl border border-border/60 bg-white p-6 shadow-sm">
+            <div className="mt-8 rounded-2xl border border-border/60 bg-white p-4 shadow-sm sm:p-6">
               <h2 className="text-lg font-bold text-foreground mb-6">
                 Similar Commodities
               </h2>
@@ -591,6 +609,45 @@ const MarketplaceDetails = () => {
         )}
       </main>
       <Footer />
+
+      {/* Cart toast notification */}
+      <AnimatePresence>
+        {cartAdded && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 320, damping: 28 }}
+            className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 sm:bottom-6 sm:left-auto sm:right-6 sm:px-0 sm:pb-0"
+          >
+            <div className="flex items-center gap-4 rounded-xl border border-green-200 bg-white px-5 py-4 shadow-2xl w-full sm:w-auto">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+              </div>
+              <div className="flex-1 sm:flex-none">
+                <p className="text-sm font-semibold text-foreground">
+                  Added to cart!
+                </p>
+                <p className="text-xs text-muted">Item added successfully.</p>
+              </div>
+              <Link
+                to="/marketplace"
+                className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-green-700"
+              >
+                <ShoppingCart className="h-3.5 w-3.5" />
+                View Cart
+              </Link>
+              <button
+                onClick={() => setCartAdded(false)}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted hover:bg-[#f5f6f1] hover:text-foreground transition-colors"
+                aria-label="Dismiss"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

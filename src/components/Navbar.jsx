@@ -173,7 +173,7 @@ const Navbar = ({ minimal = false }) => {
     return (
       <header className="sticky top-0 z-50">
         {/* Trust strip */}
-        <div className="bg-[#112b11] py-2">
+        <div className="hidden bg-[#112b11] py-2 sm:block">
           <div className="mx-auto flex max-w-7xl items-center justify-center gap-6 px-4 text-xs text-white/60 sm:px-6 lg:px-8">
             <span className="hidden sm:block">🌱 100% Organic Produce</span>
             <span>🤝 Direct from Farmers</span>
@@ -201,28 +201,31 @@ const Navbar = ({ minimal = false }) => {
             </Link>
 
             {/* Search bar */}
-            <form onSubmit={handleSearch} className="mx-2 flex-1 sm:mx-4">
-              <div className="flex h-10 items-center overflow-hidden rounded-full bg-white pl-4 pr-1">
-                <Search className="h-4 w-4 shrink-0 text-gray-400" />
+            <form
+              onSubmit={handleSearch}
+              className="mx-2 flex w-full max-w-[185px] flex-1 sm:mx-4 sm:max-w-none"
+            >
+              <div className="flex h-9 w-full items-center overflow-hidden rounded-full bg-white pl-3 pr-1 sm:h-10 sm:pl-4">
+                <Search className="h-3.5 w-3.5 shrink-0 text-gray-400 sm:h-4 sm:w-4" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search produce, farmers, categories..."
-                  className="min-w-0 flex-1 bg-transparent pl-2 text-sm text-gray-700 outline-none placeholder:text-gray-400"
+                  placeholder="Search..."
+                  className="min-w-0 flex-1 bg-transparent pl-1.5 text-sm text-gray-700 outline-none placeholder:text-gray-400 sm:pl-2"
                 />
                 <button
                   type="submit"
-                  className="mr-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-500 text-white transition-colors hover:bg-green-600"
+                  className="mr-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-green-500 text-white transition-colors hover:bg-green-600 sm:h-8 sm:w-8"
                   aria-label="Search"
                 >
-                  <Search className="h-3.5 w-3.5" />
+                  <Search className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 </button>
               </div>
             </form>
 
             {/* Right actions */}
-            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
               {/* Cart */}
               <button
                 onClick={() => navigate("/marketplace")}
@@ -294,53 +297,8 @@ const Navbar = ({ minimal = false }) => {
               )}
 
               {/* Mobile menu toggle */}
-              <button
-                className="ml-1 flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 sm:hidden"
-                onClick={() => setOpen((prev) => !prev)}
-                aria-label="Menu"
-              >
-                {open ? (
-                  <X className="h-5 w-5" />
-                ) : (
-                  <Menu className="h-5 w-5" />
-                )}
-              </button>
             </div>
           </div>
-
-          {/* Mobile expanded search */}
-          {open && (
-            <div className="border-t border-white/10 bg-[#1c3d1c] px-4 py-3 sm:hidden">
-              <form onSubmit={handleSearch}>
-                <div className="flex h-10 items-center overflow-hidden rounded-full bg-white pl-4 pr-1">
-                  <Search className="h-4 w-4 shrink-0 text-gray-400" />
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search produce, farmers..."
-                    className="min-w-0 flex-1 bg-transparent pl-2 text-sm text-gray-700 outline-none"
-                    autoFocus
-                  />
-                  <button
-                    type="submit"
-                    className="mr-1 flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600"
-                  >
-                    <Search className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </form>
-              {user && (
-                <button
-                  onClick={handleLogout}
-                  className="mt-3 flex items-center gap-2 text-sm text-white/70 hover:text-white"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sign Out
-                </button>
-              )}
-            </div>
-          )}
         </nav>
       </header>
     );

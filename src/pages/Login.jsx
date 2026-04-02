@@ -174,7 +174,7 @@ export default function Login() {
       ════════════════════════════════════ */}
       <div className="flex-1 flex flex-col bg-white">
         {/* Minimal top bar — logo visible on mobile only */}
-        <header className="flex items-center px-8 pt-6 pb-2 lg:hidden">
+        <header className="flex items-center px-4 pb-2 pt-5 sm:px-8 sm:pt-6 lg:hidden">
           <Link to="/" className="flex items-center gap-2">
             <img src={logo} alt="AgriTech logo" className="h-6 w-6 shrink-0" />
             <span className="font-semibold text-gray-900 text-base">
@@ -184,7 +184,7 @@ export default function Login() {
         </header>
 
         {/* Center the form vertically */}
-        <main className="flex-1 flex items-center justify-center px-8 py-10">
+        <main className="flex flex-1 items-center justify-center px-4 py-8 sm:px-8 sm:py-10">
           <AnimatePresence mode="wait">
             {success ? (
               /* ── Success state ── */

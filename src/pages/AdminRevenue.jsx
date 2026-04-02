@@ -338,7 +338,7 @@ const AdminRevenue = () => {
 
   return (
     <AdminLayout admin={sidebarAdmin}>
-      <main className="flex-1 px-6 py-6 lg:px-8 lg:py-8">
+      <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         <div className="mb-6 rounded-2xl border border-border/60 bg-gradient-to-r from-emerald-50 to-white p-5 pl-12 shadow-sm lg:pl-5">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Revenue & Categories
@@ -555,37 +555,41 @@ const AdminRevenue = () => {
                     </td>
                   </tr>
                 ) : (
-                  categories.map((category, index) => (
-                    <tr
-                      key={getCategoryId(category) || index}
-                      className="border-b border-border/40"
-                    >
-                      <td className="px-4 py-3 text-foreground/80">
-                        {getCategoryId(category) || "-"}
-                      </td>
-                      <td className="px-4 py-3 text-foreground">
-                        {category.name || "-"}
-                      </td>
-                      <td className="px-4 py-3 text-foreground/80">
-                        {category.description || "-"}
-                      </td>
-                      <td className="px-4 py-3 text-foreground/80">
-                        {Array.isArray(category.children)
-                          ? category.children.length
-                          : 0}
-                      </td>
-                      <td className="px-4 py-3">
-                        <button
-                          type="button"
-                          onClick={() => startEditCategory(category)}
-                          disabled={!getCategoryId(category)}
-                          className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-surface/70 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          Edit
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  [...categories]
+                    .sort((a, b) =>
+                      getCategoryId(a).localeCompare(getCategoryId(b)),
+                    )
+                    .map((category, index) => (
+                      <tr
+                        key={getCategoryId(category) || index}
+                        className="border-b border-border/40"
+                      >
+                        <td className="px-4 py-3 text-foreground/80">
+                          {index + 1}
+                        </td>
+                        <td className="px-4 py-3 text-foreground">
+                          {category.name || "-"}
+                        </td>
+                        <td className="px-4 py-3 text-foreground/80">
+                          {category.description || "-"}
+                        </td>
+                        <td className="px-4 py-3 text-foreground/80">
+                          {Array.isArray(category.children)
+                            ? category.children.length
+                            : 0}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            type="button"
+                            onClick={() => startEditCategory(category)}
+                            disabled={!getCategoryId(category)}
+                            className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-surface/70 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            Edit
+                          </button>
+                        </td>
+                      </tr>
+                    ))
                 )}
               </tbody>
             </table>

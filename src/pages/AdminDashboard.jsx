@@ -43,7 +43,7 @@ const AdminDashboard = () => {
 
   return (
     <AdminLayout admin={sidebarAdmin}>
-      <main className="flex-1 px-6 py-6 lg:px-8 lg:py-8">
+      <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         {/* ── Page header ── */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="pl-12 lg:pl-0">
