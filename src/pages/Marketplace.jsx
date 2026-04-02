@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { SlidersHorizontal } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -74,16 +74,22 @@ const formatCurrency = (value) => {
 
 const Marketplace = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [region, setRegion] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState("newest");
 
-  const [appliedSearch, setAppliedSearch] = useState("");
-  const [appliedCategory, setAppliedCategory] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("search") || "";
+  });
+  const [appliedCategory, setAppliedCategory] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("category") || "";
+  });
   const [appliedRegion, setAppliedRegion] = useState("");
   const [appliedMinPrice, setAppliedMinPrice] = useState("");
   const [appliedMaxPrice, setAppliedMaxPrice] = useState("");
@@ -120,6 +126,19 @@ const Marketplace = () => {
       cancelled = true;
     };
   }, []);
+
+  // Sync search/category from URL params (set by navbar search)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlSearch = params.get("search") || "";
+    const urlCategory = params.get("category") || "";
+    setAppliedSearch(urlSearch);
+    if (urlCategory) {
+      setCategory(urlCategory);
+      setAppliedCategory(urlCategory);
+    }
+    setPage(1);
+  }, [location.search]);
 
   useEffect(() => {
     let cancelled = false;
@@ -208,7 +227,6 @@ const Marketplace = () => {
   }, [listings, sortBy]);
 
   const applyFilters = () => {
-    setAppliedSearch(search.trim());
     setAppliedCategory(category);
     setAppliedRegion(region);
     setAppliedMinPrice(minPrice.trim());
@@ -217,7 +235,6 @@ const Marketplace = () => {
   };
 
   const clearFilters = () => {
-    setSearch("");
     setCategory("");
     setRegion("");
     setMinPrice("");
@@ -230,12 +247,15 @@ const Marketplace = () => {
     setAppliedMinPrice("");
     setAppliedMaxPrice("");
     setPage(1);
+
+    // Also clear search param from URL
+    navigate("/marketplace", { replace: true });
   };
 
   return (
     <div className="min-h-screen bg-[#f5f6f1] text-foreground">
       <Navbar minimal />
-      <main className="pb-12 pt-24 md:pt-28">
+      <main className="pb-12 pt-6">
         <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="overflow-hidden rounded-3xl border border-border/60 bg-[radial-gradient(circle_at_top_left,_#eef6e3_0%,_#f8faf4_45%,_#ffffff_100%)] p-6 shadow-sm md:p-8">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
@@ -267,22 +287,6 @@ const Marketplace = () => {
             </div>
 
             <div className="space-y-3">
-              <label className="block">
-                <span className="mb-1 block text-xs font-medium text-muted">
-                  Search
-                </span>
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    placeholder="Tomatoes, yam, maize"
-                    className="w-full rounded-xl border border-border px-3 py-2 pl-9 text-sm focus:outline-none"
-                  />
-                </div>
-              </label>
-
               <label className="block">
                 <span className="mb-1 block text-xs font-medium text-muted">
                   Category
