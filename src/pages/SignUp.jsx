@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Footer from "@/components/Footer";
-import { useSignUp } from "@clerk/react";
+import { useAuth } from "@/context/AuthContext";
 import {
   User,
   Mail,
@@ -17,6 +17,26 @@ import {
 } from "lucide-react";
 import logo from "@/assets/logo.svg";
 import { transition } from "@/motionConfig";
+import { authService } from "@/lib";
+
+const GHANA_REGIONS = [
+  "Ahafo",
+  "Ashanti",
+  "Bono",
+  "Bono East",
+  "Central",
+  "Eastern",
+  "Greater Accra",
+  "North East",
+  "Northern",
+  "Oti",
+  "Savannah",
+  "Upper East",
+  "Upper West",
+  "Volta",
+  "Western",
+  "Western North",
+];
 
 /* ─── Google "G" SVG ─── */
 const GoogleIcon = () => (
@@ -64,21 +84,41 @@ const itemVariants = {
 
 /* ─── Main component ─── */
 export default function SignUp() {
-  const { signUp, isLoaded } = useSignUp();
+  const { register } = useAuth();
   const navigate = useNavigate();
-  const [role, setRole] = useState("Farmer");
+  const [selectedRole, setSelectedRole] = useState("FARMER");
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    assignedRegion: "",
+    commissionRate: "",
+    bio: "",
+  });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // ── Email verification stage ──
-  const [verifying, setVerifying] = useState(false);
-  const [verifyCode, setVerifyCode] = useState("");
-  const [verifyError, setVerifyError] = useState("");
+  const handleGoogleAuth = () => {
+    authService.signInWithGoogle();
+  };
+
+  const roleOptions = [
+    { label: "Farmer", value: "FARMER", Icon: Sprout },
+    { label: "Agent", value: "AGENT", Icon: Handshake },
+    { label: "Buyer", value: "BUYER", Icon: ShoppingBasket },
+  ];
+  const normalizedRole = String(selectedRole || "")
+    .trim()
+    .toUpperCase();
+  const isAgentRole = normalizedRole === "AGENT";
+
+  const handleRoleSelect = (value) => {
+    setSelectedRole(value);
+  };
 
   /* ── Validation ── */
   const validate = () => {
@@ -90,6 +130,20 @@ export default function SignUp() {
     if (!form.password) e.password = "Password is required.";
     else if (form.password.length < 8 || !/\d/.test(form.password))
       e.password = "Must be at least 8 characters long and include a number.";
+    if (isAgentRole) {
+      if (!form.assignedRegion) e.assignedRegion = "Region is required.";
+
+      const commission = parseFloat(form.commissionRate);
+      if (form.commissionRate === "" || Number.isNaN(commission)) {
+        e.commissionRate = "Commission rate is required.";
+      } else if (commission < 0 || commission > 100) {
+        e.commissionRate = "Commission rate must be between 0 and 100.";
+      }
+
+      if (!form.bio.trim()) {
+        e.bio = "Bio is required for agent registration.";
+      }
+    }
     if (!agreed) e.terms = "You must agree to the terms to continue.";
     return e;
   };
@@ -99,7 +153,7 @@ export default function SignUp() {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
-  /* Stage 1 — create account & send verification email */
+  /* Stage 1 — create account */
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
@@ -107,66 +161,38 @@ export default function SignUp() {
       setErrors(newErrors);
       return;
     }
-    if (!isLoaded) return;
     setErrors({});
     setLoading(true);
     try {
-      await signUp.create({
-        firstName: form.name.split(" ")[0],
-        lastName: form.name.split(" ").slice(1).join(" ") || undefined,
-        emailAddress: form.email,
+      await register({
+        fullName: form.name,
+        email: form.email,
         password: form.password,
-        unsafeMetadata: { role },
+        role: selectedRole,
+        ...(isAgentRole
+          ? {
+              assignedRegion: form.assignedRegion,
+              commissionRate: parseFloat(form.commissionRate),
+              bio: form.bio.trim(),
+            }
+          : {}),
       });
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      // Move to the code-entry stage
-      setVerifying(true);
+      setSuccess(true);
+
+      // Route based on role
+      setTimeout(() => {
+        if (normalizedRole === "ADMIN") navigate("/admin/dashboard");
+        else if (isAgentRole) navigate("/agent/dashboard");
+        else if (normalizedRole === "BUYER") navigate("/marketplace");
+        else navigate("/farmer/dashboard");
+      }, 900);
     } catch (err) {
-      const msg =
-        err?.errors?.[0]?.longMessage ??
-        err?.errors?.[0]?.message ??
-        "Sign-up failed. Please try again.";
-      setErrors({ password: msg });
+      setErrors({
+        password: err.message || "Sign-up failed. Please try again.",
+      });
     } finally {
       setLoading(false);
     }
-  };
-
-  /* Stage 2 — verify the emailed code */
-  const handleVerify = async (e) => {
-    e.preventDefault();
-    if (!isLoaded || !verifyCode.trim()) {
-      setVerifyError("Please enter the code sent to your email.");
-      return;
-    }
-    setLoading(true);
-    setVerifyError("");
-    try {
-      const result = await signUp.attemptEmailAddressVerification({
-        code: verifyCode.trim(),
-      });
-      if (result.status === "complete") {
-        setSuccess(true);
-        setTimeout(() => navigate("/farmer/dashboard"), 900);
-      }
-    } catch (err) {
-      const msg =
-        err?.errors?.[0]?.longMessage ??
-        err?.errors?.[0]?.message ??
-        "Invalid code. Please try again.";
-      setVerifyError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSignUp = async () => {
-    if (!isLoaded) return;
-    await signUp.authenticateWithRedirect({
-      strategy: "oauth_google",
-      redirectUrl: "/sso-callback",
-      redirectUrlComplete: "/farmer/dashboard",
-    });
   };
 
   return (
@@ -260,7 +286,7 @@ export default function SignUp() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={transition}
-              className="bg-white rounded-2xl shadow-sm p-10 w-full max-w-md text-center"
+              className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-sm sm:p-10"
             >
               <div className="flex justify-center mb-4">
                 <span className="bg-green-100 text-green-600 rounded-full p-4">
@@ -281,92 +307,13 @@ export default function SignUp() {
                 Go to Home
               </Link>
             </motion.div>
-          ) : verifying ? (
-            /* ── Verify email code stage ── */
-            <motion.div
-              key="verify"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={transition}
-              className="bg-white rounded-2xl shadow-sm p-10 w-full max-w-md"
-            >
-              <div className="flex justify-center mb-5">
-                <span className="bg-green-100 text-green-600 rounded-full p-4">
-                  <Mail size={28} />
-                </span>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
-                Check your email
-              </h2>
-              <p className="text-sm text-gray-500 text-center mb-6">
-                We sent a 6-digit code to <strong>{form.email}</strong>. Enter
-                it below to verify your account.
-              </p>
-              <form onSubmit={handleVerify} noValidate className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                    Verification Code
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={verifyCode}
-                    onChange={(e) => {
-                      setVerifyCode(e.target.value);
-                      setVerifyError("");
-                    }}
-                    placeholder="123456"
-                    className={[
-                      "w-full px-4 py-3 rounded-2xl border text-sm bg-gray-50 outline-none transition-colors text-center tracking-[0.4em] font-mono text-lg",
-                      verifyError
-                        ? "border-red-400 focus:border-red-500 bg-red-50"
-                        : "border-gray-200 focus:border-green-400",
-                    ].join(" ")}
-                    autoFocus
-                  />
-                  {verifyError && (
-                    <p className="text-xs text-red-500 mt-1.5">{verifyError}</p>
-                  )}
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3.5 rounded-full bg-green-500 hover:bg-green-600 active:bg-green-700 disabled:opacity-70 transition-colors text-white font-bold text-sm flex items-center justify-center gap-2"
-                >
-                  {loading ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                      </svg>
-                      Verifying…
-                    </>
-                  ) : (
-                    <>
-                      Verify Email <ArrowRight size={16} strokeWidth={2.5} />
-                    </>
-                  )}
-                </button>
-                <p className="text-center text-xs text-gray-400 mt-2">
-                  Didn&apos;t receive it?{" "}
-                  <button
-                    type="button"
-                    onClick={() => signUp.prepareEmailAddressVerification({ strategy: "email_code" })}
-                    className="text-green-500 font-semibold hover:underline"
-                  >
-                    Resend code
-                  </button>
-                </p>
-              </form>
-            </motion.div>
           ) : (
             <motion.div
               key="form"
               variants={cardVariants}
               initial="hidden"
               animate="visible"
-              className="bg-white rounded-2xl shadow-sm p-8 w-full max-w-md"
+              className="w-full max-w-md rounded-2xl bg-white p-5 shadow-sm sm:p-8"
             >
               {/* Heading */}
               <motion.div variants={itemVariants} className="text-center mb-6">
@@ -382,11 +329,11 @@ export default function SignUp() {
               <motion.button
                 variants={itemVariants}
                 type="button"
-                onClick={handleGoogleSignUp}
-                className="w-full flex items-center justify-center gap-3 py-2.5 rounded-full border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors mb-5"
+                onClick={handleGoogleAuth}
+                className="mb-5 flex w-full items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50"
               >
                 <GoogleIcon />
-                Sign up with Google
+                Continue with Google
               </motion.button>
 
               {/* Divider */}
@@ -405,24 +352,32 @@ export default function SignUp() {
                 {/* Role selector */}
                 <motion.div variants={itemVariants} className="mb-5">
                   <p className="text-sm text-gray-700 mb-2">I am a...</p>
-                  <div className="flex gap-3">
-                    {roles.map(({ label, Icon }) => {
-                      const active = role === label;
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    {roleOptions.map(({ label, value, Icon }) => {
+                      const active = selectedRole === value;
                       return (
-                        <button
-                          key={label}
-                          type="button"
-                          onClick={() => setRole(label)}
+                        <label
+                          key={value}
+                          htmlFor={`role-${value}`}
                           className={[
-                            "flex-1 flex flex-col items-center gap-1 py-3 rounded-xl border-2 text-sm font-medium transition-all",
+                            "cursor-pointer flex flex-col items-center gap-1 rounded-xl border-2 px-2 py-2.5 text-center text-xs font-medium transition-all sm:py-3 sm:text-sm",
                             active
                               ? "border-green-500 bg-green-50 text-green-700"
                               : "border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50",
                           ].join(" ")}
                         >
+                          <input
+                            id={`role-${value}`}
+                            name="role"
+                            type="radio"
+                            value={value}
+                            checked={active}
+                            onChange={() => handleRoleSelect(value)}
+                            className="sr-only"
+                          />
                           <Icon size={20} strokeWidth={1.5} />
                           {label}
-                        </button>
+                        </label>
                       );
                     })}
                   </div>
@@ -481,6 +436,101 @@ export default function SignUp() {
                     <p className="text-xs text-red-500 mt-1">{errors.email}</p>
                   )}
                 </motion.div>
+
+                {/* Agent fields */}
+                <AnimatePresence>
+                  {isAgentRole && (
+                    <motion.div
+                      key="agentFields"
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={transition}
+                    >
+                      <motion.div className="mb-4 mt-4">
+                        <label className="block text-sm text-gray-700 mb-1.5">
+                          Assigned Region
+                        </label>
+                        <select
+                          value={form.assignedRegion}
+                          onChange={handleChange("assignedRegion")}
+                          className={[
+                            "w-full rounded-xl border bg-white px-4 py-2.5 text-sm outline-none transition-colors",
+                            errors.assignedRegion
+                              ? "border-red-400 focus:border-red-500"
+                              : "border-gray-200 focus:border-green-400",
+                          ].join(" ")}
+                        >
+                          <option value="">Select region</option>
+                          {GHANA_REGIONS.map((region) => (
+                            <option key={region} value={region}>
+                              {region}
+                            </option>
+                          ))}
+                        </select>
+                        {errors.assignedRegion && (
+                          <p className="text-xs text-red-500 mt-1">
+                            {errors.assignedRegion}
+                          </p>
+                        )}
+                      </motion.div>
+
+                      <motion.div className="mb-4">
+                        <label className="block text-sm text-gray-700 mb-1.5">
+                          Commission Rate (%)
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            value={form.commissionRate}
+                            onChange={handleChange("commissionRate")}
+                            placeholder="5.0"
+                            className={[
+                              "w-full rounded-xl border bg-white py-2.5 pl-4 pr-10 text-sm outline-none transition-colors",
+                              errors.commissionRate
+                                ? "border-red-400 focus:border-red-500"
+                                : "border-gray-200 focus:border-green-400",
+                            ].join(" ")}
+                          />
+                          <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+                            %
+                          </span>
+                        </div>
+                        {errors.commissionRate && (
+                          <p className="text-xs text-red-500 mt-1">
+                            {errors.commissionRate}
+                          </p>
+                        )}
+                      </motion.div>
+
+                      <motion.div className="mb-2">
+                        <label className="block text-sm text-gray-700 mb-1.5">
+                          Agent Bio
+                        </label>
+                        <textarea
+                          value={form.bio}
+                          onChange={handleChange("bio")}
+                          placeholder="Experienced field agent"
+                          rows={3}
+                          className={[
+                            "w-full resize-none rounded-xl border bg-white px-4 py-2.5 text-sm outline-none transition-colors",
+                            errors.bio
+                              ? "border-red-400 focus:border-red-500"
+                              : "border-gray-200 focus:border-green-400",
+                          ].join(" ")}
+                        />
+                        {errors.bio && (
+                          <p className="text-xs text-red-500 mt-1">
+                            {errors.bio}
+                          </p>
+                        )}
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Password */}
                 <motion.div variants={itemVariants} className="mb-2">

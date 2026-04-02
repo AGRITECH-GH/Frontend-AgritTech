@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInventory } from "@/hooks/useInventory";
+import { useAuth } from "@/context/AuthContext";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import StatCard from "@/components/dashboard/StatCard";
+import EditProductModal from "@/components/dashboard/EditProductModal";
 import {
   Plus,
   Filter,
@@ -14,6 +16,7 @@ import {
 
 const Inventory = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     products,
     paginatedProducts,
@@ -27,23 +30,72 @@ const Inventory = () => {
     totalPages,
     filteredProducts,
     stats,
+    updateProduct,
+    deleteProduct,
+    uploadProductImages,
   } = useInventory();
 
   const [showFilter, setShowFilter] = useState(false);
-  const user = { name: "Farmer Joe", avatarUrl: null };
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const displayName = user?.name || user?.fullName || "Farmer Joe";
+  const navbarUser = {
+    name: displayName,
+    avatarUrl: user?.avatarUrl || null,
+  };
 
   const handleAddProduct = () => {
     navigate("/farmer/inventory/add-product");
   };
 
   const handleEdit = (product) => {
-    // TODO: Open edit modal
-    console.log("Edit product:", product);
+    setSelectedProduct(product);
+    setShowEditModal(true);
   };
 
-  const handleDelete = (product) => {
-    // TODO: Show confirmation and delete
-    console.log("Delete product:", product);
+  const handleDelete = (productId) => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete this product? This action cannot be undone.",
+      )
+    ) {
+      setIsSaving(true);
+      deleteProduct(productId)
+        .then(() => {
+          setIsSaving(false);
+          setSelectedProduct(null);
+          setShowEditModal(false);
+        })
+        .catch((error) => {
+          console.error("Error deleting product:", error);
+          setIsSaving(false);
+          alert("Failed to delete product. Please try again.");
+        });
+    }
+  };
+
+  const handleSaveProduct = async (updatedData) => {
+    setIsSaving(true);
+    try {
+      await updateProduct(selectedProduct.id, updatedData);
+      setShowEditModal(false);
+      setSelectedProduct(null);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      throw error;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleUploadImages = async (files) => {
+    try {
+      await uploadProductImages(selectedProduct.id, files);
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      throw error;
+    }
   };
 
   const getStatusBadge = (status) => {
@@ -84,7 +136,10 @@ const Inventory = () => {
   return (
     <div className="min-h-screen bg-surface">
       {/* Navigation */}
-      <DashboardNavbar user={user} searchPlaceholder="Search inventory..." />
+      <DashboardNavbar
+        user={navbarUser}
+        searchPlaceholder="Search inventory..."
+      />
 
       <main className="container py-6 lg:py-8">
         {/* ── Page Header ── */}
@@ -175,9 +230,17 @@ const Inventory = () => {
                     className="border-b border-border/50 hover:bg-surface/30"
                   >
                     <td className="px-4 py-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-lg">
-                        {product.image}
-                      </div>
+                      {product.imageUrl ? (
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="h-10 w-10 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-lg">
+                          {product.image}
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <div>
@@ -217,7 +280,7 @@ const Inventory = () => {
                     </td>
                     <td className="px-4 py-3">
                       <span className="font-medium text-foreground">
-                        ${product.price.toFixed(2)} / {product.unit}
+                        ₵{product.price.toFixed(2)} / {product.unit}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -317,7 +380,7 @@ const Inventory = () => {
         <div className="flex flex-col gap-4 sm:flex-row">
           <StatCard
             label="Total Value"
-            value={`$${stats.totalValue}`}
+            value={`₵${stats.totalValue}`}
             icon="dollar"
             trend="+2.5%"
             trendType="positive"
@@ -337,6 +400,19 @@ const Inventory = () => {
             trendType="neutral"
           />
         </div>
+
+        {/* ── Edit Product Modal ── */}
+        <EditProductModal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedProduct(null);
+          }}
+          product={selectedProduct}
+          onSave={handleSaveProduct}
+          onUploadImages={handleUploadImages}
+          isSaving={isSaving}
+        />
       </main>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -9,8 +9,11 @@ import {
   User,
   Menu,
   X,
+  LogOut,
+  ChevronDown,
 } from "lucide-react";
 import logo from "@/assets/logo.svg";
+import { useAuth } from "@/context/AuthContext";
 
 const navItems = [
   { label: "Dashboard", to: "/agent/dashboard", icon: LayoutDashboard },
@@ -25,18 +28,63 @@ const navItems = [
  *
  * @param {{ agent: { name: string, role: string, avatarUrl: string|null } }} props
  */
-const AgentSidebar = ({ agent }) => {
+const AgentNavContent = ({ agent, onNavigate }) => {
   const navigate = useNavigate();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const { logout } = useAuth();
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const profileMenuRef = useRef(null);
 
-  const NavContent = () => (
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    setIsLoggingOut(true);
+    setProfileMenuOpen(false);
+
+    try {
+      console.log("Starting logout...");
+      await logout();
+      console.log("Logout completed, redirecting to login");
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+      navigate("/login", { replace: true });
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }, [logout, navigate]);
+
+  return (
     <div className="flex h-full flex-col">
       {/* Logo */}
       <button
         type="button"
         onClick={() => {
           navigate("/agent/dashboard");
-          setMobileOpen(false);
+          onNavigate();
         }}
         className="flex items-center gap-2 px-5 py-5 text-base font-bold text-primary"
       >
@@ -50,7 +98,7 @@ const AgentSidebar = ({ agent }) => {
           <NavLink
             key={to}
             to={to}
-            onClick={() => setMobileOpen(false)}
+            onClick={onNavigate}
             className={({ isActive }) =>
               `mb-1 flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
                 isActive
@@ -67,34 +115,71 @@ const AgentSidebar = ({ agent }) => {
 
       {/* User profile */}
       <div className="border-t border-border/60 px-5 py-4">
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-green-100 text-primary">
-            {agent?.avatarUrl ? (
-              <img
-                src={agent.avatarUrl}
-                alt={agent.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <User className="h-5 w-5" />
-            )}
-          </span>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-foreground">
-              {agent?.name}
-            </p>
-            <p className="truncate text-xs text-muted">{agent?.role}</p>
-          </div>
+        <div className="relative" ref={profileMenuRef}>
+          <button
+            type="button"
+            onClick={() => setProfileMenuOpen((value) => !value)}
+            className="flex w-full items-center gap-3 rounded-lg px-0 py-1 transition-colors hover:bg-surface"
+            aria-label="Profile menu"
+            aria-haspopup="menu"
+            aria-expanded={profileMenuOpen}
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-green-100 text-primary">
+              {agent?.avatarUrl ? (
+                <img
+                  src={agent.avatarUrl}
+                  alt={agent.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <User className="h-5 w-5" />
+              )}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-foreground">
+                {agent?.name}
+              </p>
+              <p className="truncate text-xs text-muted">{agent?.role}</p>
+            </div>
+            <ChevronDown
+              className={`h-4 w-4 shrink-0 text-muted transition-transform ${
+                profileMenuOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {profileMenuOpen && (
+            <div
+              className="absolute bottom-full left-0 right-0 z-50 mb-2 w-full rounded-xl border border-border/70 bg-white p-1.5 shadow-lg"
+              role="menu"
+              aria-label="Profile actions"
+            >
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70"
+                role="menuitem"
+              >
+                <LogOut className="h-4 w-4" />
+                {isLoggingOut ? "Logging out..." : "Log out"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
+};
+
+const AgentSidebar = ({ agent }) => {
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <>
       {/* ── Desktop sidebar ── */}
-      <aside className="hidden h-screen w-56 shrink-0 flex-col overflow-hidden border-r border-border/60 bg-white lg:flex">
-        <NavContent />
+      <aside className="hidden h-screen w-56 shrink-0 flex-col overflow-y-auto overflow-x-hidden border-r border-border/60 bg-white lg:flex">
+        <AgentNavContent agent={agent} onNavigate={() => {}} />
       </aside>
 
       {/* ── Mobile: hamburger button ── */}
@@ -130,7 +215,10 @@ const AgentSidebar = ({ agent }) => {
         >
           <X className="h-4 w-4" />
         </button>
-        <NavContent />
+        <AgentNavContent
+          agent={agent}
+          onNavigate={() => setMobileOpen(false)}
+        />
       </aside>
     </>
   );

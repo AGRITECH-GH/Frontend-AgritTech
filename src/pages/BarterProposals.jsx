@@ -1,43 +1,15 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Search, Plus } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { useBarterProposals } from "@/hooks/useBarterProposals";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import Footer from "@/components/Footer";
 import ProposalCard from "@/components/proposals/ProposalCard";
 import NewExchangeCTA from "@/components/proposals/NewExchangeCTA";
 import BarterProtocolBanner from "@/components/proposals/BarterProtocolBanner";
-
-// ─── Static mock data ────────────────────────────────────────────────────────
-
-const PROPOSALS = [
-  {
-    id: 1,
-    status: "pending",
-    user: { name: "Samuel Green", avatarEmoji: "🧑‍🌾" },
-    farm: "Green Valley Orchards",
-    giveItem: { emoji: "🌾", name: "50kg Organic Wheat" },
-    getItem: { emoji: "🥚", name: "20 Dozen Fresh Eggs" },
-    quote: "Good quality wheat for my chickens…",
-  },
-  {
-    id: 2,
-    status: "accepted",
-    user: { name: "Elena Rivers", avatarEmoji: "👩‍🌾" },
-    farm: "Riverside Livestock",
-    giveItem: { emoji: "💧", name: "Solar Pump Repair Kit" },
-    getItem: { emoji: "🌿", name: "5 Bags Organic Fertilizer" },
-    reactions: ["🤝", "✅"],
-    messageName: "Elena",
-  },
-  {
-    id: 3,
-    status: "rejected",
-    user: { name: "John Miller", avatarEmoji: "👨‍🌾" },
-    farm: "Miller's Grain Co.",
-    giveItem: { emoji: "🚜", name: "1 Tractor Tire" },
-    getItem: { emoji: "🛢️", name: "2 Barrels Fuel" },
-    rejectReason: "Fuel prices increased significantly.",
-  },
-];
+import CreateBarterModal from "@/components/proposals/CreateBarterModal";
+import TradeDetailsModal from "@/components/proposals/TradeDetailsModal";
 
 // ─── Navbar links for this page ───────────────────────────────────────────────
 
@@ -59,14 +31,111 @@ const TABS = [
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const BarterProposals = () => {
-  const [activeTab, setActiveTab] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const location = useLocation();
+  const highlightedTimeoutRef = useRef(null);
+  const closeAfterStatusRef = useRef(null);
+  const hasFocusedRef = useRef(false);
+  const { user } = useAuth();
+  const {
+    barterRequests,
+    loading,
+    error,
+    activeTab,
+    setActiveTab,
+    searchQuery,
+    setSearchQuery,
+    updating,
+    updateBarterStatus,
+    refreshBarterRequests,
+    stats,
+  } = useBarterProposals();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [highlightedBarterId, setHighlightedBarterId] = useState(null);
+  const [selectedTrade, setSelectedTrade] = useState(null);
+  const [detailsError, setDetailsError] = useState("");
+  const [detailsStatusPreview, setDetailsStatusPreview] = useState("");
+
+  const focusBarterId =
+    location.state?.focusBarterId !== undefined &&
+    location.state?.focusBarterId !== null
+      ? String(location.state.focusBarterId)
+      : null;
+
+  useEffect(() => {
+    if (location.state?.fromDashboardReview) {
+      setActiveTab("received");
+    }
+  }, [location.state, setActiveTab]);
+
+  useEffect(() => {
+    if (!focusBarterId) return;
+    hasFocusedRef.current = false;
+  }, [focusBarterId]);
+
+  useEffect(() => {
+    if (loading || !focusBarterId || hasFocusedRef.current) return;
+
+    const cardElement = document.querySelector(
+      `[data-barter-id="${focusBarterId}"]`,
+    );
+
+    if (!cardElement) return;
+
+    hasFocusedRef.current = true;
+    cardElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    setHighlightedBarterId(focusBarterId);
+
+    if (highlightedTimeoutRef.current) {
+      clearTimeout(highlightedTimeoutRef.current);
+    }
+
+    highlightedTimeoutRef.current = setTimeout(() => {
+      setHighlightedBarterId(null);
+    }, 2500);
+
+    return () => {
+      if (highlightedTimeoutRef.current) {
+        clearTimeout(highlightedTimeoutRef.current);
+      }
+    };
+  }, [loading, focusBarterId, barterRequests]);
+
+  const displayName = user?.name || user?.fullName || "Farmer Joe";
+  const navbarUser = {
+    name: displayName,
+    avatarUrl: user?.avatarUrl || null,
+  };
+
+  const proposals = loading ? [] : barterRequests;
+
+  const handleDetailsAction = async (newStatus) => {
+    if (!selectedTrade?.id) return;
+
+    setDetailsError("");
+    const result = await updateBarterStatus(selectedTrade.id, newStatus);
+    if (result?.success) {
+      setSelectedTrade((prev) =>
+        prev ? { ...prev, status: newStatus.toLowerCase() } : prev,
+      );
+      setDetailsStatusPreview(newStatus.toLowerCase());
+      if (closeAfterStatusRef.current) {
+        clearTimeout(closeAfterStatusRef.current);
+      }
+      closeAfterStatusRef.current = setTimeout(() => {
+        setDetailsStatusPreview("");
+        setSelectedTrade(null);
+      }, 750);
+      return;
+    }
+
+    setDetailsError(result?.error || "Failed to update barter request.");
+  };
 
   return (
     <div className="min-h-screen bg-surface">
       {/* Navbar */}
       <DashboardNavbar
-        user={{ name: "Farmer Joe", avatarUrl: null }}
+        user={navbarUser}
         navLinks={NAV_LINKS}
         showSearch={false}
       />
@@ -84,6 +153,7 @@ const BarterProposals = () => {
           </div>
           <button
             type="button"
+            onClick={() => setShowCreateModal(true)}
             className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90"
           >
             <Plus className="h-4 w-4" />
@@ -95,8 +165,13 @@ const BarterProposals = () => {
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           {/* Tabs */}
           <div className="flex items-center gap-1">
-            {TABS.map(({ key, label, count }) => {
+            {TABS.map(({ key, label }) => {
               const isActive = activeTab === key;
+              let count = null;
+              if (key === "all") count = stats.total;
+              else if (key === "sent") count = stats.sent;
+              else if (key === "received") count = stats.received;
+
               return (
                 <button
                   key={key}
@@ -136,24 +211,125 @@ const BarterProposals = () => {
           </div>
         </div>
 
-        {/* ── Proposals Grid ── */}
-        <div className="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-          {/* Left column – pending + rejected */}
-          <div className="flex flex-col gap-5">
-            <ProposalCard proposal={PROPOSALS[0]} />
-            <ProposalCard proposal={PROPOSALS[2]} />
+        {/* ── Error State ── */}
+        {error && (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error}
           </div>
+        )}
 
-          {/* Right column – accepted + new exchange CTA */}
-          <div className="flex flex-col gap-5">
-            <ProposalCard proposal={PROPOSALS[1]} />
-            <NewExchangeCTA />
+        {/* ── Loading State ── */}
+        {loading && (
+          <div className="mb-8 text-center py-12">
+            <p className="text-sm text-muted">Loading barter proposals...</p>
           </div>
-        </div>
+        )}
+
+        {/* ── Empty State ── */}
+        {!loading && proposals.length === 0 && (
+          <div className="mb-8 rounded-2xl border border-border/60 bg-surface p-12 text-center">
+            <p className="text-sm text-muted">No barter proposals yet.</p>
+            <button
+              type="button"
+              onClick={() => setShowCreateModal(true)}
+              className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              Create Your First Offer
+            </button>
+          </div>
+        )}
+
+        {/* ── Proposals Grid ── */}
+        {!loading && proposals.length > 0 && (
+          <div className="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+            {/* Left column */}
+            <div className="flex flex-col gap-5">
+              {proposals
+                .slice(0, Math.ceil(proposals.length / 2))
+                .map((proposal) => (
+                  <div
+                    key={proposal.id}
+                    data-barter-id={String(proposal.id)}
+                    onClick={() => setSelectedTrade(proposal)}
+                    className={`rounded-2xl transition-shadow duration-300 ${
+                      highlightedBarterId === String(proposal.id)
+                        ? "ring-2 ring-primary/60 shadow-lg"
+                        : ""
+                    }`}
+                  >
+                    <ProposalCard
+                      proposal={proposal}
+                      updating={updating === proposal.id}
+                      onStatusChange={(newStatus) =>
+                        updateBarterStatus(proposal.id, newStatus)
+                      }
+                    />
+                  </div>
+                ))}
+            </div>
+
+            {/* Right column */}
+            <div className="flex flex-col gap-5">
+              {proposals
+                .slice(Math.ceil(proposals.length / 2))
+                .map((proposal) => (
+                  <div
+                    key={proposal.id}
+                    data-barter-id={String(proposal.id)}
+                    onClick={() => setSelectedTrade(proposal)}
+                    className={`rounded-2xl transition-shadow duration-300 ${
+                      highlightedBarterId === String(proposal.id)
+                        ? "ring-2 ring-primary/60 shadow-lg"
+                        : ""
+                    }`}
+                  >
+                    <ProposalCard
+                      proposal={proposal}
+                      updating={updating === proposal.id}
+                      onStatusChange={(newStatus) =>
+                        updateBarterStatus(proposal.id, newStatus)
+                      }
+                    />
+                  </div>
+                ))}
+              <NewExchangeCTA />
+            </div>
+          </div>
+        )}
 
         {/* ── Protocol Banner ── */}
         <BarterProtocolBanner />
       </main>
+
+      {/* Create Barter Modal */}
+      <CreateBarterModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreated={refreshBarterRequests}
+      />
+
+      <TradeDetailsModal
+        isOpen={Boolean(selectedTrade)}
+        trade={selectedTrade}
+        onClose={() => {
+          setDetailsError("");
+          setDetailsStatusPreview("");
+          setSelectedTrade(null);
+        }}
+        canAccept={Boolean(selectedTrade?.canAcceptReject)}
+        canDecline={Boolean(
+          selectedTrade?.canAcceptReject || selectedTrade?.canCancel,
+        )}
+        isSubmitting={updating === selectedTrade?.id}
+        actionError={detailsError}
+        previewStatus={detailsStatusPreview}
+        onAccept={() => handleDetailsAction("accepted")}
+        onDecline={() =>
+          handleDetailsAction(
+            selectedTrade?.canCancel ? "cancelled" : "rejected",
+          )
+        }
+      />
 
       <Footer />
     </div>

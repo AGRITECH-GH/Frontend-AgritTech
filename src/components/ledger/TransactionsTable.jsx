@@ -172,7 +172,7 @@ const TransactionsTable = ({
 
                     {/* Total price */}
                     <td className="py-4 pr-4 font-bold text-foreground">
-                      $
+                      ₵
                       {trx.totalPrice.toLocaleString("en-US", {
                         minimumFractionDigits: 2,
                       })}
