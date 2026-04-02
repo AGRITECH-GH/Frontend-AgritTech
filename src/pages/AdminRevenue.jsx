@@ -145,7 +145,8 @@ const AdminRevenue = () => {
             Revenue Reports
           </h1>
           <p className="mt-1 text-sm text-muted">
-            Monitor order performance and review revenue data from admin endpoints.
+            Monitor order performance and review revenue data from admin
+            endpoints.
           </p>
         </div>
 
@@ -283,7 +284,6 @@ const AdminRevenue = () => {
             </div>
           </div>
         </section>
-
       </main>
     </AdminLayout>
   );

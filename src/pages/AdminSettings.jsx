@@ -218,9 +218,12 @@ const AdminSettings = () => {
         <section className="rounded-2xl border border-border/60 bg-white p-5 shadow-sm ring-1 ring-black/5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-foreground">Categories</h2>
+              <h2 className="text-lg font-semibold text-foreground">
+                Categories
+              </h2>
               <p className="mt-1 text-sm text-muted">
-                Create and maintain product categories used across the marketplace.
+                Create and maintain product categories used across the
+                marketplace.
               </p>
             </div>
             <button
@@ -252,39 +255,65 @@ const AdminSettings = () => {
             <table className="w-full min-w-[760px] text-sm">
               <thead className="border-b border-border bg-surface/60">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-foreground">#</th>
-                  <th className="px-4 py-3 text-left font-medium text-foreground">Name</th>
-                  <th className="px-4 py-3 text-left font-medium text-foreground">Description</th>
-                  <th className="px-4 py-3 text-left font-medium text-foreground">Children</th>
-                  <th className="px-4 py-3 text-left font-medium text-foreground">Actions</th>
+                  <th className="px-4 py-3 text-left font-medium text-foreground">
+                    #
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-foreground">
+                    Name
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-foreground">
+                    Description
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-foreground">
+                    Children
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-foreground">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {categoriesLoading ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-muted">
+                    <td
+                      colSpan={5}
+                      className="px-4 py-8 text-center text-muted"
+                    >
                       Loading categories...
                     </td>
                   </tr>
                 ) : categories.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-muted">
+                    <td
+                      colSpan={5}
+                      className="px-4 py-8 text-center text-muted"
+                    >
                       No categories found.
                     </td>
                   </tr>
                 ) : (
                   [...categories]
-                    .sort((a, b) => getCategoryId(a).localeCompare(getCategoryId(b)))
+                    .sort((a, b) =>
+                      getCategoryId(a).localeCompare(getCategoryId(b)),
+                    )
                     .map((category, index) => (
                       <tr
                         key={getCategoryId(category) || index}
                         className="border-b border-border/40"
                       >
-                        <td className="px-4 py-3 text-foreground/80">{index + 1}</td>
-                        <td className="px-4 py-3 text-foreground">{category.name || "-"}</td>
-                        <td className="px-4 py-3 text-foreground/80">{category.description || "-"}</td>
                         <td className="px-4 py-3 text-foreground/80">
-                          {Array.isArray(category.children) ? category.children.length : 0}
+                          {index + 1}
+                        </td>
+                        <td className="px-4 py-3 text-foreground">
+                          {category.name || "-"}
+                        </td>
+                        <td className="px-4 py-3 text-foreground/80">
+                          {category.description || "-"}
+                        </td>
+                        <td className="px-4 py-3 text-foreground/80">
+                          {Array.isArray(category.children)
+                            ? category.children.length
+                            : 0}
                         </td>
                         <td className="px-4 py-3">
                           <button
@@ -308,7 +337,9 @@ const AdminSettings = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
             <div className="w-full max-w-2xl rounded-2xl border border-border bg-white p-5 shadow-xl">
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-foreground">Create Category</h3>
+                <h3 className="text-lg font-semibold text-foreground">
+                  Create Category
+                </h3>
                 <button
                   type="button"
                   onClick={() => setIsCreateOpen(false)}
@@ -317,11 +348,16 @@ const AdminSettings = () => {
                   Close
                 </button>
               </div>
-              <form onSubmit={handleCreateCategory} className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+              <form
+                onSubmit={handleCreateCategory}
+                className="grid grid-cols-1 gap-3 lg:grid-cols-2"
+              >
                 <input
                   type="text"
                   value={createForm.name}
-                  onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setCreateForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   placeholder="Name"
                   className="w-full rounded-xl border border-border px-3 py-2 text-sm text-foreground focus:outline-none"
                 />
@@ -329,7 +365,10 @@ const AdminSettings = () => {
                   type="text"
                   value={createForm.description}
                   onChange={(e) =>
-                    setCreateForm((prev) => ({ ...prev, description: e.target.value }))
+                    setCreateForm((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
                   }
                   placeholder="Description"
                   className="w-full rounded-xl border border-border px-3 py-2 text-sm text-foreground focus:outline-none"
@@ -338,7 +377,10 @@ const AdminSettings = () => {
                   type="url"
                   value={createForm.iconUrl}
                   onChange={(e) =>
-                    setCreateForm((prev) => ({ ...prev, iconUrl: e.target.value }))
+                    setCreateForm((prev) => ({
+                      ...prev,
+                      iconUrl: e.target.value,
+                    }))
                   }
                   placeholder="Icon URL"
                   className="w-full rounded-xl border border-border px-3 py-2 text-sm text-foreground focus:outline-none"
@@ -347,7 +389,10 @@ const AdminSettings = () => {
                   type="text"
                   value={createForm.parentId}
                   onChange={(e) =>
-                    setCreateForm((prev) => ({ ...prev, parentId: e.target.value }))
+                    setCreateForm((prev) => ({
+                      ...prev,
+                      parentId: e.target.value,
+                    }))
                   }
                   placeholder="Parent ID (optional)"
                   className="w-full rounded-xl border border-border px-3 py-2 text-sm text-foreground focus:outline-none"
@@ -384,7 +429,9 @@ const AdminSettings = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
             <div className="w-full max-w-2xl rounded-2xl border border-border bg-white p-5 shadow-xl">
               <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-foreground">Edit Category</h3>
+                <h3 className="text-lg font-semibold text-foreground">
+                  Edit Category
+                </h3>
                 <button
                   type="button"
                   onClick={cancelEditCategory}
@@ -395,12 +442,19 @@ const AdminSettings = () => {
               </div>
 
               <form onSubmit={handleUpdateCategory} className="space-y-3">
-                <div className="text-xs text-muted">Category ID: {updateForm.id}</div>
+                <div className="text-xs text-muted">
+                  Category ID: {updateForm.id}
+                </div>
                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                   <input
                     type="text"
                     value={updateForm.name}
-                    onChange={(e) => setUpdateForm((prev) => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) =>
+                      setUpdateForm((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
                     placeholder="Name"
                     className="w-full rounded-xl border border-border px-3 py-2 text-sm text-foreground focus:outline-none"
                   />
@@ -408,7 +462,10 @@ const AdminSettings = () => {
                     type="text"
                     value={updateForm.description}
                     onChange={(e) =>
-                      setUpdateForm((prev) => ({ ...prev, description: e.target.value }))
+                      setUpdateForm((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
                     }
                     placeholder="Description"
                     className="w-full rounded-xl border border-border px-3 py-2 text-sm text-foreground focus:outline-none"
@@ -417,7 +474,10 @@ const AdminSettings = () => {
                     type="url"
                     value={updateForm.iconUrl}
                     onChange={(e) =>
-                      setUpdateForm((prev) => ({ ...prev, iconUrl: e.target.value }))
+                      setUpdateForm((prev) => ({
+                        ...prev,
+                        iconUrl: e.target.value,
+                      }))
                     }
                     placeholder="Icon URL"
                     className="w-full rounded-xl border border-border px-3 py-2 text-sm text-foreground focus:outline-none"
@@ -426,7 +486,10 @@ const AdminSettings = () => {
                     type="text"
                     value={updateForm.parentId}
                     onChange={(e) =>
-                      setUpdateForm((prev) => ({ ...prev, parentId: e.target.value }))
+                      setUpdateForm((prev) => ({
+                        ...prev,
+                        parentId: e.target.value,
+                      }))
                     }
                     placeholder="Parent ID"
                     className="w-full rounded-xl border border-border px-3 py-2 text-sm text-foreground focus:outline-none"
@@ -438,7 +501,10 @@ const AdminSettings = () => {
                     type="checkbox"
                     checked={updateForm.isActive}
                     onChange={(e) =>
-                      setUpdateForm((prev) => ({ ...prev, isActive: e.target.checked }))
+                      setUpdateForm((prev) => ({
+                        ...prev,
+                        isActive: e.target.checked,
+                      }))
                     }
                   />
                   isActive
