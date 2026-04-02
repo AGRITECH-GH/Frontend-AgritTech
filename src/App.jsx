@@ -18,6 +18,7 @@ const VerifyEmail = lazy(() => import("@/pages/VerifyEmail"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const AgentDashboard = lazy(() => import("@/pages/AgentDashboard"));
+const AgentFarmers = lazy(() => import("@/pages/AgentFarmers"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const AdminListings = lazy(() => import("@/pages/AdminListings"));
 const AdminUsers = lazy(() => import("@/pages/AdminUsers"));
@@ -162,6 +163,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["AGENT"]}>
                 <AgentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agent/farmers"
+            element={
+              <ProtectedRoute allowedRoles={["AGENT"]}>
+                <AgentFarmers />
               </ProtectedRoute>
             }
           />
