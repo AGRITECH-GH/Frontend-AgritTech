@@ -103,6 +103,39 @@ const authService = {
       method: "PUT",
       body: JSON.stringify(data),
     }),
+
+  /**
+   * Edit profile fields for logged in user
+   * @param {Object} data - { fullName?, phoneNumber?, region?, bio? }
+   * @returns {Promise} { message, user }
+   */
+  editProfile: (data) =>
+    api.apiFetch("/api/auth/edit-profile", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * Request email change verification
+   * @param {Object} data - { newEmail, password }
+   * @returns {Promise} { message }
+   */
+  requestEmailChange: (data) =>
+    api.apiFetch("/api/auth/request-email-change", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  /**
+   * Delete currently authenticated account
+   * @param {Object} data - { password }
+   * @returns {Promise} { message }
+   */
+  deleteAccount: (data) =>
+    api.apiFetch("/api/auth/delete-account", {
+      method: "DELETE",
+      body: JSON.stringify(data),
+    }),
 };
 
 export default authService;
