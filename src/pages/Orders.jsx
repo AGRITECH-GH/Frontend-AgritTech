@@ -14,12 +14,14 @@ import {
   Wallet,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { paymentsService } from "@/lib";
 import { transition } from "@/motionConfig";
 import { useAuth } from "@/context/AuthContext";
 import { useOrders } from "@/hooks/useOrders";
+import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 
 /* ─── Status helpers ─────────────────────────────────────────────── */
 const STATUS_META = {
@@ -125,16 +127,10 @@ const getOrderItems = (order) => {
         0,
     );
     const quantity = Number(item?.quantity ?? item?.qty ?? 1);
-    const firstImage = listing?.images?.[0] || item?.images?.[0];
     const image =
-      typeof firstImage === "string"
-        ? firstImage
-        : firstImage?.url ||
-          firstImage?.secure_url ||
-          firstImage?.src ||
-          listing?.imageUrl ||
-          listing?.image ||
-          "";
+      getPrimaryListingImageUrl(listing) ||
+      getPrimaryListingImageUrl({ images: item?.images || [] }) ||
+      "";
 
     return {
       id: String(item?._id || item?.id || listing?._id || listing?.id || ""),
@@ -529,6 +525,159 @@ const STATUS_FILTERS = [
   { value: "CANCELLED", label: "Cancelled" },
 ];
 
+function FarmerOrderTableRow({
+  order,
+  onUpdateStatus,
+  forceOpen = false,
+  currentRole,
+}) {
+  const [open, setOpen] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState("");
+  const [statusError, setStatusError] = useState("");
+
+  useEffect(() => {
+    if (forceOpen) setOpen(true);
+  }, [forceOpen]);
+
+  const meta = getStatusMeta(order.status);
+  const allowedTransitions = (ALLOWED_TRANSITIONS[currentRole] || []).filter(
+    (status) => status !== order.status,
+  );
+
+  const handleStatusChange = async (status) => {
+    setUpdatingStatus(status);
+    setStatusError("");
+    try {
+      await onUpdateStatus(order.id, status);
+    } catch (err) {
+      setStatusError(err?.message || "Failed to update status");
+    } finally {
+      setUpdatingStatus("");
+    }
+  };
+
+  return (
+    <>
+      <tr className="border-b border-border/50 align-top">
+        <td className="px-4 py-3 text-sm font-semibold text-foreground">
+          #
+          {String(order.id || "")
+            .slice(-8)
+            .toUpperCase()}
+        </td>
+        <td className="px-4 py-3 text-sm text-foreground">
+          {order.buyerName || "-"}
+        </td>
+        <td className="px-4 py-3 text-sm text-muted">
+          {formatDate(order.createdAt)}
+        </td>
+        <td className="px-4 py-3 text-sm text-foreground">
+          {order.items.length}
+        </td>
+        <td className="px-4 py-3 text-sm font-semibold text-foreground">
+          {formatCurrency(order.total)}
+        </td>
+        <td className="px-4 py-3">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${meta.bg} ${meta.color}`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
+            {meta.label}
+          </span>
+        </td>
+        <td className="px-4 py-3 text-right">
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            className="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-surface"
+          >
+            {open ? "Hide" : "View"} items
+            <ChevronDown
+              className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`}
+            />
+          </button>
+        </td>
+      </tr>
+
+      {open && (
+        <tr className="border-b border-border/50 bg-surface/40">
+          <td colSpan={7} className="px-4 py-4">
+            <div className="rounded-xl border border-border/60 bg-white p-4">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                Items in this order
+              </p>
+
+              <div className="space-y-2">
+                {order.items.map((item, idx) => (
+                  <div
+                    key={item.id || idx}
+                    className="flex items-center gap-3 rounded-lg border border-border/40 px-3 py-2"
+                  >
+                    {item.image ? (
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#f0f4e5] text-primary">
+                        <Package className="h-4 w-4" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {item.name}
+                      </p>
+                      <p className="text-xs text-muted">
+                        Qty: {item.quantity} • Unit:{" "}
+                        {formatCurrency(item.unitPrice)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {statusError && (
+                <div className="mt-3 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  {statusError}
+                </div>
+              )}
+
+              {allowedTransitions.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {allowedTransitions.map((status) => {
+                    const sm = getStatusMeta(status);
+                    const isLoading = updatingStatus === status;
+                    return (
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => handleStatusChange(status)}
+                        disabled={!!updatingStatus}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${sm.bg} ${sm.color} hover:opacity-80`}
+                      >
+                        {isLoading ? (
+                          <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        ) : (
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${sm.dot}`}
+                          />
+                        )}
+                        Mark {sm.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
 export default function Orders() {
   const { id: routeOrderId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -566,6 +715,22 @@ export default function Orders() {
       active = false;
     };
   }, [getOrderById, routeOrderId]);
+
+  useEffect(() => {
+    const presetStatus = searchParams.get("status");
+    if (currentRole !== "FARMER") return;
+
+    if (!presetStatus) {
+      setStatusFilter("");
+      return;
+    }
+
+    const upperPreset = presetStatus.toUpperCase();
+    const allowedStatuses = STATUS_FILTERS.map((f) => f.value);
+    if (allowedStatuses.includes(upperPreset)) {
+      setStatusFilter(upperPreset);
+    }
+  }, [currentRole, searchParams]);
 
   useEffect(() => {
     const urlReference = searchParams.get("reference");
@@ -623,6 +788,130 @@ export default function Orders() {
     },
     [updateStatus],
   );
+
+  const navbarUser = {
+    name: user?.fullName || user?.name || "Farmer",
+    avatarUrl: user?.profilePhotoUrl || user?.avatarUrl || null,
+  };
+
+  if (currentRole === "FARMER") {
+    return (
+      <div className="flex min-h-screen flex-col bg-surface text-foreground">
+        <DashboardNavbar user={navbarUser} showSearch={false} />
+        <main className="container flex-1 py-6 lg:py-8">
+          <section className="mb-6 rounded-3xl border border-border/60 bg-white p-5 shadow-sm sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                  Farmer Orders Dashboard
+                </h1>
+                <p className="text-sm text-muted">
+                  Clear outline of your incoming orders and the items in each
+                  order.
+                </p>
+              </div>
+              <span className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-semibold text-muted">
+                {orders.length} total
+              </span>
+            </div>
+          </section>
+
+          <div className="mb-5 flex flex-wrap gap-2">
+            {STATUS_FILTERS.map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => {
+                  setStatusFilter(f.value);
+                  const next = new URLSearchParams(searchParams);
+                  if (f.value) {
+                    next.set("status", f.value);
+                  } else {
+                    next.delete("status");
+                  }
+                  setSearchParams(next, { replace: true });
+                }}
+                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                  statusFilter === f.value
+                    ? "bg-primary text-white"
+                    : "border border-border bg-white text-muted hover:border-primary/50 hover:text-foreground"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {error && (
+            <div className="mb-5 flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              <AlertCircle size={18} />
+              {error}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="flex justify-center py-16">
+              <div className="h-9 w-9 animate-spin rounded-full border-4 border-green-200 border-t-green-500" />
+            </div>
+          ) : filteredOrders.length === 0 ? (
+            <div className="rounded-3xl border border-border/60 bg-white py-16 text-center">
+              <ShoppingBag className="mx-auto mb-4 h-12 w-12 text-gray-300" />
+              <h3 className="text-lg font-semibold text-foreground">
+                No orders found
+              </h3>
+              <p className="mt-2 text-sm text-muted">
+                {statusFilter
+                  ? `No ${STATUS_META[statusFilter]?.label?.toLowerCase()} orders.`
+                  : "You have no orders yet."}
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-2xl border border-border/60 bg-white shadow-sm">
+              <table className="w-full min-w-[860px] text-left">
+                <thead className="border-b border-border bg-surface/60">
+                  <tr>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Order
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Buyer
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Date
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Items
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Total
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted">
+                      Details
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredOrders.map((order) => (
+                    <FarmerOrderTableRow
+                      key={order.id}
+                      order={order}
+                      onUpdateStatus={handleUpdateStatus}
+                      currentRole={currentRole}
+                      forceOpen={routeOrderId === order.id}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f5f6f1] text-foreground">

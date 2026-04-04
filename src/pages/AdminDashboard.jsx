@@ -1,4 +1,5 @@
 import { Search, Calendar } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { useAuth } from "@/context/AuthContext";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -8,6 +9,7 @@ import RegionalFocusCard from "@/components/admin/RegionalFocusCard";
 import UserManagementTable from "@/components/admin/UserManagementTable";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const { user: authUser } = useAuth();
   const {
     admin,
@@ -38,7 +40,12 @@ const AdminDashboard = () => {
       "Admin",
     email: authUser?.email || admin?.email || "",
     avatarUrl:
-      authUser?.avatarUrl || authUser?.profileImage || admin?.avatarUrl || null,
+      authUser?.profilePhotoUrl ||
+      authUser?.avatarUrl ||
+      authUser?.profileImage ||
+      admin?.profilePhotoUrl ||
+      admin?.avatarUrl ||
+      null,
   };
 
   return (
@@ -108,6 +115,15 @@ const AdminDashboard = () => {
               icon={stat.icon}
               trend={stat.trend}
               trendType={stat.trendType}
+              onClick={
+                stat.id === "users"
+                  ? () => navigate("/admin/users")
+                  : stat.id === "listings"
+                    ? () => navigate("/admin/listings")
+                    : stat.id === "revenue"
+                      ? () => navigate("/admin/revenue")
+                      : undefined
+              }
             />
           ))}
         </div>

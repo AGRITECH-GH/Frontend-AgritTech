@@ -143,7 +143,7 @@ export function useAgentDashboard() {
         : "pending",
       lastActivity: "Just now",
       totalCommission: "₵0.00",
-      avatarUrl: source.avatarUrl || null,
+      avatarUrl: source.profilePhotoUrl || source.avatarUrl || null,
     };
   };
 
@@ -180,7 +180,7 @@ export function useAgentDashboard() {
           source.lastSeen ||
           "Recently active",
         totalCommission: source.totalCommission || "₵0.00",
-        avatarUrl: source.avatarUrl || null,
+        avatarUrl: source.profilePhotoUrl || source.avatarUrl || null,
       };
     });
   };

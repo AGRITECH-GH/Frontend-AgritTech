@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ordersService } from "@/lib";
+import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 
 const getEntityName = (entity, fallback = "") => {
   if (!entity) return fallback;
@@ -33,16 +34,10 @@ const getOrderItems = (order) => {
         0,
     );
     const quantity = Number(item?.quantity ?? item?.qty ?? 1);
-    const firstImage = listing?.images?.[0] || item?.images?.[0];
     const image =
-      typeof firstImage === "string"
-        ? firstImage
-        : firstImage?.url ||
-          firstImage?.secure_url ||
-          firstImage?.src ||
-          listing?.imageUrl ||
-          listing?.image ||
-          "";
+      getPrimaryListingImageUrl(listing) ||
+      getPrimaryListingImageUrl({ images: item?.images || [] }) ||
+      "";
 
     return {
       id: String(item?._id || item?.id || listing?._id || listing?.id || ""),

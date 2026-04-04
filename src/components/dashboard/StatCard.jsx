@@ -29,11 +29,18 @@ const trendColors = {
   neutral: "text-muted",
 };
 
-const StatCard = ({ label, value, icon, trend, trendType = "neutral" }) => {
+const StatCard = ({
+  label,
+  value,
+  icon,
+  trend,
+  trendType = "neutral",
+  onClick,
+}) => {
   const Icon = iconMap[icon] ?? Tag;
 
-  return (
-    <div className="relative flex flex-1 items-center gap-4 overflow-hidden rounded-2xl bg-white px-5 py-5 shadow-sm">
+  const content = (
+    <>
       {/* Decorative green blob */}
       <span
         aria-hidden
@@ -53,6 +60,25 @@ const StatCard = ({ label, value, icon, trend, trendType = "neutral" }) => {
           </p>
         )}
       </div>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label={`View ${label} details`}
+        className="relative flex flex-1 items-center gap-4 overflow-hidden rounded-2xl bg-white px-5 py-5 text-left shadow-sm transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/30"
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div className="relative flex flex-1 items-center gap-4 overflow-hidden rounded-2xl bg-white px-5 py-5 text-left shadow-sm">
+      {content}
     </div>
   );
 };

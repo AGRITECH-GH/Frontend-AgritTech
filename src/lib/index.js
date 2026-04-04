@@ -9,3 +9,7 @@ export { default as paymentsService } from "./paymentsService";
 export { default as agentsService } from "./agentsService";
 export { default as adminService } from "./adminService";
 export { default as categoriesService } from "./categoriesService";
+export {
+  getPrimaryListingImageUrl,
+  getListingImageGalleryUrls,
+} from "./listingImages";

@@ -20,7 +20,11 @@ const AgentFarmers = () => {
     name: authUser?.fullName || authUser?.name || authUser?.username || "Agent",
     role:
       authUser?.role || authUser?.userType || authUser?.accountType || "AGENT",
-    avatarUrl: authUser?.avatarUrl || authUser?.profileImage || null,
+    avatarUrl:
+      authUser?.profilePhotoUrl ||
+      authUser?.avatarUrl ||
+      authUser?.profileImage ||
+      null,
   };
 
   const farmerStats = useMemo(() => {

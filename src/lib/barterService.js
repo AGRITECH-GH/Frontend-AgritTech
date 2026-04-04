@@ -1,5 +1,6 @@
 // Barter API Service
 import api from "./api";
+import { validateImageFiles } from "./utils";
 
 const ALLOWED_BARTER_STATUSES = [
   "PENDING",
@@ -81,6 +82,37 @@ const barterService = {
       method: "POST",
       body: JSON.stringify(sanitizeCreateBarterPayload(barterData)),
     }),
+
+  /**
+   * Upload images for a barter request (requester only)
+   * @param {string} barterId
+   * @param {File[]} files - client-validated: max 3, JPG/JPEG/PNG/WEBP, 5MB each
+   * @returns {Promise} { message, images }
+   */
+  uploadBarterImages: (barterId, files = []) => {
+    const selectedFiles = Array.from(files || []);
+
+    if (selectedFiles.length === 0) {
+      throw new Error("No files selected.");
+    }
+
+    const { isValid, error } = validateImageFiles(selectedFiles, {
+      maxFiles: 3,
+      maxFilesError: "Maximum 3 images allowed.",
+    });
+
+    if (!isValid) {
+      throw new Error(error);
+    }
+
+    const formData = new FormData();
+    selectedFiles.forEach((file) => formData.append("images", file));
+
+    return api.apiFetch(`/api/barter/${barterId}/images`, {
+      method: "POST",
+      body: formData,
+    });
+  },
 
   /**
    * Get barter requests

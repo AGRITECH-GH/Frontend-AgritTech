@@ -91,6 +91,7 @@ const normalizeBarterRequest = (request, currentUserId) => {
     targetOwnerId,
     targetListing,
     offeredListing,
+    offeredImages: Array.isArray(request.images) ? request.images : [],
     offeredDescription: request.offeredDescription || "",
     offeredQuantity: request.offeredQuantity || 0,
     message:
@@ -102,7 +103,11 @@ const normalizeBarterRequest = (request, currentUserId) => {
       "",
     requesterName:
       requester.fullName || requester.name || requester.username || "Unknown",
-    requesterAvatar: requester.avatarUrl || requester.avatar || null,
+    requesterAvatar:
+      requester.profilePhotoUrl ||
+      requester.avatarUrl ||
+      requester.avatar ||
+      null,
     targetOwnerName:
       targetOwner.fullName ||
       targetOwner.name ||

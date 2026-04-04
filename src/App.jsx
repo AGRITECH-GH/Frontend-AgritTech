@@ -35,6 +35,7 @@ const Checkout = lazy(() => import("@/pages/Checkout"));
 const Orders = lazy(() => import("@/pages/Orders"));
 const PaymentReturn = lazy(() => import("@/pages/PaymentReturn"));
 const Profile = lazy(() => import("@/pages/Profile"));
+const Activity = lazy(() => import("@/pages/Activity"));
 
 function HomePage() {
   return (
@@ -153,6 +154,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["FARMER"]}>
                 <BarterProposals />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/activity"
+            element={
+              <ProtectedRoute allowedRoles={["FARMER"]}>
+                <Activity />
               </ProtectedRoute>
             }
           />

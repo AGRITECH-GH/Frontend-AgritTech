@@ -55,7 +55,11 @@ const AdminSettings = () => {
   const sidebarAdmin = {
     name: authUser?.fullName || authUser?.name || authUser?.username || "Admin",
     email: authUser?.email || "",
-    avatarUrl: authUser?.avatarUrl || authUser?.profileImage || null,
+    avatarUrl:
+      authUser?.profilePhotoUrl ||
+      authUser?.avatarUrl ||
+      authUser?.profileImage ||
+      null,
   };
 
   useEffect(() => {

@@ -168,6 +168,13 @@ const Navbar = ({ minimal = false }) => {
     user?.email?.split("@")[0] ||
     "Account";
 
+  const userAvatar =
+    user?.profilePhotoUrl ||
+    user?.avatarUrl ||
+    user?.profileImage ||
+    user?.photoUrl ||
+    null;
+
   /* ─── Minimal: Marketplace Navbar ─────────────────────────────────────── */
   if (minimal) {
     return (
@@ -247,8 +254,16 @@ const Navbar = ({ minimal = false }) => {
                     onClick={() => setUserMenuOpen((prev) => !prev)}
                     className="flex items-center gap-2 rounded-full px-2 py-1 transition-colors hover:bg-white/10"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-400 text-sm font-bold text-[#1c3d1c]">
-                      {userInitial}
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-green-400 text-sm font-bold text-[#1c3d1c]">
+                      {userAvatar ? (
+                        <img
+                          src={userAvatar}
+                          alt={userName}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        userInitial
+                      )}
                     </div>
                     <span className="hidden max-w-[100px] truncate text-sm font-medium text-white md:block">
                       {userName}

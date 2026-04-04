@@ -63,7 +63,11 @@ const normalizeFarmersList = (payload) => {
       totalCommission: formatCurrency(
         source.totalCommission || source.commission || source.commissionEarned,
       ),
-      avatarUrl: source.avatarUrl || source.profileImage || null,
+      avatarUrl:
+        source.profilePhotoUrl ||
+        source.avatarUrl ||
+        source.profileImage ||
+        null,
       phoneNumber: source.phoneNumber || source.phone || "",
       email: source.email || "",
     };

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { listingsService, ordersService, barterService } from "@/lib";
+import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 
 const toArray = (value) => (Array.isArray(value) ? value : []);
 const getIdentifier = (value) =>
@@ -43,7 +44,7 @@ const normalizeListingForDashboard = (listing) => {
         : percentRemaining >= 30
           ? "down"
           : "down",
-    imageUrl: listing.images?.[0]?.url || null,
+    imageUrl: getPrimaryListingImageUrl(listing) || null,
   };
 };
 

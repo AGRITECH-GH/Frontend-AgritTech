@@ -18,6 +18,7 @@ import { transition } from "@/motionConfig";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/hooks/useCart";
 import { useOrders } from "@/hooks/useOrders";
+import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 
 const PAYMENT_METHODS = [
   { value: "CASH", label: "Cash on Delivery", icon: "💵" },
@@ -50,12 +51,7 @@ export default function Checkout() {
 
   const getImage = (item) => {
     const listing = item?.listing || item || {};
-    const firstImage = listing?.images?.[0];
-    if (typeof firstImage === "string") return firstImage;
-    if (firstImage && typeof firstImage === "object") {
-      return firstImage.url || firstImage.secure_url || firstImage.src || "";
-    }
-    return listing?.image || listing?.imageUrl || "";
+    return getPrimaryListingImageUrl(listing);
   };
 
   const subtotal = items.reduce((sum, item) => {

@@ -1,6 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
   User,
   Mail,
@@ -15,11 +14,12 @@ import {
   Eye,
   EyeOff,
   X,
+  Camera,
 } from "lucide-react";
 import logo from "@/assets/logo.svg";
-import { transition } from "@/motionConfig";
 import { authService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
+import { validateImageFiles } from "@/lib/utils";
 
 const GHANA_REGIONS = [
   "Ahafo",
@@ -63,6 +63,7 @@ export default function Profile() {
   });
 
   const [deletePassword, setDeletePassword] = useState("");
+  const photoInputRef = useRef(null);
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -88,6 +89,11 @@ export default function Profile() {
     message: "",
     error: "",
   });
+  const [photoState, setPhotoState] = useState({
+    loading: false,
+    message: "",
+    error: "",
+  });
 
   const isAgent = String(user?.role || "").toUpperCase() === "AGENT";
 
@@ -96,6 +102,23 @@ export default function Profile() {
     if (!role) return "User";
     return role.charAt(0) + role.slice(1).toLowerCase();
   }, [user?.role]);
+
+  const profilePhotoSrc =
+    user?.profilePhotoUrl ||
+    user?.avatarUrl ||
+    user?.profileImage ||
+    user?.photoUrl ||
+    null;
+
+  const initials = useMemo(() => {
+    const value = user?.fullName || user?.name || "User";
+    return value
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() || "")
+      .join("");
+  }, [user?.fullName, user?.name]);
 
   const handleProfileSave = async (e) => {
     e.preventDefault();
@@ -267,11 +290,84 @@ export default function Profile() {
     }
   };
 
+  const handleUploadProfilePhoto = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setPhotoState({ loading: true, message: "", error: "" });
+
+    const { isValid, error } = validateImageFiles([file], {
+      maxFiles: 1,
+      maxSizeBytes: 3 * 1024 * 1024,
+      allowedTypesError: "Please upload a JPG, PNG, or WEBP image.",
+      maxSizeError: "Image must be 3MB or smaller.",
+      maxFilesError: "Only one profile image is allowed.",
+    });
+
+    if (!isValid) {
+      setPhotoState({
+        loading: false,
+        message: "",
+        error,
+      });
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      const response = await authService.uploadProfilePhoto(file);
+      if (response?.user) {
+        updateUser(response.user);
+      }
+
+      setPhotoState({
+        loading: false,
+        message: response?.message || "Profile photo updated successfully.",
+        error: "",
+      });
+    } catch (err) {
+      setPhotoState({
+        loading: false,
+        message: "",
+        error: err?.message || "Failed to upload profile photo.",
+      });
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  const handleDeleteProfilePhoto = async () => {
+    setPhotoState({ loading: true, message: "", error: "" });
+
+    try {
+      const response = await authService.deleteProfilePhoto();
+      if (response?.user) {
+        updateUser(response.user);
+      } else {
+        updateUser({
+          profilePhotoUrl: null,
+          avatarUrl: null,
+          profileImage: null,
+          photoUrl: null,
+        });
+      }
+
+      setPhotoState({
+        loading: false,
+        message: response?.message || "Profile photo removed.",
+        error: "",
+      });
+    } catch (err) {
+      setPhotoState({
+        loading: false,
+        message: "",
+        error: err?.message || "Failed to remove profile photo.",
+      });
+    }
+  };
+
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ backgroundColor: "#f0f2ec" }}
-    >
+    <div className="min-h-screen bg-surface">
       <nav className="sticky top-0 z-50 border-b border-border bg-white">
         <div className="container flex h-12 items-center justify-between md:h-14">
           <Link
@@ -291,359 +387,452 @@ export default function Profile() {
         </div>
       </nav>
 
-      <main className="container flex-1 px-4 py-8 sm:px-6 lg:py-10">
-        <motion.section
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={transition}
-          className="mb-6 rounded-2xl border border-border/60 bg-white p-5 shadow-sm sm:p-6"
-        >
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
-            <p className="text-sm text-gray-500">
-              Manage your personal details, password, email and account
-              security.
-            </p>
-            <p className="text-xs font-medium text-gray-600">
-              Role: {displayRole}
-            </p>
-          </div>
-        </motion.section>
+      <main className="container py-6 sm:py-8">
+        <div>
+          <section className="w-full rounded-3xl border border-border/60 bg-white p-4 shadow-sm sm:p-6 lg:p-7">
+            <div className="mb-6 flex flex-col gap-1 border-b border-border/60 pb-4">
+              <h1 className="text-2xl font-bold text-gray-900">
+                Account Settings
+              </h1>
+              <p className="text-sm text-gray-500">
+                Manage your profile, security, and account preferences.
+              </p>
+              <p className="text-xs font-medium text-gray-600">
+                Signed in as {displayRole}
+              </p>
+            </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <motion.form
-            onSubmit={handleProfileSave}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={transition}
-            className="rounded-2xl border border-border/60 bg-white p-5 shadow-sm sm:p-6"
-          >
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">
-              Edit Profile
-            </h2>
-            <div className="space-y-3">
-              <label className="block text-sm text-gray-700">
-                Full Name
-                <div className="relative mt-1">
-                  <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  <input
-                    value={profileForm.fullName}
-                    onChange={(e) =>
-                      setProfileForm((p) => ({
-                        ...p,
-                        fullName: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-green-400"
-                  />
-                </div>
-              </label>
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.5fr_1fr]">
+              <div className="space-y-5">
+                <form
+                  onSubmit={handleProfileSave}
+                  className="rounded-2xl border border-border/60 bg-white p-5 shadow-sm"
+                >
+                  <h2 className="mb-4 text-lg font-semibold text-gray-900">
+                    Profile Details
+                  </h2>
 
-              <label className="block text-sm text-gray-700">
-                Phone Number
-                <div className="relative mt-1">
-                  <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  <input
-                    value={profileForm.phoneNumber}
-                    onChange={(e) =>
-                      setProfileForm((p) => ({
-                        ...p,
-                        phoneNumber: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-green-400"
-                  />
-                </div>
-              </label>
+                  <div className="mb-5 rounded-xl border border-border/60 bg-surface/50 p-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                      <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-white text-sm font-semibold text-foreground">
+                        {profilePhotoSrc ? (
+                          <img
+                            src={profilePhotoSrc}
+                            alt="Profile"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          initials
+                        )}
+                      </span>
 
-              <label className="block text-sm text-gray-700">
-                Region
-                <div className="relative mt-1">
-                  <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  <select
-                    value={profileForm.region}
-                    onChange={(e) =>
-                      setProfileForm((p) => ({ ...p, region: e.target.value }))
-                    }
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-green-400"
-                  >
-                    <option value="">Select region</option>
-                    {GHANA_REGIONS.map((region) => (
-                      <option key={region} value={region}>
-                        {region}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </label>
+                      <div className="flex-1">
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            disabled={photoState.loading}
+                            onClick={() => photoInputRef.current?.click()}
+                            className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <Camera size={14} />
+                            {photoState.loading ? "Working..." : "Upload Photo"}
+                          </button>
 
-              {isAgent && (
-                <label className="block text-sm text-gray-700">
-                  Bio
-                  <div className="relative mt-1">
-                    <FileText className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <textarea
-                      rows={3}
-                      value={profileForm.bio}
-                      onChange={(e) =>
-                        setProfileForm((p) => ({ ...p, bio: e.target.value }))
-                      }
-                      className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-green-400"
-                    />
+                          <button
+                            type="button"
+                            disabled={photoState.loading || !profilePhotoSrc}
+                            onClick={handleDeleteProfilePhoto}
+                            className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            <Trash2 size={14} />
+                            Delete
+                          </button>
+                        </div>
+
+                        <p className="mt-2 text-xs text-gray-500">
+                          Allowed formats: JPG, PNG, WEBP. Maximum size: 3MB.
+                        </p>
+
+                        <input
+                          ref={photoInputRef}
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg,image/webp"
+                          className="hidden"
+                          onChange={handleUploadProfilePhoto}
+                        />
+
+                        {photoState.message && (
+                          <p className="mt-2 inline-flex items-center gap-1 text-xs text-green-600">
+                            <CheckCircle2 size={14} />
+                            {photoState.message}
+                          </p>
+                        )}
+                        {photoState.error && (
+                          <p className="mt-2 inline-flex items-center gap-1 text-xs text-red-600">
+                            <AlertCircle size={14} />
+                            {photoState.error}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </label>
-              )}
-            </div>
 
-            <button
-              type="submit"
-              disabled={profileState.loading}
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-green-500 py-2.5 text-sm font-bold text-white transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:bg-green-300"
-            >
-              {profileState.loading ? "Saving..." : "Save profile"}
-            </button>
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    <label className="block text-sm text-gray-700">
+                      Full Name
+                      <div className="relative mt-1">
+                        <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <input
+                          value={profileForm.fullName}
+                          onChange={(e) =>
+                            setProfileForm((p) => ({
+                              ...p,
+                              fullName: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-primary/50"
+                        />
+                      </div>
+                    </label>
 
-            {profileState.message && (
-              <p className="mt-3 inline-flex items-center gap-1 text-xs text-green-600">
-                <CheckCircle2 size={14} />
-                {profileState.message}
-              </p>
-            )}
-            {profileState.error && (
-              <p className="mt-3 inline-flex items-center gap-1 text-xs text-red-600">
-                <AlertCircle size={14} />
-                {profileState.error}
-              </p>
-            )}
-          </motion.form>
+                    <label className="block text-sm text-gray-700">
+                      Email
+                      <div className="relative mt-1">
+                        <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <input
+                          value={user?.email || ""}
+                          readOnly
+                          className="w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 py-2.5 pl-10 pr-3 text-sm text-gray-500"
+                        />
+                      </div>
+                    </label>
 
-          <motion.form
-            onSubmit={handleChangePassword}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={transition}
-            className="rounded-2xl border border-border/60 bg-white p-5 shadow-sm sm:p-6"
-          >
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">
-              Change Password
-            </h2>
-            <div className="space-y-3">
-              <label className="block text-sm text-gray-700">
-                Current Password
-                <div className="relative mt-1">
-                  <input
-                    type={showCurrentPassword ? "text" : "password"}
-                    value={passwordForm.currentPassword}
-                    onChange={(e) =>
-                      setPasswordForm((p) => ({
-                        ...p,
-                        currentPassword: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm outline-none focus:border-green-400"
-                  />
+                    <label className="block text-sm text-gray-700">
+                      Phone Number
+                      <div className="relative mt-1">
+                        <Phone className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <input
+                          value={profileForm.phoneNumber}
+                          onChange={(e) =>
+                            setProfileForm((p) => ({
+                              ...p,
+                              phoneNumber: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-primary/50"
+                        />
+                      </div>
+                    </label>
+
+                    <label className="block text-sm text-gray-700">
+                      Region
+                      <div className="relative mt-1">
+                        <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <select
+                          value={profileForm.region}
+                          onChange={(e) =>
+                            setProfileForm((p) => ({
+                              ...p,
+                              region: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-primary/50"
+                        >
+                          <option value="">Select region</option>
+                          {GHANA_REGIONS.map((region) => (
+                            <option key={region} value={region}>
+                              {region}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </label>
+                  </div>
+
+                  {isAgent && (
+                    <label className="mt-3 block text-sm text-gray-700">
+                      Bio
+                      <div className="relative mt-1">
+                        <FileText className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <textarea
+                          rows={3}
+                          value={profileForm.bio}
+                          onChange={(e) =>
+                            setProfileForm((p) => ({
+                              ...p,
+                              bio: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-primary/50"
+                        />
+                      </div>
+                    </label>
+                  )}
+
                   <button
-                    type="button"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    type="submit"
+                    disabled={profileState.loading}
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {showCurrentPassword ? (
-                      <EyeOff size={16} />
-                    ) : (
-                      <Eye size={16} />
-                    )}
+                    {profileState.loading ? "Saving..." : "Save profile"}
                   </button>
-                </div>
-              </label>
 
-              <label className="block text-sm text-gray-700">
-                New Password
-                <div className="relative mt-1">
-                  <input
-                    type={showNewPassword ? "text" : "password"}
-                    value={passwordForm.newPassword}
-                    onChange={(e) =>
-                      setPasswordForm((p) => ({
-                        ...p,
-                        newPassword: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm outline-none focus:border-green-400"
-                  />
+                  {profileState.message && (
+                    <p className="mt-3 inline-flex items-center gap-1 text-xs text-green-600">
+                      <CheckCircle2 size={14} />
+                      {profileState.message}
+                    </p>
+                  )}
+                  {profileState.error && (
+                    <p className="mt-3 inline-flex items-center gap-1 text-xs text-red-600">
+                      <AlertCircle size={14} />
+                      {profileState.error}
+                    </p>
+                  )}
+                </form>
+
+                <form
+                  onSubmit={handleRequestEmailChange}
+                  className="rounded-2xl border border-border/60 bg-white p-5 shadow-sm"
+                >
+                  <h2 className="mb-4 text-lg font-semibold text-gray-900">
+                    Change Email
+                  </h2>
+                  <p className="mb-3 text-xs text-gray-500">
+                    Current email: {user?.email || "-"}
+                  </p>
+
+                  <div className="space-y-3">
+                    <label className="block text-sm text-gray-700">
+                      New Email
+                      <div className="relative mt-1">
+                        <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                        <input
+                          type="email"
+                          value={emailForm.newEmail}
+                          onChange={(e) =>
+                            setEmailForm((p) => ({
+                              ...p,
+                              newEmail: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-primary/50"
+                        />
+                      </div>
+                    </label>
+
+                    <label className="block text-sm text-gray-700">
+                      Current Password
+                      <input
+                        type="password"
+                        value={emailForm.password}
+                        onChange={(e) =>
+                          setEmailForm((p) => ({
+                            ...p,
+                            password: e.target.value,
+                          }))
+                        }
+                        className="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-primary/50"
+                      />
+                    </label>
+                  </div>
+
                   <button
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    type="submit"
+                    disabled={emailState.loading}
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {emailState.loading ? "Sending..." : "Request email change"}
+                    {!emailState.loading && <ArrowRight size={15} />}
                   </button>
-                </div>
-              </label>
 
-              <label className="block text-sm text-gray-700">
-                Confirm New Password
-                <div className="relative mt-1">
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={passwordForm.confirmNewPassword}
-                    onChange={(e) =>
-                      setPasswordForm((p) => ({
-                        ...p,
-                        confirmNewPassword: e.target.value,
-                      }))
-                    }
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm outline-none focus:border-green-400"
-                  />
+                  {emailState.message && (
+                    <p className="mt-3 inline-flex items-center gap-1 text-xs text-green-600">
+                      <CheckCircle2 size={14} />
+                      {emailState.message}
+                    </p>
+                  )}
+                  {emailState.error && (
+                    <p className="mt-3 inline-flex items-center gap-1 text-xs text-red-600">
+                      <AlertCircle size={14} />
+                      {emailState.error}
+                    </p>
+                  )}
+                </form>
+              </div>
+
+              <div className="space-y-5">
+                <form
+                  onSubmit={handleChangePassword}
+                  className="rounded-2xl border border-border/60 bg-white p-5 shadow-sm"
+                >
+                  <h2 className="mb-4 text-lg font-semibold text-gray-900">
+                    Change Password
+                  </h2>
+                  <p className="mb-3 text-sm text-gray-500">
+                    Update your password to keep your account secure.
+                  </p>
+
+                  <div className="space-y-3">
+                    <label className="block text-sm text-gray-700">
+                      Current Password
+                      <div className="relative mt-1">
+                        <input
+                          type={showCurrentPassword ? "text" : "password"}
+                          value={passwordForm.currentPassword}
+                          onChange={(e) =>
+                            setPasswordForm((p) => ({
+                              ...p,
+                              currentPassword: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm outline-none focus:border-primary/50"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowCurrentPassword(!showCurrentPassword)
+                          }
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showCurrentPassword ? (
+                            <EyeOff size={16} />
+                          ) : (
+                            <Eye size={16} />
+                          )}
+                        </button>
+                      </div>
+                    </label>
+
+                    <label className="block text-sm text-gray-700">
+                      New Password
+                      <div className="relative mt-1">
+                        <input
+                          type={showNewPassword ? "text" : "password"}
+                          value={passwordForm.newPassword}
+                          onChange={(e) =>
+                            setPasswordForm((p) => ({
+                              ...p,
+                              newPassword: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm outline-none focus:border-primary/50"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showNewPassword ? (
+                            <EyeOff size={16} />
+                          ) : (
+                            <Eye size={16} />
+                          )}
+                        </button>
+                      </div>
+                    </label>
+
+                    <label className="block text-sm text-gray-700">
+                      Confirm New Password
+                      <div className="relative mt-1">
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={passwordForm.confirmNewPassword}
+                          onChange={(e) =>
+                            setPasswordForm((p) => ({
+                              ...p,
+                              confirmNewPassword: e.target.value,
+                            }))
+                          }
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm outline-none focus:border-primary/50"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff size={16} />
+                          ) : (
+                            <Eye size={16} />
+                          )}
+                        </button>
+                      </div>
+                    </label>
+                  </div>
+
                   <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    type="submit"
+                    disabled={passwordState.loading}
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {showConfirmPassword ? (
-                      <EyeOff size={16} />
-                    ) : (
-                      <Eye size={16} />
-                    )}
+                    <KeyRound size={15} />
+                    {passwordState.loading ? "Updating..." : "Update password"}
                   </button>
-                </div>
-              </label>
+
+                  {passwordState.message && (
+                    <p className="mt-3 inline-flex items-center gap-1 text-xs text-green-600">
+                      <CheckCircle2 size={14} />
+                      {passwordState.message}
+                    </p>
+                  )}
+                  {passwordState.error && (
+                    <p className="mt-3 inline-flex items-center gap-1 text-xs text-red-600">
+                      <AlertCircle size={14} />
+                      {passwordState.error}
+                    </p>
+                  )}
+                </form>
+
+                <form
+                  onSubmit={handleDeleteAccount}
+                  className="rounded-2xl border border-red-200 bg-white p-5 shadow-sm"
+                >
+                  <h2 className="mb-2 text-lg font-semibold text-red-700">
+                    Close Account
+                  </h2>
+                  <p className="mb-4 text-sm text-gray-600">
+                    This action is permanent. Your account and data will be
+                    removed.
+                  </p>
+
+                  <label className="block text-sm text-gray-700">
+                    Confirm with Password
+                    <input
+                      type="password"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                      className="mt-1 w-full rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm outline-none focus:border-red-400"
+                    />
+                  </label>
+
+                  <button
+                    type="submit"
+                    disabled={deleteState.loading}
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
+                  >
+                    <Trash2 size={15} />
+                    {deleteState.loading ? "Closing..." : "Close account"}
+                  </button>
+
+                  {deleteState.message && (
+                    <p className="mt-3 inline-flex items-center gap-1 text-xs text-green-600">
+                      <CheckCircle2 size={14} />
+                      {deleteState.message}
+                    </p>
+                  )}
+                  {deleteState.error && (
+                    <p className="mt-3 inline-flex items-center gap-1 text-xs text-red-600">
+                      <AlertCircle size={14} />
+                      {deleteState.error}
+                    </p>
+                  )}
+                </form>
+              </div>
             </div>
-
-            <button
-              type="submit"
-              disabled={passwordState.loading}
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-green-500 py-2.5 text-sm font-bold text-white transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:bg-green-300"
-            >
-              <KeyRound size={15} />
-              {passwordState.loading ? "Updating..." : "Update password"}
-            </button>
-
-            {passwordState.message && (
-              <p className="mt-3 inline-flex items-center gap-1 text-xs text-green-600">
-                <CheckCircle2 size={14} />
-                {passwordState.message}
-              </p>
-            )}
-            {passwordState.error && (
-              <p className="mt-3 inline-flex items-center gap-1 text-xs text-red-600">
-                <AlertCircle size={14} />
-                {passwordState.error}
-              </p>
-            )}
-          </motion.form>
-
-          <motion.form
-            onSubmit={handleRequestEmailChange}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={transition}
-            className="rounded-2xl border border-border/60 bg-white p-5 shadow-sm sm:p-6"
-          >
-            <h2 className="mb-4 text-lg font-semibold text-gray-900">
-              Change Email
-            </h2>
-            <p className="mb-3 text-xs text-gray-500">
-              Current email: {user?.email || "-"}
-            </p>
-
-            <div className="space-y-3">
-              <label className="block text-sm text-gray-700">
-                New Email
-                <div className="relative mt-1">
-                  <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="email"
-                    value={emailForm.newEmail}
-                    onChange={(e) =>
-                      setEmailForm((p) => ({ ...p, newEmail: e.target.value }))
-                    }
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-green-400"
-                  />
-                </div>
-              </label>
-
-              <label className="block text-sm text-gray-700">
-                Current Password
-                <input
-                  type="password"
-                  value={emailForm.password}
-                  onChange={(e) =>
-                    setEmailForm((p) => ({ ...p, password: e.target.value }))
-                  }
-                  className="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-green-400"
-                />
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              disabled={emailState.loading}
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-green-500 py-2.5 text-sm font-bold text-white transition-colors hover:bg-green-600 disabled:cursor-not-allowed disabled:bg-green-300"
-            >
-              {emailState.loading ? "Sending..." : "Request email change"}
-              {!emailState.loading && <ArrowRight size={15} />}
-            </button>
-
-            {emailState.message && (
-              <p className="mt-3 inline-flex items-center gap-1 text-xs text-green-600">
-                <CheckCircle2 size={14} />
-                {emailState.message}
-              </p>
-            )}
-            {emailState.error && (
-              <p className="mt-3 inline-flex items-center gap-1 text-xs text-red-600">
-                <AlertCircle size={14} />
-                {emailState.error}
-              </p>
-            )}
-          </motion.form>
-
-          <motion.form
-            onSubmit={handleDeleteAccount}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={transition}
-            className="rounded-2xl border border-red-200 bg-white p-5 shadow-sm sm:p-6"
-          >
-            <h2 className="mb-2 text-lg font-semibold text-red-700">
-              Delete Account
-            </h2>
-            <p className="mb-4 text-sm text-gray-600">
-              This action is permanent. Your account and data will be removed.
-            </p>
-
-            <label className="block text-sm text-gray-700">
-              Confirm with Password
-              <input
-                type="password"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm outline-none focus:border-red-400"
-              />
-            </label>
-
-            <button
-              type="submit"
-              disabled={deleteState.loading}
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-red-600 py-2.5 text-sm font-bold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
-            >
-              <Trash2 size={15} />
-              {deleteState.loading ? "Deleting..." : "Delete my account"}
-            </button>
-
-            {deleteState.message && (
-              <p className="mt-3 inline-flex items-center gap-1 text-xs text-green-600">
-                <CheckCircle2 size={14} />
-                {deleteState.message}
-              </p>
-            )}
-            {deleteState.error && (
-              <p className="mt-3 inline-flex items-center gap-1 text-xs text-red-600">
-                <AlertCircle size={14} />
-                {deleteState.error}
-              </p>
-            )}
-          </motion.form>
+          </section>
         </div>
       </main>
     </div>

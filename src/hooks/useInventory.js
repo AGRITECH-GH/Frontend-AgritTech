@@ -1,20 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { listingsService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
+import { getPrimaryListingImageUrl } from "@/lib/listingImages";
+import { validateImageFiles } from "@/lib/utils";
 
 const getIdentifier = (value) =>
   value?.id || value?._id || value?.userId || value?.ownerId || null;
-
-const getListingImageUrl = (listing) => {
-  const firstImage = Array.isArray(listing?.images) ? listing.images[0] : null;
-
-  if (typeof firstImage === "string") return firstImage;
-  if (firstImage?.url) return firstImage.url;
-  if (listing?.imageUrl) return listing.imageUrl;
-  if (listing?.image) return listing.image;
-
-  return null;
-};
 
 const isOwnedByUser = (listing, userId) => {
   if (!listing || !userId) return false;
@@ -77,7 +68,7 @@ export const useInventory = () => {
             name: listing.title,
             sku: listing.id.slice(0, 8),
             image: "📦",
-            imageUrl: getListingImageUrl(listing),
+            imageUrl: getPrimaryListingImageUrl(listing),
             category: listing.category?.name || "General",
             stockLevel: parseInt(listing.quantityAvailable) || 0,
             maxStock: parseInt(listing.quantity) || 0,
@@ -240,8 +231,9 @@ export const useInventory = () => {
       return { success: false, error: "No files selected." };
     }
 
-    if (files.length > 5) {
-      return { success: false, error: "Maximum 5 images allowed." };
+    const { isValid, error } = validateImageFiles(files, { maxFiles: 5 });
+    if (!isValid) {
+      return { success: false, error };
     }
 
     try {

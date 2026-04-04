@@ -116,6 +116,30 @@ const authService = {
     }),
 
   /**
+   * Upload profile photo for authenticated user
+   * @param {File} file
+   * @returns {Promise} { message, user }
+   */
+  uploadProfilePhoto: (file) => {
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    return api.apiFetch("/api/auth/profile-photo", {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
+   * Delete profile photo for authenticated user
+   * @returns {Promise} { message, user }
+   */
+  deleteProfilePhoto: () =>
+    api.apiFetch("/api/auth/profile-photo", {
+      method: "DELETE",
+    }),
+
+  /**
    * Request email change verification
    * @param {Object} data - { newEmail, password }
    * @returns {Promise} { message }

@@ -18,6 +18,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { transition } from "@/motionConfig";
 import { useCart } from "@/hooks/useCart";
+import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -48,12 +49,7 @@ export default function Cart() {
 
   const getImage = (item) => {
     const listing = getListing(item);
-    const firstImage = listing?.images?.[0];
-    if (typeof firstImage === "string") return firstImage;
-    if (firstImage && typeof firstImage === "object") {
-      return firstImage.url || firstImage.secure_url || firstImage.src || "";
-    }
-    return listing?.image || listing?.imageUrl || "";
+    return getPrimaryListingImageUrl(listing);
   };
 
   const getPrice = (item) => {
