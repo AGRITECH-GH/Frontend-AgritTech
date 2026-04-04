@@ -72,7 +72,6 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -107,7 +106,7 @@ export default function Login() {
     setErrors({});
     setLoading(true);
     try {
-      const response = await login(form.email, form.password, remember);
+      const response = await login(form.email, form.password);
       setSuccess(true);
 
       // Route based on role
@@ -269,12 +268,12 @@ export default function Login() {
                       <label className="text-sm font-medium text-gray-700">
                         Password
                       </label>
-                      <a
-                        href="#"
+                      <Link
+                        to="/forgot-password"
                         className="text-xs font-semibold text-green-500 hover:text-green-600 hover:underline transition-colors"
                       >
                         Forgot password?
-                      </a>
+                      </Link>
                     </div>
                     <div className="relative">
                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
@@ -313,21 +312,6 @@ export default function Login() {
                         {errors.password}
                       </p>
                     )}
-                  </motion.div>
-
-                  {/* ── Remember me ── */}
-                  <motion.div variants={itemVariants}>
-                    <label className="flex items-center gap-2.5 cursor-pointer select-none w-fit">
-                      <input
-                        type="checkbox"
-                        checked={remember}
-                        onChange={(e) => setRemember(e.target.checked)}
-                        className="accent-green-500 w-4 h-4 cursor-pointer rounded"
-                      />
-                      <span className="text-sm text-gray-600">
-                        Remember me for 30 days
-                      </span>
-                    </label>
                   </motion.div>
 
                   {/* ── Sign In ── */}

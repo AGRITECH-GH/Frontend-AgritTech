@@ -18,6 +18,10 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { cartService, listingsService } from "@/lib";
+import {
+  getPrimaryListingImageUrl,
+  getListingImageGalleryUrls,
+} from "@/lib/listingImages";
 
 const normalizeListing = (response) => {
   if (!response || typeof response !== "object") return null;
@@ -27,24 +31,11 @@ const normalizeListing = (response) => {
 };
 
 const getListingImage = (listing) => {
-  const images = listing?.images;
-  if (Array.isArray(images) && images.length > 0) {
-    const first = images[0];
-    if (typeof first === "string") return first;
-    return first?.url || first?.secure_url || first?.src || "";
-  }
-  return listing?.imageUrl || listing?.image || "";
+  return getPrimaryListingImageUrl(listing);
 };
 
 const getAllImages = (listing) => {
-  const images = listing?.images;
-  if (!Array.isArray(images)) return [];
-  return images
-    .map((img) => {
-      if (typeof img === "string") return img;
-      return img?.url || img?.secure_url || img?.src || "";
-    })
-    .filter(Boolean);
+  return getListingImageGalleryUrls(listing);
 };
 
 const formatCurrency = (value) => {
@@ -372,7 +363,7 @@ const MarketplaceDetails = () => {
                       Added to cart!
                     </div>
                     <Link
-                      to="/marketplace"
+                      to="/cart"
                       className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-green-700"
                     >
                       <ShoppingCart className="h-3.5 w-3.5" />
@@ -408,36 +399,38 @@ const MarketplaceDetails = () => {
 
             {/* Seller Card */}
             <div className="mt-8 rounded-2xl border border-border/60 bg-white p-4 shadow-sm sm:p-6">
-              <h2 className="text-lg font-bold text-foreground mb-4">
+              <h2 className="mb-4 text-lg font-bold text-foreground">
                 Seller Information
               </h2>
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center text-white font-bold">
-                    {(
-                      listing?.farmerName?.[0] ||
-                      listing?.sellerName?.[0] ||
-                      "S"
-                    ).toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {listing?.farmerName || listing?.sellerName || "Seller"}
-                    </p>
-                    <p className="text-xs text-muted">Verified Seller</p>
-                  </div>
-                </div>
 
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-foreground">4.8</p>
-                  <p className="text-xs text-muted">Rating</p>
-                </div>
-
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-foreground">
-                    {Math.floor(Math.random() * 500) + 100}
+              {/* Identity row */}
+              <div className="flex items-center gap-4">
+                {listing?.seller?.profilePhotoUrl ? (
+                  <img
+                    src={listing.seller.profilePhotoUrl}
+                    alt={listing.seller.fullName}
+                    className="h-14 w-14 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-emerald-600 text-xl font-bold text-white">
+                    {(listing?.seller?.fullName?.[0] || "S").toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="truncate text-base font-semibold text-foreground">
+                    {listing?.seller?.fullName || "Seller"}
                   </p>
-                  <p className="text-xs text-muted">Sales</p>
+                  {listing?.seller?.email && (
+                    <p className="truncate text-xs text-muted">
+                      {listing.seller.email}
+                    </p>
+                  )}
+                  {(listing?.location || listing?.region) && (
+                    <p className="mt-0.5 flex items-center gap-1 text-xs text-muted">
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      {listing.location || listing.region}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -445,18 +438,21 @@ const MarketplaceDetails = () => {
                 <button
                   type="button"
                   onClick={handleMessageSeller}
-                  className="flex-1 h-10 border border-primary text-primary font-semibold rounded-lg hover:bg-[#f5f6f1] transition flex items-center justify-center"
+                  className="flex h-10 flex-1 items-center justify-center rounded-lg border border-primary font-semibold text-primary transition hover:bg-[#f5f6f1]"
                 >
                   <MessageCircle className="mr-2 h-4 w-4" />
                   Contact Seller
                 </button>
-                <button
-                  type="button"
-                  className="flex-1 h-10 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition flex items-center justify-center"
-                >
-                  <Eye className="mr-2 h-4 w-4" />
-                  View Profile
-                </button>
+                {listing?.seller?.id && (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/profile/${listing.seller.id}`)}
+                    className="flex h-10 flex-1 items-center justify-center rounded-lg bg-green-600 font-semibold text-white transition hover:bg-green-700"
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Profile
+                  </button>
+                )}
               </div>
             </div>
 
@@ -631,7 +627,7 @@ const MarketplaceDetails = () => {
                 <p className="text-xs text-muted">Item added successfully.</p>
               </div>
               <Link
-                to="/marketplace"
+                to="/cart"
                 className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-green-700"
               >
                 <ShoppingCart className="h-3.5 w-3.5" />

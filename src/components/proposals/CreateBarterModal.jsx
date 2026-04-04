@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { barterService, listingsService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
+import { validateImageFiles } from "@/lib/utils";
+
+const MAX_BARTER_IMAGES = 3;
 
 const getIdentifier = (value) =>
   value?.id || value?._id || value?.userId || value?.ownerId || null;
@@ -48,6 +51,8 @@ const CreateBarterModal = ({ isOpen, onClose, onCreated }) => {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState([]);
 
   const currentUserId = normalizeId(getIdentifier(user));
 
@@ -57,6 +62,7 @@ const CreateBarterModal = ({ isOpen, onClose, onCreated }) => {
     setSearchTerm("");
     setErrors({});
     setSubmitError("");
+    setImageFiles([]);
     setFormData({
       targetListingId: "",
       offeredListingId: "",
@@ -130,11 +136,42 @@ const CreateBarterModal = ({ isOpen, onClose, onCreated }) => {
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    const urls = imageFiles.map((file) => URL.createObjectURL(file));
+    setImagePreviewUrls(urls);
+
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [imageFiles]);
+
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
+  };
+
+  const handleImageSelection = (event) => {
+    const selected = Array.from(event.target.files || []);
+
+    if (selected.length === 0) {
+      setImageFiles([]);
+      return;
+    }
+
+    const { isValid, error } = validateImageFiles(selected, {
+      maxFiles: MAX_BARTER_IMAGES,
+      maxFilesError: "You can upload up to 3 images.",
+    });
+    if (!isValid) {
+      setSubmitError(error);
+      event.target.value = "";
+      return;
+    }
+
+    setSubmitError("");
+    setImageFiles(selected);
   };
 
   const validateStep2 = () => {
@@ -178,7 +215,18 @@ const CreateBarterModal = ({ isOpen, onClose, onCreated }) => {
           : {}),
       };
 
-      await barterService.createBarterRequest(payload);
+      const created = await barterService.createBarterRequest(payload);
+
+      const barterId =
+        created?.barterRequest?.id ||
+        created?.barter?.id ||
+        created?.data?.barterRequest?.id ||
+        created?.data?.barter?.id ||
+        null;
+
+      if (barterId && imageFiles.length > 0) {
+        await barterService.uploadBarterImages(barterId, imageFiles);
+      }
 
       resetModalState();
       await onCreated?.();
@@ -389,6 +437,38 @@ const CreateBarterModal = ({ isOpen, onClose, onCreated }) => {
                 rows={3}
                 className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none resize-none"
               />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-foreground">
+                Offer images (optional)
+              </label>
+              <input
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                multiple
+                onChange={handleImageSelection}
+                className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary"
+              />
+              <p className="mt-1 text-xs text-muted">
+                Up to 3 images. JPG, JPEG, PNG, WEBP. Max 5MB each.
+              </p>
+              {imageFiles.length > 0 && (
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {imagePreviewUrls.map((previewUrl, index) => (
+                    <div
+                      key={`${imageFiles[index]?.name}-${imageFiles[index]?.lastModified}`}
+                      className="rounded-lg border border-border/60 bg-white p-1.5"
+                    >
+                      <img
+                        src={previewUrl}
+                        alt={imageFiles[index]?.name || "Barter image"}
+                        className="h-20 w-full rounded object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Error */}

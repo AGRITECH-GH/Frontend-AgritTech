@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import StatCard from "@/components/dashboard/StatCard";
 import EditProductModal from "@/components/dashboard/EditProductModal";
+import { listingsService } from "@/lib";
 import {
   Plus,
   Filter,
@@ -12,7 +13,47 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
+
+const normalizeListingResponse = (response) => {
+  if (!response || typeof response !== "object") return null;
+  return (
+    response.listing || response.data?.listing || response.data || response
+  );
+};
+
+const toEditableProduct = (listing, fallback = {}) => {
+  const safeListing = listing || {};
+  const statusValue = String(
+    safeListing.status || fallback.status || "ACTIVE",
+  ).toUpperCase();
+
+  return {
+    id: safeListing.id || safeListing._id || fallback.id,
+    title: safeListing.title || safeListing.name || fallback.name || "",
+    description: safeListing.description || fallback.description || "",
+    category:
+      safeListing.category?.name ||
+      safeListing.categoryName ||
+      fallback.category ||
+      "",
+    pricePerUnit: Number(
+      safeListing.pricePerUnit ?? safeListing.price ?? fallback.price ?? 0,
+    ),
+    quantityAvailable: Number(
+      safeListing.quantityAvailable ??
+        safeListing.quantity ??
+        fallback.stockLevel ??
+        0,
+    ),
+    unit: safeListing.unit || fallback.unit || "KG",
+    status:
+      statusValue === "PAUSED" || statusValue === "INACTIVE"
+        ? "inactive"
+        : "active",
+  };
+};
 
 const Inventory = () => {
   const navigate = useNavigate();
@@ -39,19 +80,34 @@ const Inventory = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [editingProductId, setEditingProductId] = useState("");
   const displayName = user?.name || user?.fullName || "Farmer Joe";
   const navbarUser = {
     name: displayName,
-    avatarUrl: user?.avatarUrl || null,
+    avatarUrl: user?.profilePhotoUrl || user?.avatarUrl || null,
   };
 
   const handleAddProduct = () => {
     navigate("/farmer/inventory/add-product");
   };
 
-  const handleEdit = (product) => {
-    setSelectedProduct(product);
-    setShowEditModal(true);
+  const handleEdit = async (product) => {
+    if (!product?.id) return;
+
+    setEditingProductId(product.id);
+    try {
+      const response = await listingsService.getListingById(product.id);
+      const latestListing = normalizeListingResponse(response);
+
+      setSelectedProduct(toEditableProduct(latestListing, product));
+    } catch (error) {
+      console.error("Failed to fetch latest listing details:", error);
+      // Fallback to current table data so user can still proceed.
+      setSelectedProduct(toEditableProduct(null, product));
+    } finally {
+      setEditingProductId("");
+      setShowEditModal(true);
+    }
   };
 
   const handleDelete = (productId) => {
@@ -290,13 +346,18 @@ const Inventory = () => {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEdit(product)}
+                          disabled={editingProductId === product.id}
                           className="rounded p-1 text-muted transition hover:bg-primary/10 hover:text-primary"
                           title="Edit product"
                         >
-                          <Edit2 className="h-4 w-4" />
+                          {editingProductId === product.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Edit2 className="h-4 w-4" />
+                          )}
                         </button>
                         <button
-                          onClick={() => handleDelete(product)}
+                          onClick={() => handleDelete(product.id)}
                           className="rounded p-1 text-muted transition hover:bg-red-100 hover:text-red-600"
                           title="Delete product"
                         >

@@ -43,6 +43,9 @@ const normalizeUser = (user, index) => {
   const name = user.fullName || user.name || user.username || "Unknown User";
   const email = user.email || "No email";
   const role = user.role || "UNKNOWN";
+  const isVerified = Boolean(
+    user.isVerified ?? user.verified ?? user.emailVerified ?? false,
+  );
 
   const activeFromIsActive =
     typeof user.isActive === "boolean" ? user.isActive : undefined;
@@ -65,6 +68,7 @@ const normalizeUser = (user, index) => {
     email,
     role,
     isActive,
+    isVerified,
     joinedAt,
   };
 };
@@ -108,11 +112,21 @@ const AdminUsers = () => {
   const [actionSuccess, setActionSuccess] = useState("");
   const [updatingUserId, setUpdatingUserId] = useState(null);
   const [deletingUserId, setDeletingUserId] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editForm, setEditForm] = useState({
+    role: "BUYER",
+    isActive: true,
+    isVerified: false,
+  });
 
   const sidebarAdmin = {
     name: authUser?.fullName || authUser?.name || authUser?.username || "Admin",
     email: authUser?.email || "",
-    avatarUrl: authUser?.avatarUrl || authUser?.profileImage || null,
+    avatarUrl:
+      authUser?.profilePhotoUrl ||
+      authUser?.avatarUrl ||
+      authUser?.profileImage ||
+      null,
   };
 
   const queryParams = useMemo(
@@ -200,6 +214,64 @@ const AdminUsers = () => {
           ? "User account enabled successfully."
           : "User account disabled successfully.",
       );
+    } catch (err) {
+      console.error("Failed to update user:", err);
+      setActionError(err.message || "Failed to update user.");
+    } finally {
+      setUpdatingUserId(null);
+    }
+  };
+
+  const openEditModal = (user) => {
+    setActionError("");
+    setActionSuccess("");
+    setEditingUser(user);
+    setEditForm({
+      role: String(user?.role || "BUYER").toUpperCase(),
+      isActive: Boolean(user?.isActive),
+      isVerified: Boolean(user?.isVerified),
+    });
+  };
+
+  const closeEditModal = () => {
+    setEditingUser(null);
+    setEditForm({
+      role: "BUYER",
+      isActive: true,
+      isVerified: false,
+    });
+  };
+
+  const handleUpdateUser = async (event) => {
+    event.preventDefault();
+    if (!editingUser?.id) return;
+
+    setActionError("");
+    setActionSuccess("");
+    setUpdatingUserId(editingUser.id);
+
+    try {
+      await adminService.updateUser(editingUser.id, {
+        role: editForm.role,
+        isActive: editForm.isActive,
+        isVerified: editForm.isVerified,
+      });
+
+      setUsers((prev) =>
+        prev.map((item) =>
+          item.id === editingUser.id
+            ? {
+                ...item,
+                role: editForm.role,
+                isActive: editForm.isActive,
+                isVerified: editForm.isVerified,
+              }
+            : item,
+        ),
+      );
+
+      setActionSuccess("User updated successfully.");
+      closeEditModal();
     } catch (err) {
       console.error("Failed to update user:", err);
       setActionError(err.message || "Failed to update user.");
@@ -350,6 +422,9 @@ const AdminUsers = () => {
                   Status
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-foreground">
+                  Verified
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-foreground">
                   Joined
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-foreground">
@@ -360,13 +435,13 @@ const AdminUsers = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-muted">
+                  <td colSpan={7} className="px-4 py-10 text-center text-muted">
                     Loading users...
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-muted">
+                  <td colSpan={7} className="px-4 py-10 text-center text-muted">
                     No users found.
                   </td>
                 </tr>
@@ -400,11 +475,33 @@ const AdminUsers = () => {
                         {user.isActive ? "Active" : "Inactive"}
                       </span>
                     </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                          user.isVerified
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-amber-50 text-amber-700"
+                        }`}
+                      >
+                        {user.isVerified ? "Verified" : "Unverified"}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-foreground/80">
                       {formatDate(user.joinedAt)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openEditModal(user)}
+                          disabled={
+                            updatingUserId === user.id ||
+                            deletingUserId === user.id
+                          }
+                          className="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Edit
+                        </button>
                         <button
                           type="button"
                           onClick={() => handleToggleUserActive(user)}
@@ -477,6 +574,111 @@ const AdminUsers = () => {
             </button>
           </div>
         </div>
+
+        {editingUser && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
+            <div className="w-full max-w-xl rounded-2xl border border-border bg-white p-5 shadow-xl">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Update User
+                  </h2>
+                  <p className="mt-1 text-sm text-muted">
+                    Manage access, role, and verification for {editingUser.name}
+                    .
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="rounded-lg border border-border px-3 py-1 text-sm text-foreground hover:bg-surface"
+                >
+                  Close
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateUser} className="space-y-4">
+                <div className="rounded-xl bg-surface/60 p-3 text-sm text-foreground/80">
+                  <p className="font-medium text-foreground">
+                    {editingUser.name}
+                  </p>
+                  <p>{editingUser.email}</p>
+                </div>
+
+                <label className="block text-sm text-foreground">
+                  Role
+                  <select
+                    value={editForm.role}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({ ...prev, role: e.target.value }))
+                    }
+                    className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm text-foreground focus:outline-none"
+                  >
+                    <option value="FARMER">FARMER</option>
+                    <option value="BUYER">BUYER</option>
+                    <option value="AGENT">AGENT</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                </label>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <label className="flex items-center gap-2 rounded-xl border border-border px-3 py-3 text-sm text-foreground">
+                    <input
+                      type="checkbox"
+                      checked={editForm.isActive}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          isActive: e.target.checked,
+                        }))
+                      }
+                    />
+                    Active account
+                  </label>
+
+                  <label className="flex items-center gap-2 rounded-xl border border-border px-3 py-3 text-sm text-foreground">
+                    <input
+                      type="checkbox"
+                      checked={editForm.isVerified}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          isVerified: e.target.checked,
+                        }))
+                      }
+                    />
+                    Verified user
+                  </label>
+                </div>
+
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                  Set <strong>isActive</strong> to false to revoke access. Set
+                  the role to <strong>ADMIN</strong> to transfer ownership to
+                  another user.
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={updatingUserId === editingUser.id}
+                    className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                  >
+                    {updatingUserId === editingUser.id
+                      ? "Saving..."
+                      : "Save Changes"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeEditModal}
+                    className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-surface"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </AdminLayout>
   );

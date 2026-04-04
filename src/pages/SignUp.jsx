@@ -179,12 +179,8 @@ export default function SignUp() {
       });
       setSuccess(true);
 
-      // Route based on role
       setTimeout(() => {
-        if (normalizedRole === "ADMIN") navigate("/admin/dashboard");
-        else if (isAgentRole) navigate("/agent/dashboard");
-        else if (normalizedRole === "BUYER") navigate("/marketplace");
-        else navigate("/farmer/dashboard");
+        navigate(`/verify-email?email=${encodeURIComponent(form.email)}`);
       }, 900);
     } catch (err) {
       setErrors({

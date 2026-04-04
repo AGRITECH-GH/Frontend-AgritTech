@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 import { useState } from "react";
+=======
+import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { listingsService, ordersService, barterService } from "@/lib";
+import { getPrimaryListingImageUrl } from "@/lib/listingImages";
+>>>>>>> dev
 
 // ---------------------------------------------------------------------------
 // Mock data – replace the values / fetch calls with real API responses later
@@ -9,9 +16,36 @@ const MOCK_USER = {
   avatarUrl: null, // swap with a real URL when available
 };
 
+<<<<<<< HEAD
 const MOCK_WEATHER = {
   temp: 28,
   condition: "Sunny",
+=======
+const normalizeListingForDashboard = (listing) => {
+  const quantity = Number(listing.quantity) || 0;
+  const available = Number(listing.quantityAvailable) || 0;
+  const percentRemaining = quantity > 0 ? (available / quantity) * 100 : 0;
+
+  return {
+    id: listing.id || listing._id,
+    name: listing.title || "Unnamed Product",
+    stock: `${available} ${listing.unit || "KG"}`,
+    price: `₵${(Number(listing.pricePerUnit) || 0).toFixed(2)}`,
+    trend:
+      percentRemaining >= 70
+        ? "Stable"
+        : percentRemaining >= 30
+          ? "Medium"
+          : "Low",
+    trendDir:
+      percentRemaining >= 70
+        ? "stable"
+        : percentRemaining >= 30
+          ? "down"
+          : "down",
+    imageUrl: getPrimaryListingImageUrl(listing) || null,
+  };
+>>>>>>> dev
 };
 
 const MOCK_STATS = [

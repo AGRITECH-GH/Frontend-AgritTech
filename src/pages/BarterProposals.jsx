@@ -103,7 +103,7 @@ const BarterProposals = () => {
   const displayName = user?.name || user?.fullName || "Farmer Joe";
   const navbarUser = {
     name: displayName,
-    avatarUrl: user?.avatarUrl || null,
+    avatarUrl: user?.profilePhotoUrl || user?.avatarUrl || null,
   };
 
   const proposals = loading ? [] : barterRequests;

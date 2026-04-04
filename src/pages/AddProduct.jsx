@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInventory, PRODUCT_UNITS } from "@/hooks/useInventory";
 import { listingsService, categoriesService } from "@/lib";
+import { validateImageFiles } from "@/lib/utils";
 import StatCard from "@/components/dashboard/StatCard";
 import { ChevronLeft, Upload, X } from "lucide-react";
 import { useEffect } from "react";
@@ -88,30 +89,23 @@ const AddProduct = () => {
   };
 
   const validateFiles = (files) => {
-    const maxSize = 10 * 1024 * 1024;
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     const maxFiles = 5;
 
-    if (uploadedImages.length + files.length > maxFiles) {
-      setImageErrors(`Maximum ${maxFiles} images allowed`);
+    const { isValid, error } = validateImageFiles(files, {
+      existingCount: uploadedImages.length,
+      maxFiles,
+      allowedTypesError: "Only JPG, PNG, or WEBP images are allowed",
+      maxFilesError: `Maximum ${maxFiles} images allowed`,
+      maxSizeError: "Images must be 5MB or smaller each",
+    });
+
+    if (!isValid) {
+      setImageErrors(error);
       return [];
     }
 
-    const validFiles = [];
-    for (const file of files) {
-      if (!allowedTypes.includes(file.type)) {
-        setImageErrors("Only JPG, PNG, or WEBP images are allowed");
-        return [];
-      }
-      if (file.size > maxSize) {
-        setImageErrors("Images must be smaller than 10MB each");
-        return [];
-      }
-      validFiles.push(file);
-    }
-
     setImageErrors("");
-    return validFiles;
+    return files;
   };
 
   const handleFileSelect = (e) => {
@@ -433,7 +427,7 @@ const AddProduct = () => {
                     or click to browse from your files
                   </p>
                   <p className="mt-2 text-xs text-muted">
-                    JPG, PNG or WEBP up to 10 MB each (max{" "}
+                    JPG, PNG or WEBP up to 5 MB each (max{" "}
                     {5 - uploadedImages.length} remaining)
                   </p>
                 </div>

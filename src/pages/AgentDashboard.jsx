@@ -45,7 +45,12 @@ const AgentDashboard = () => {
       authUser?.accountType ||
       agent?.role,
     avatarUrl:
-      authUser?.avatarUrl || authUser?.profileImage || agent?.avatarUrl || null,
+      authUser?.profilePhotoUrl ||
+      authUser?.avatarUrl ||
+      authUser?.profileImage ||
+      agent?.profilePhotoUrl ||
+      agent?.avatarUrl ||
+      null,
   };
 
   useEffect(() => {
@@ -119,6 +124,11 @@ const AgentDashboard = () => {
               icon={stat.icon}
               trend={stat.trend}
               trendType={stat.trendType}
+              onClick={
+                stat.id === "farmers"
+                  ? () => navigate("/agent/farmers")
+                  : undefined
+              }
             />
           ))}
         </div>

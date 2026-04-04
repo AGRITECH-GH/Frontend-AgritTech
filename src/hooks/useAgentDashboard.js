@@ -115,6 +115,115 @@ export function useAgentDashboard() {
   const [hubActivity] = useState(MOCK_HUB_ACTIVITY);
   const [farmers] = useState(MOCK_FARMERS);
   const [searchQuery, setSearchQuery] = useState("");
+<<<<<<< HEAD
+=======
+  const [registeringFarmer, setRegisteringFarmer] = useState(false);
+  const [loadingFarmers, setLoadingFarmers] = useState(false);
+  const [farmersLoadError, setFarmersLoadError] = useState("");
+
+  const formatRegistrationDate = () =>
+    new Date().toLocaleDateString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    });
+
+  const normalizeFarmer = (payload, fallbackData) => {
+    const source = payload?.farmer || payload?.data || payload || {};
+    const fullName = source.fullName || source.name || fallbackData.fullName;
+    const region = source.region || source.location || fallbackData.region;
+    const rawStatus = (source.status || "pending").toLowerCase();
+
+    return {
+      id: source.id || source._id || `temp-${Date.now()}`,
+      name: fullName,
+      registeredDate: formatRegistrationDate(),
+      location: region,
+      status: ["verified", "processing", "pending"].includes(rawStatus)
+        ? rawStatus
+        : "pending",
+      lastActivity: "Just now",
+      totalCommission: "₵0.00",
+      avatarUrl: source.profilePhotoUrl || source.avatarUrl || null,
+    };
+  };
+
+  const normalizeFarmersList = (payload) => {
+    const rawList =
+      payload?.farmers ||
+      payload?.data?.farmers ||
+      payload?.data ||
+      (Array.isArray(payload) ? payload : []);
+
+    if (!Array.isArray(rawList) || rawList.length === 0) {
+      return [];
+    }
+
+    return rawList.map((farmer, index) => {
+      const source = farmer || {};
+      const rawStatus = (source.status || "pending").toLowerCase();
+
+      return {
+        id: source.id || source._id || `farmer-${Date.now()}-${index}`,
+        name: source.fullName || source.name || "Unknown Farmer",
+        registeredDate:
+          source.registeredDate ||
+          source.createdAt ||
+          source.created_on ||
+          formatRegistrationDate(),
+        location: source.region || source.location || "Unknown Region",
+        status: ["verified", "processing", "pending"].includes(rawStatus)
+          ? rawStatus
+          : "pending",
+        lastActivity:
+          source.lastActivity ||
+          source.updatedAt ||
+          source.lastSeen ||
+          "Recently active",
+        totalCommission: source.totalCommission || "₵0.00",
+        avatarUrl: source.profilePhotoUrl || source.avatarUrl || null,
+      };
+    });
+  };
+
+  useEffect(() => {
+    if (import.meta.env.MODE === "test") {
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadFarmers = async () => {
+      setLoadingFarmers(true);
+      setFarmersLoadError("");
+
+      try {
+        const response = await agentsService.getMyFarmers();
+        if (cancelled) return;
+
+        const normalized = normalizeFarmersList(response);
+        if (normalized.length > 0) {
+          setFarmers(normalized);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setFarmersLoadError(
+          err?.message || "Unable to load your farmers right now.",
+        );
+      } finally {
+        if (!cancelled) {
+          setLoadingFarmers(false);
+        }
+      }
+    };
+
+    loadFarmers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+>>>>>>> dev
 
   const filteredFarmers = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();

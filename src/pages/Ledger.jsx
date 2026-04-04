@@ -33,7 +33,12 @@ const Ledger = () => {
     "Farmer Joe";
   const navbarUser = {
     name: displayName,
-    avatarUrl: authUser?.avatarUrl || user?.avatarUrl || null,
+    avatarUrl:
+      authUser?.profilePhotoUrl ||
+      authUser?.avatarUrl ||
+      user?.profilePhotoUrl ||
+      user?.avatarUrl ||
+      null,
   };
   return (
     <div className="min-h-screen bg-surface">

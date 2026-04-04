@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Upload, AlertCircle } from "lucide-react";
+import { validateImageFiles } from "@/lib/utils";
 
 const EditProductModal = ({
   isOpen,
@@ -62,22 +63,16 @@ const EditProductModal = ({
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    // Validate file types and sizes
-    const validFiles = [];
-    for (const file of files) {
-      if (!file.type.startsWith("image/")) {
-        setUploadError("Only image files are allowed.");
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        // 5MB limit
-        setUploadError("File size must be less than 5MB.");
-        return;
-      }
-      validFiles.push(file);
+    const { isValid, error } = validateImageFiles(files, {
+      maxFiles: 5,
+      maxFilesError: "Maximum 5 images allowed.",
+    });
+    if (!isValid) {
+      setUploadError(error);
+      return;
     }
 
-    setUploadedFiles(validFiles);
+    setUploadedFiles(files);
     setUploadError("");
   };
 

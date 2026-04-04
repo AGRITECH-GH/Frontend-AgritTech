@@ -12,19 +12,30 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 
 const SignUp = lazy(() => import("@/pages/SignUp"));
 const Login = lazy(() => import("@/pages/Login"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
+const VerifyEmail = lazy(() => import("@/pages/VerifyEmail"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const AgentDashboard = lazy(() => import("@/pages/AgentDashboard"));
+const AgentFarmers = lazy(() => import("@/pages/AgentFarmers"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const AdminListings = lazy(() => import("@/pages/AdminListings"));
 const AdminUsers = lazy(() => import("@/pages/AdminUsers"));
 const AdminRevenue = lazy(() => import("@/pages/AdminRevenue"));
+const AdminSettings = lazy(() => import("@/pages/AdminSettings"));
 const Ledger = lazy(() => import("@/pages/Ledger"));
 const BarterProposals = lazy(() => import("@/pages/BarterProposals"));
 const Inventory = lazy(() => import("@/pages/Inventory"));
 const AddProduct = lazy(() => import("@/pages/AddProduct"));
 const Marketplace = lazy(() => import("@/pages/Marketplace"));
 const MarketplaceDetails = lazy(() => import("@/pages/MarketplaceDetails"));
+const Cart = lazy(() => import("@/pages/Cart"));
+const Checkout = lazy(() => import("@/pages/Checkout"));
+const Orders = lazy(() => import("@/pages/Orders"));
+const PaymentReturn = lazy(() => import("@/pages/PaymentReturn"));
+const Profile = lazy(() => import("@/pages/Profile"));
+const Activity = lazy(() => import("@/pages/Activity"));
 
 function HomePage() {
   return (
@@ -50,6 +61,10 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/payments/return" element={<PaymentReturn />} />
 
           {/* Buyer routes - protected */}
           <Route
@@ -65,6 +80,38 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["BUYER"]}>
                 <MarketplaceDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute allowedRoles={["BUYER"]}>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute allowedRoles={["BUYER"]}>
+                <Checkout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <ProtectedRoute>
+                <Orders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/orders/:id"
+            element={
+              <ProtectedRoute>
+                <Orders />
               </ProtectedRoute>
             }
           />
@@ -110,6 +157,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/activity"
+            element={
+              <ProtectedRoute allowedRoles={["FARMER"]}>
+                <Activity />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Agent routes - protected */}
           <Route
@@ -117,6 +172,24 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["AGENT"]}>
                 <AgentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agent/farmers"
+            element={
+              <ProtectedRoute allowedRoles={["AGENT"]}>
+                <AgentFarmers />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Profile route - protected */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />
@@ -151,6 +224,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["ADMIN"]}>
                 <AdminRevenue />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/settings"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminSettings />
               </ProtectedRoute>
             }
           />

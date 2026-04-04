@@ -30,8 +30,24 @@ const getListingImage = (listing) => {
   return null;
 };
 
-const ItemPreview = ({ label, listing, fallbackQuantity, fallbackName }) => {
-  const imageUrl = getListingImage(listing);
+const getBarterImage = (images) => {
+  if (!Array.isArray(images) || images.length === 0) return null;
+
+  const first = images[0];
+  if (typeof first === "string") return first;
+  if (first?.imageUrl) return first.imageUrl;
+  if (first?.url) return first.url;
+  return null;
+};
+
+const ItemPreview = ({
+  label,
+  listing,
+  images,
+  fallbackQuantity,
+  fallbackName,
+}) => {
+  const imageUrl = getListingImage(listing) || getBarterImage(images);
   const title = listing
     ? getListingTitle(listing)
     : fallbackName || "Not specified";
@@ -77,6 +93,7 @@ const TradeDetailsModal = ({
   const {
     requesterName,
     offeredListing,
+    offeredImages,
     targetListing,
     offeredDescription,
     offeredQuantity,
@@ -136,6 +153,7 @@ const TradeDetailsModal = ({
           <ItemPreview
             label="Item Offered"
             listing={offeredListing}
+            images={offeredImages}
             fallbackQuantity={offeredQuantity}
             fallbackName={offeredDescription}
           />

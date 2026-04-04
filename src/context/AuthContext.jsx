@@ -3,6 +3,23 @@ import { authService, api } from "@/lib";
 
 const AuthContext = createContext(null);
 
+const normalizeUser = (nextUser) => {
+  if (!nextUser || typeof nextUser !== "object") return nextUser;
+
+  const profilePhotoUrl =
+    nextUser.profilePhotoUrl ||
+    nextUser.avatarUrl ||
+    nextUser.profileImage ||
+    nextUser.photoUrl ||
+    null;
+
+  return {
+    ...nextUser,
+    profilePhotoUrl,
+    avatarUrl: profilePhotoUrl,
+  };
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,7 +32,7 @@ export const AuthProvider = ({ children }) => {
 
     if (storedUser && token) {
       try {
-        setUser(JSON.parse(storedUser));
+        setUser(normalizeUser(JSON.parse(storedUser)));
       } catch (err) {
         console.error("Failed to parse stored user:", err);
         localStorage.removeItem("user");
@@ -51,8 +68,9 @@ export const AuthProvider = ({ children }) => {
       });
 
       api.setAccessToken(response.accessToken);
-      setUser(response.user);
-      localStorage.setItem("user", JSON.stringify(response.user));
+      const normalizedUser = normalizeUser(response.user);
+      setUser(normalizedUser);
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
 
       return response;
     } catch (err) {
@@ -70,8 +88,9 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.register(userData);
 
       api.setAccessToken(response.accessToken);
-      setUser(response.user);
-      localStorage.setItem("user", JSON.stringify(response.user));
+      const normalizedUser = normalizeUser(response.user);
+      setUser(normalizedUser);
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
 
       return response;
     } catch (err) {
@@ -110,8 +129,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.verifyEmail(token);
       api.setAccessToken(response.accessToken);
-      setUser(response.user);
-      localStorage.setItem("user", JSON.stringify(response.user));
+      const normalizedUser = normalizeUser(response.user);
+      setUser(normalizedUser);
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
       return response;
     } catch (err) {
       setError(err.message);
@@ -122,7 +142,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateUser = (userData) => {
-    const updated = { ...user, ...userData };
+    const updated = normalizeUser({ ...user, ...userData });
     setUser(updated);
     localStorage.setItem("user", JSON.stringify(updated));
   };

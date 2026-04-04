@@ -92,7 +92,7 @@ const Dashboard = () => {
   const displayName = user?.name || user?.fullName || "Farmer Joe";
   const navbarUser = {
     name: displayName,
-    avatarUrl: user?.avatarUrl || null,
+    avatarUrl: user?.profilePhotoUrl || user?.avatarUrl || null,
   };
 
   return (
@@ -134,6 +134,15 @@ const Dashboard = () => {
               label={stat.label}
               value={stat.value}
               icon={stat.icon}
+              onClick={
+                stat.id === "orders"
+                  ? () => navigate("/orders?status=PENDING")
+                  : stat.id === "listings"
+                    ? () => navigate("/farmer/inventory")
+                    : stat.id === "barter"
+                      ? () => navigate("/farmer/proposals")
+                      : undefined
+              }
             />
           ))}
         </div>

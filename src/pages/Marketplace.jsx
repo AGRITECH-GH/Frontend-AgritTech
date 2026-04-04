@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { categoriesService, listingsService } from "@/lib";
+import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 
 const GHANA_REGIONS = [
   "Ahafo",
@@ -41,13 +42,7 @@ const extractCategories = (response) => {
 };
 
 const getListingImage = (listing) => {
-  const images = listing?.images;
-  if (Array.isArray(images) && images.length > 0) {
-    const first = images[0];
-    if (typeof first === "string") return first;
-    return first?.url || first?.secure_url || first?.src || "";
-  }
-  return listing?.imageUrl || listing?.image || "";
+  return getPrimaryListingImageUrl(listing);
 };
 
 const getListingId = (listing) =>
@@ -487,21 +482,6 @@ const Marketplace = () => {
                 </button>
               </div>
             </div>
-          </div>
-        </section>
-
-        <section className="mx-auto mt-8 w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-border/60 bg-white p-5 text-sm text-muted shadow-sm md:flex md:items-center md:justify-between">
-            <p>
-              Need help finding specific produce? Connect with verified sellers
-              and compare offers quickly.
-            </p>
-            <Link
-              to="/"
-              className="mt-3 inline-block text-sm font-semibold text-primary hover:underline md:mt-0"
-            >
-              Back to home
-            </Link>
           </div>
         </section>
       </main>
