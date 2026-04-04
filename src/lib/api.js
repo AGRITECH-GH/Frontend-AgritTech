@@ -1,5 +1,5 @@
 // API Configuration and Utilities
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // Get stored access token
 const getAccessToken = () => {
