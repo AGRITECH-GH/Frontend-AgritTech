@@ -1,23 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { listingsService } from "@/lib";
+import { getPrimaryListingImageUrl, listingsService } from "@/lib";
 import AdminLayout from "@/components/admin/AdminLayout";
-
-const getListingImageUrl = (listing) => {
-  const firstImage = Array.isArray(listing?.images) ? listing.images[0] : null;
-
-  if (typeof firstImage === "string") return firstImage;
-  if (firstImage?.url) return firstImage.url;
-  if (listing?.imageUrl) return listing.imageUrl;
-  if (listing?.image) return listing.image;
-
-  return null;
-};
 
 const toNumber = (value) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
+};
+
+const getListedBy = (listing) => {
+  const seller = listing?.seller || listing?.owner || listing?.user;
+  const name =
+    seller?.fullName ||
+    seller?.name ||
+    listing?.sellerName ||
+    listing?.ownerName ||
+    "Unknown Seller";
+
+  const email =
+    seller?.email || listing?.sellerEmail || listing?.ownerEmail || "";
+
+  return { name, email };
 };
 
 const normalizeListings = (listings) =>
@@ -35,7 +40,15 @@ const normalizeListings = (listings) =>
     quantityAvailable:
       listing.quantityAvailable ?? listing.quantity ?? listing.stockLevel ?? 0,
     unit: listing.unit || "KG",
-    imageUrl: getListingImageUrl(listing),
+    imageUrl: getPrimaryListingImageUrl(listing) || null,
+    listedBy: getListedBy(listing),
+    listedById:
+      listing.seller?.id ||
+      listing.owner?.id ||
+      listing.user?.id ||
+      listing.sellerId ||
+      listing.ownerId ||
+      null,
   }));
 
 const getPagination = (response, fallbackPage, fallbackLimit, totalItems) => {
@@ -255,7 +268,7 @@ const AdminListings = () => {
         )}
 
         <div className="overflow-x-auto rounded-2xl border border-border/60 bg-white shadow-sm">
-          <table className="w-full min-w-[920px] text-sm">
+          <table className="w-full min-w-[1040px] text-sm">
             <thead className="border-b border-border bg-surface/60">
               <tr>
                 <th className="px-4 py-3 text-left font-medium text-foreground">
@@ -263,6 +276,9 @@ const AdminListings = () => {
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-foreground">
                   Title
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-foreground">
+                  Listed By
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-foreground">
                   Category
@@ -284,13 +300,13 @@ const AdminListings = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-muted">
+                  <td colSpan={8} className="px-4 py-10 text-center text-muted">
                     Loading listings...
                   </td>
                 </tr>
               ) : listings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-muted">
+                  <td colSpan={8} className="px-4 py-10 text-center text-muted">
                     No listings found.
                   </td>
                 </tr>
@@ -315,6 +331,19 @@ const AdminListings = () => {
                     </td>
                     <td className="px-4 py-3 font-medium text-foreground">
                       {listing.title}
+                    </td>
+                    <td className="px-4 py-3 text-foreground/80">
+                      <Link
+                        to={`/admin/users?q=${encodeURIComponent(listing.listedBy.name)}${listing.listedById ? `&sellerId=${encodeURIComponent(listing.listedById)}` : ""}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {listing.listedBy.name}
+                      </Link>
+                      {listing.listedBy.email ? (
+                        <p className="text-xs text-muted">
+                          {listing.listedBy.email}
+                        </p>
+                      ) : null}
                     </td>
                     <td className="px-4 py-3 text-foreground/80">
                       {listing.category}

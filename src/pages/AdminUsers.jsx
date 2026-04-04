@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { adminService } from "@/lib";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -92,8 +93,11 @@ const roleBadgeClass = (role) => {
 
 const AdminUsers = () => {
   const { user: authUser } = useAuth();
+  const [searchParams] = useSearchParams();
+  const initialSearch =
+    searchParams.get("q") || searchParams.get("sellerId") || "";
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch);
   const [role, setRole] = useState("");
   const [isActiveFilter, setIsActiveFilter] = useState("");
   const [page, setPage] = useState(1);
