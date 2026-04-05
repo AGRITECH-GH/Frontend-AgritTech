@@ -24,3 +24,5 @@ tests
 *.njsproj
 *.sln
 *.sw?
+
+.env
