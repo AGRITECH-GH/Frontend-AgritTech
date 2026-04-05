@@ -15,6 +15,7 @@ import logo from "@/assets/logo.svg";
 import { transition } from "@/motionConfig";
 import { useAuth } from "@/context/AuthContext";
 import { cartService } from "@/lib";
+import VerificationBanner from "@/components/VerificationBanner";
 
 const navItems = [
   { label: "Solutions", id: "solutions" },
@@ -325,6 +326,7 @@ const Navbar = ({ minimal = false }) => {
             </div>
           </div>
         </nav>
+        <VerificationBanner />
       </header>
     );
   }

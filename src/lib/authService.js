@@ -151,6 +151,17 @@ const authService = {
     }),
 
   /**
+   * Confirm email change with token from email link
+   * @param {Object} data - { token, newEmail }
+   * @returns {Promise} { message }
+   */
+  confirmEmailChange: (data) =>
+    api.apiFetch("/api/auth/confirm-email-change", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  /**
    * Delete currently authenticated account
    * @param {Object} data - { password }
    * @returns {Promise} { message }
