@@ -16,7 +16,6 @@ const AddProduct = () => {
 
   const [formData, setFormData] = useState({
     productName: "",
-    expectedHarvestDate: "",
     category: "",
     pricePerUnit: "",
     quantity: "",
@@ -222,52 +221,28 @@ const AddProduct = () => {
         {/* Form Card */}
         <div className="mb-6 rounded-lg bg-white p-6 shadow-sm lg:p-8">
           <form onSubmit={handleSubmit}>
-            {/* Row 1: Product Name & Harvest Date */}
-            <div className="mb-6 grid gap-6 md:grid-cols-2">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-foreground">
-                  Product Name
-                </label>
-                <input
-                  type="text"
-                  name="productName"
-                  value={formData.productName}
-                  onChange={handleInputChange}
-                  placeholder="e.g. Organic Red Tomatoes"
-                  className={`w-full rounded-lg border px-3 py-2 text-sm transition focus:outline-none ${
-                    errors.productName
-                      ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
-                      : "border-border focus:border-primary focus:ring-1 focus:ring-primary/20"
-                  }`}
-                />
-                {errors.productName && (
-                  <p className="mt-1 text-xs text-red-500">
-                    {errors.productName}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-foreground">
-                  Expected Harvest Date
-                </label>
-                <input
-                  type="date"
-                  name="expectedHarvestDate"
-                  value={formData.expectedHarvestDate}
-                  onChange={handleInputChange}
-                  className={`w-full rounded-lg border px-3 py-2 text-sm transition focus:outline-none ${
-                    errors.expectedHarvestDate
-                      ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
-                      : "border-border focus:border-primary focus:ring-1 focus:ring-primary/20"
-                  }`}
-                />
-                {errors.expectedHarvestDate && (
-                  <p className="mt-1 text-xs text-red-500">
-                    {errors.expectedHarvestDate}
-                  </p>
-                )}
-              </div>
+            {/* Row 1: Product Name */}
+            <div className="mb-6">
+              <label className="mb-2 block text-sm font-medium text-foreground">
+                Product Name
+              </label>
+              <input
+                type="text"
+                name="productName"
+                value={formData.productName}
+                onChange={handleInputChange}
+                placeholder="e.g. Organic Red Tomatoes"
+                className={`w-full rounded-lg border px-3 py-2 text-sm transition focus:outline-none ${
+                  errors.productName
+                    ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                    : "border-border focus:border-primary focus:ring-1 focus:ring-primary/20"
+                }`}
+              />
+              {errors.productName && (
+                <p className="mt-1 text-xs text-red-500">
+                  {errors.productName}
+                </p>
+              )}
             </div>
 
             {/* Row 2: Category & Price */}

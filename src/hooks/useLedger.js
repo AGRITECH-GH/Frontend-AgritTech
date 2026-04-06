@@ -1,169 +1,169 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-
-// ---------------------------------------------------------------------------
-// Mock data
-// ---------------------------------------------------------------------------
-
-const MOCK_USER = { name: "Farmer Joe", avatarUrl: null };
-
-const MOCK_STATS = [
-  {
-    id: "sales",
-    label: "Total Sales (Monthly)",
-    value: "₵12,450.00",
-    icon: "sales",
-  },
-  {
-    id: "pending",
-    label: "Pending Payments",
-    value: "₵1,840.50",
-    icon: "pending",
-  },
-  {
-    id: "transactions",
-    label: "Total Transactions",
-    value: "48",
-    icon: "transactions",
-  },
-];
-
-const MOCK_TRANSACTIONS = [
-  {
-    id: 1,
-    date: "Oct 24, 2023",
-    time: "14:30 PM",
-    name: "Organic Wheat",
-    trxId: "#TRX-948201",
-    quantity: "200 kg",
-    totalPrice: 450.0,
-    status: "completed",
-  },
-  {
-    id: 2,
-    date: "Oct 22, 2023",
-    time: "09:15 AM",
-    name: "New Potatoes (Grade A)",
-    trxId: "#TRX-948185",
-    quantity: "500 kg",
-    totalPrice: 1120.0,
-    status: "completed",
-  },
-  {
-    id: 3,
-    date: "Oct 20, 2023",
-    time: "16:45 PM",
-    name: "Sweet Corn",
-    trxId: "#TRX-948112",
-    quantity: "1,200 kg",
-    totalPrice: 2840.5,
-    status: "pending",
-  },
-  {
-    id: 4,
-    date: "Oct 18, 2023",
-    time: "11:20 AM",
-    name: "Organic Carrots",
-    trxId: "#TRX-948090",
-    quantity: "150 kg",
-    totalPrice: 320.0,
-    status: "completed",
-  },
-  {
-    id: 5,
-    date: "Oct 15, 2023",
-    time: "08:00 AM",
-    name: "Maize Grain",
-    trxId: "#TRX-948041",
-    quantity: "3,000 kg",
-    totalPrice: 4200.0,
-    status: "completed",
-  },
-  {
-    id: 6,
-    date: "Oct 12, 2023",
-    time: "13:30 PM",
-    name: "Soybean Batch",
-    trxId: "#TRX-947998",
-    quantity: "800 kg",
-    totalPrice: 1760.0,
-    status: "pending",
-  },
-  {
-    id: 7,
-    date: "Oct 10, 2023",
-    time: "10:45 AM",
-    name: "Cassava Tubers",
-    trxId: "#TRX-947944",
-    quantity: "600 kg",
-    totalPrice: 540.0,
-    status: "completed",
-  },
-  {
-    id: 8,
-    date: "Oct 08, 2023",
-    time: "15:20 PM",
-    name: "Fresh Tomatoes",
-    trxId: "#TRX-947881",
-    quantity: "250 kg",
-    totalPrice: 875.0,
-    status: "completed",
-  },
-  {
-    id: 9,
-    date: "Oct 05, 2023",
-    time: "07:50 AM",
-    name: "Groundnut Oil",
-    trxId: "#TRX-947820",
-    quantity: "100 L",
-    totalPrice: 620.0,
-    status: "pending",
-  },
-  {
-    id: 10,
-    date: "Oct 03, 2023",
-    time: "12:00 PM",
-    name: "Rice (Local)",
-    trxId: "#TRX-947772",
-    quantity: "1,000 kg",
-    totalPrice: 2200.0,
-    status: "completed",
-  },
-  {
-    id: 11,
-    date: "Oct 01, 2023",
-    time: "09:00 AM",
-    name: "Yam Tubers",
-    trxId: "#TRX-947710",
-    quantity: "400 kg",
-    totalPrice: 680.0,
-    status: "completed",
-  },
-  {
-    id: 12,
-    date: "Sep 28, 2023",
-    time: "16:00 PM",
-    name: "Pepper (Dried)",
-    trxId: "#TRX-947650",
-    quantity: "75 kg",
-    totalPrice: 525.0,
-    status: "completed",
-  },
-];
+import { ordersService } from "@/lib";
 
 const PAGE_SIZE = 4;
 
-export function useLedger() {
-  const [user] = useState(MOCK_USER);
-  const [stats] = useState(MOCK_STATS);
-  const [transactions] = useState(MOCK_TRANSACTIONS);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [dateRange, setDateRange] = useState({
-    from: "2023-10-01",
-    to: "2023-10-31",
+const formatDate = (value) =>
+  new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
   });
+
+const formatTime = (value) =>
+  new Date(value).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+const getQuantityString = (items) => {
+  if (!Array.isArray(items) || items.length === 0) return "1";
+
+  const totalQuantity = items.reduce((sum, item) => {
+    const quantity = Number(item?.quantity ?? item?.qty ?? 0);
+    return sum + (Number.isFinite(quantity) ? quantity : 0);
+  }, 0);
+
+  const unit =
+    items[0]?.unit || items[0]?.unitType || items[0]?.unitOfMeasure || "";
+
+  return `${totalQuantity || 1}${unit ? ` ${unit}` : ""}`;
+};
+
+const normalizeOrder = (order) => {
+  const createdAt =
+    order?.createdAt ||
+    order?.created_at ||
+    order?.updatedAt ||
+    order?.updated_at;
+  const timestamp = createdAt ? new Date(createdAt) : new Date();
+  const items = Array.isArray(order?.items)
+    ? order.items
+    : Array.isArray(order?.orderItems)
+      ? order.orderItems
+      : [];
+
+  const firstItem = items[0] || {};
+  const productName =
+    firstItem?.productName || firstItem?.name || firstItem?.title || "Order";
+
+  const totalPrice = Number(
+    order?.totalPrice ?? order?.total ?? order?.amount ?? order?.subtotal ?? 0,
+  );
+
+  const status = String(order?.status || "PENDING").toLowerCase();
+  const paymentStatus = String(
+    order?.payment?.status || order?.paymentStatus || "",
+  ).toLowerCase();
+
+  return {
+    id: String(
+      order?._id || order?.id || order?.orderId || order?.reference || "",
+    ),
+    date: formatDate(timestamp),
+    time: formatTime(timestamp),
+    name: productName,
+    trxId: String(
+      order?._id || order?.id || order?.orderId || order?.reference || "N/A",
+    ),
+    quantity: getQuantityString(items),
+    totalPrice: Number.isFinite(totalPrice) ? totalPrice : 0,
+    status,
+    paymentStatus,
+  };
+};
+
+export function useLedger() {
+  const [transactions, setTransactions] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const fetchTransactions = useCallback(async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await ordersService.getMyOrders({ limit: 100 });
+      const orders =
+        response?.orders ?? response?.data?.orders ?? response?.data ?? [];
+
+      const normalized = Array.isArray(orders)
+        ? orders.map(normalizeOrder)
+        : [];
+
+      setTransactions(normalized);
+    } catch (err) {
+      setError(err?.message || "Failed to load ledger entries");
+      setTransactions([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
+
+  const stats = useMemo(() => {
+    const totalSales = transactions.reduce((sum, trx) => {
+      const status = String(trx.status || "").toLowerCase();
+      const paymentStatus = String(trx.paymentStatus || "").toLowerCase();
+      const isCancelled = status === "cancelled";
+      const isPendingOrder = status === "pending";
+      const isPendingPayment = paymentStatus === "pending";
+      const isSuccessfulPayment =
+        paymentStatus === "success" ||
+        status === "delivered" ||
+        status === "dispatched";
+
+      if (
+        isCancelled ||
+        isPendingOrder ||
+        isPendingPayment ||
+        !isSuccessfulPayment
+      ) {
+        return sum;
+      }
+
+      return sum + trx.totalPrice;
+    }, 0);
+
+    const pendingCount = transactions.filter((trx) => {
+      const status = String(trx.status || "").toLowerCase();
+      const paymentStatus = String(trx.paymentStatus || "").toLowerCase();
+      return (
+        status === "pending" ||
+        paymentStatus === "pending" ||
+        (status === "confirmed" && paymentStatus && paymentStatus !== "success")
+      );
+    }).length;
+
+    return [
+      {
+        id: "sales",
+        label: "Total Sales",
+        value: `₵${totalSales.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+        icon: "sales",
+      },
+      {
+        id: "pending",
+        label: "Pending Payments",
+        value: `${pendingCount}`,
+        icon: "pending",
+      },
+      {
+        id: "transactions",
+        label: "Total Transactions",
+        value: `${transactions.length}`,
+        icon: "transactions",
+      },
+    ];
+  }, [transactions]);
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -213,7 +213,7 @@ export function useLedger() {
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text(`Period: ${formattedDateRange}`, 14, 26);
-    doc.text(`Farmer: ${user.name}`, 14, 32);
+    doc.text(`Farmer: Farmer`, 14, 32);
     doc.text(
       `Total: ₵${totalFiltered.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
       14,
@@ -237,7 +237,7 @@ export function useLedger() {
   };
 
   return {
-    user,
+    user: {},
     stats,
     paginated,
     filtered,
@@ -251,5 +251,7 @@ export function useLedger() {
     onDateChange,
     formattedDateRange,
     onDownloadPDF,
+    loading,
+    error,
   };
 }

@@ -59,6 +59,7 @@ const HeroSection = () => {
           <Button
             size="lg"
             className="rounded-2xl px-10 text-sm font-semibold md:text-base"
+            onClick={() => navigate("/signup")}
           >
             Get Started
           </Button>

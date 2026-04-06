@@ -101,20 +101,39 @@ const MarketplaceDetails = () => {
 
         setListing(extracted);
 
-        // Fetch similar products
+        // Fetch similar products by category ID
         setSimilarLoading(true);
         try {
           const categoryObj =
-            extracted?.category || extracted?.categoryName || "";
-          const categoryName = getCategoryName(categoryObj);
-          const similarRes = await listingsService.getListings({
-            category: categoryName || undefined,
-            limit: 8,
-          });
-          const similar = Array.isArray(similarRes?.listings)
-            ? similarRes.listings.filter((item) => (item.id || item._id) !== id)
-            : [];
-          setSimilarProducts(similar.slice(0, 4));
+            extracted?.category || extracted?.categoryName || {};
+          const categoryId =
+            (typeof categoryObj === "object" && categoryObj?.id) ||
+            (typeof categoryObj === "string" && categoryObj) ||
+            extracted?.categoryId ||
+            "";
+
+          console.log(
+            "Fetching similar products - Category ID:",
+            categoryId,
+            "Category Object:",
+            categoryObj,
+          );
+
+          if (categoryId) {
+            const similarRes = await listingsService.getListings({
+              category: categoryId,
+              limit: 8,
+            });
+            console.log("Similar products response:", similarRes);
+            const similar = Array.isArray(similarRes?.listings)
+              ? similarRes.listings.filter(
+                  (item) => (item.id || item._id) !== id,
+                )
+              : [];
+            setSimilarProducts(similar.slice(0, 4));
+          } else {
+            setSimilarProducts([]);
+          }
         } catch (err) {
           console.error("Failed to fetch similar products:", err);
         } finally {
@@ -473,18 +492,6 @@ const MarketplaceDetails = () => {
                 </div>
                 <div className="bg-[#f5f6f1] rounded-lg p-3">
                   <p className="text-xs uppercase tracking-wider text-muted font-semibold">
-                    Harvest Date
-                  </p>
-                  <p className="text-lg font-bold text-foreground mt-1">
-                    {listing?.harvestDate
-                      ? formatDate(listing.harvestDate)
-                      : listing?.harvest_date
-                        ? formatDate(listing.harvest_date)
-                        : "-"}
-                  </p>
-                </div>
-                <div className="bg-[#f5f6f1] rounded-lg p-3">
-                  <p className="text-xs uppercase tracking-wider text-muted font-semibold">
                     Min Order
                   </p>
                   <p className="text-lg font-bold text-foreground mt-1">
@@ -561,11 +568,8 @@ const MarketplaceDetails = () => {
               ) : similarProducts && similarProducts.length > 0 ? (
                 <div className="grid gap-4 md:grid-cols-4">
                   {similarProducts.slice(0, 4).map((product) => {
-                    const img =
-                      product?.images?.[0]?.url ||
-                      product?.image ||
-                      "/placeholder.png";
-                    const price = product?.price || 0;
+                    const img = getListingImage(product) || "/placeholder.png";
+                    const price = product?.pricePerUnit ?? product?.price ?? 0;
                     const title = product?.title || product?.name || "Product";
                     const location =
                       product?.location || product?.region || "Ghana";

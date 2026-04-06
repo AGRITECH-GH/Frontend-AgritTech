@@ -8,8 +8,12 @@ import {
 import { Wheat, Apple, Leaf, Carrot } from "lucide-react";
 
 const statusConfig = {
-  completed: { label: "COMPLETED", class: "bg-green-100 text-green-700" },
   pending: { label: "PENDING", class: "bg-orange-100 text-orange-600" },
+  confirmed: { label: "CONFIRMED", class: "bg-blue-100 text-blue-700" },
+  dispatched: { label: "DISPATCHED", class: "bg-violet-100 text-violet-700" },
+  delivered: { label: "DELIVERED", class: "bg-green-100 text-green-700" },
+  cancelled: { label: "CANCELLED", class: "bg-red-100 text-red-600" },
+  completed: { label: "COMPLETED", class: "bg-green-100 text-green-700" },
   failed: { label: "FAILED", class: "bg-red-100 text-red-600" },
 };
 
