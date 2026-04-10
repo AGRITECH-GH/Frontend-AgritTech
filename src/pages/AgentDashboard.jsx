@@ -156,7 +156,10 @@ const AgentDashboard = () => {
           <div className="mt-3 rounded-2xl border border-border/60 bg-white p-4 shadow-sm">
             <div className="space-y-3">
               {[...Array(4)].map((_, idx) => (
-                <div key={`agent-farmers-skeleton-${idx}`} className="grid grid-cols-12 gap-3">
+                <div
+                  key={`agent-farmers-skeleton-${idx}`}
+                  className="grid grid-cols-12 gap-3"
+                >
                   <Skeleton className="col-span-3 h-4" />
                   <Skeleton className="col-span-3 h-4" />
                   <Skeleton className="col-span-2 h-4" />

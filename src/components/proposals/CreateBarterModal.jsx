@@ -307,7 +307,10 @@ const CreateBarterModal = ({ isOpen, onClose, onCreated }) => {
             {loadingListings ? (
               <div className="space-y-2 rounded-lg border border-border/40 p-3">
                 {[...Array(4)].map((_, idx) => (
-                  <div key={`modal-listing-skeleton-${idx}`} className="space-y-2 rounded-lg p-3">
+                  <div
+                    key={`modal-listing-skeleton-${idx}`}
+                    className="space-y-2 rounded-lg p-3"
+                  >
                     <Skeleton className="h-4 w-2/3" />
                     <Skeleton className="h-3 w-1/2" />
                   </div>
