@@ -13,6 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 import { ordersService, barterService } from "@/lib";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import Footer from "@/components/Footer";
+import Skeleton from "@/components/ui/skeleton";
 
 // ── Activity type config ────────────────────────────────────────────────────
 const ACTIVITY_CONFIG = {
@@ -232,8 +233,23 @@ const Activity = () => {
         {/* ── Activity list ── */}
         <div className="rounded-2xl bg-white shadow-sm">
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <div className="divide-y divide-border px-6 py-2">
+              {[...Array(6)].map((_, idx) => (
+                <div
+                  key={`activity-skeleton-${idx}`}
+                  className="flex items-start gap-4 py-5"
+                >
+                  <Skeleton className="mt-0.5 h-9 w-9 rounded-full" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </div>
+                  <div className="w-20 space-y-2">
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-3/4" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
             <div className="py-12 text-center text-sm text-muted">{error}</div>

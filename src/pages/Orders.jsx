@@ -17,6 +17,7 @@ import Navbar from "@/components/Navbar";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import Skeleton from "@/components/ui/skeleton";
 import { paymentsService } from "@/lib";
 import { transition } from "@/motionConfig";
 import { useAuth } from "@/context/AuthContext";
@@ -851,8 +852,63 @@ export default function Orders() {
           )}
 
           {loading ? (
-            <div className="flex justify-center py-16">
-              <div className="h-9 w-9 animate-spin rounded-full border-4 border-green-200 border-t-green-500" />
+            <div className="overflow-x-auto rounded-2xl border border-border/60 bg-white shadow-sm">
+              <table className="w-full min-w-[860px] text-left">
+                <thead className="border-b border-border bg-surface/60">
+                  <tr>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Order
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Buyer
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Date
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Items
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Total
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted">
+                      Details
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...Array(6)].map((_, idx) => (
+                    <tr key={`farmer-orders-skeleton-${idx}`}>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-24" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-28" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-14" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-6 w-20 rounded-full" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end">
+                          <Skeleton className="h-8 w-16 rounded-lg" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : filteredOrders.length === 0 ? (
             <div className="rounded-3xl border border-border/60 bg-white py-16 text-center">
@@ -1008,8 +1064,57 @@ export default function Orders() {
 
         {/* Loading */}
         {loading && (
-          <div className="flex justify-center py-16">
-            <div className="h-9 w-9 animate-spin rounded-full border-4 border-green-200 border-t-green-500" />
+          <div className="overflow-x-auto rounded-2xl border border-border/60 bg-white shadow-sm">
+            <table className="w-full min-w-[760px] text-left">
+              <thead className="border-b border-border bg-surface/60">
+                <tr>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                    Order
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                    Date
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                    Items
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                    Total
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...Array(6)].map((_, idx) => (
+                  <tr key={`buyer-orders-skeleton-${idx}`}>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-24" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-14" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-2">
+                        <Skeleton className="h-8 w-16 rounded-lg" />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 

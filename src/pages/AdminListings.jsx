@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { getPrimaryListingImageUrl, listingsService } from "@/lib";
 import AdminLayout from "@/components/admin/AdminLayout";
+import Skeleton from "@/components/ui/skeleton";
 
 const toNumber = (value) => {
   const parsed = Number(value);
@@ -299,11 +300,34 @@ const AdminListings = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-muted">
-                    Loading listings...
-                  </td>
-                </tr>
+                [...Array(6)].map((_, idx) => (
+                  <tr key={`listings-skeleton-${idx}`}>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-10 w-10 rounded-lg" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-32" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-28" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-24" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-14" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-24" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-16" />
+                    </td>
+                  </tr>
+                ))
               ) : listings.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-10 text-center text-muted">

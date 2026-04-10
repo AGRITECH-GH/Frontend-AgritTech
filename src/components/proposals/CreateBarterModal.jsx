@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { barterService, listingsService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
 import { validateImageFiles } from "@/lib/utils";
+import Skeleton from "@/components/ui/skeleton";
 
 const MAX_BARTER_IMAGES = 3;
 
@@ -304,9 +305,14 @@ const CreateBarterModal = ({ isOpen, onClose, onCreated }) => {
             </div>
 
             {loadingListings ? (
-              <p className="text-sm text-muted py-4 text-center">
-                Loading listings...
-              </p>
+              <div className="space-y-2 rounded-lg border border-border/40 p-3">
+                {[...Array(4)].map((_, idx) => (
+                  <div key={`modal-listing-skeleton-${idx}`} className="space-y-2 rounded-lg p-3">
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                ))}
+              </div>
             ) : filteredListings.length === 0 ? (
               <p className="text-sm text-muted py-4 text-center">
                 {searchTerm ? "No listings found." : "No listings available."}

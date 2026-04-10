@@ -10,6 +10,7 @@ import NewExchangeCTA from "@/components/proposals/NewExchangeCTA";
 import BarterProtocolBanner from "@/components/proposals/BarterProtocolBanner";
 import CreateBarterModal from "@/components/proposals/CreateBarterModal";
 import TradeDetailsModal from "@/components/proposals/TradeDetailsModal";
+import Skeleton from "@/components/ui/skeleton";
 
 // ─── Navbar links for this page ───────────────────────────────────────────────
 
@@ -220,8 +221,23 @@ const BarterProposals = () => {
 
         {/* ── Loading State ── */}
         {loading && (
-          <div className="mb-8 text-center py-12">
-            <p className="text-sm text-muted">Loading barter proposals...</p>
+          <div className="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+            {[...Array(4)].map((_, idx) => (
+              <div
+                key={`proposal-skeleton-${idx}`}
+                className="rounded-2xl border border-border/60 bg-white p-5 shadow-sm"
+              >
+                <div className="space-y-3">
+                  <Skeleton className="h-5 w-2/3" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-20 w-full rounded-xl" />
+                  <div className="flex gap-2 pt-1">
+                    <Skeleton className="h-8 w-24 rounded-lg" />
+                    <Skeleton className="h-8 w-24 rounded-lg" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

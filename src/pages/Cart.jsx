@@ -16,6 +16,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import Skeleton from "@/components/ui/skeleton";
 import { transition } from "@/motionConfig";
 import { useCart } from "@/hooks/useCart";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
@@ -231,9 +232,25 @@ export default function Cart() {
         <div className="grid gap-6 lg:grid-cols-[1.55fr_1fr]">
           <section>
             {loading ? (
-              <div className="rounded-3xl border border-border/60 bg-white p-8 text-center">
-                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-green-200 border-t-green-500" />
-                <p className="mt-4 text-gray-600">Loading cart...</p>
+              <div className="rounded-3xl border border-border/60 bg-white p-6 sm:p-8">
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, idx) => (
+                    <div
+                      key={`cart-skeleton-${idx}`}
+                      className="rounded-2xl border border-border/60 p-4"
+                    >
+                      <div className="flex items-start gap-3">
+                        <Skeleton className="mt-1 h-4 w-4 rounded" />
+                        <Skeleton className="h-20 w-20 shrink-0 rounded-xl sm:h-24 sm:w-24" />
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <Skeleton className="h-5 w-3/5" />
+                          <Skeleton className="h-4 w-2/5" />
+                          <Skeleton className="h-4 w-1/4" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : items.length === 0 ? (
               <motion.div
