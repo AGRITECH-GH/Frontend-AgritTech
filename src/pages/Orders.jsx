@@ -629,8 +629,9 @@ function FarmerOrderTableRow({
                         {item.name}
                       </p>
                       <p className="text-xs text-muted">
-                        Qty: {item.quantity} • Unit:{" "}
-                        {formatCurrency(item.unitPrice)}
+                        Quantity: {item.quantity} @ Unit Price:{" "}
+                        {formatCurrency(item.unitPrice)} ={" "}
+                        {formatCurrency(item.totalPrice)}
                       </p>
                     </div>
                   </div>

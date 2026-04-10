@@ -94,6 +94,11 @@ export default function Profile() {
     message: "",
     error: "",
   });
+  const [verificationState, setVerificationState] = useState({
+    loading: false,
+    message: "",
+    error: "",
+  });
 
   const isAgent = String(user?.role || "").toUpperCase() === "AGENT";
 
@@ -102,6 +107,17 @@ export default function Profile() {
     if (!role) return "User";
     return role.charAt(0) + role.slice(1).toLowerCase();
   }, [user?.role]);
+
+  const isEmailVerified = useMemo(
+    () =>
+      Boolean(
+        user?.isVerified ??
+        user?.isEmailVerified ??
+        user?.emailVerified ??
+        user?.verified,
+      ),
+    [user],
+  );
 
   const profilePhotoSrc =
     user?.profilePhotoUrl ||
@@ -366,6 +382,29 @@ export default function Profile() {
     }
   };
 
+  const handleResendVerification = async () => {
+    if (!user?.email || verificationState.loading) return;
+
+    setVerificationState({ loading: true, message: "", error: "" });
+
+    try {
+      const response = await authService.resendVerificationEmail(user.email);
+      setVerificationState({
+        loading: false,
+        message:
+          response?.message ||
+          "Verification link sent. Please check your inbox.",
+        error: "",
+      });
+    } catch (err) {
+      setVerificationState({
+        loading: false,
+        message: "",
+        error: err?.message || "Could not resend verification email.",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-surface">
       <nav className="sticky top-0 z-50 border-b border-border bg-white">
@@ -400,6 +439,54 @@ export default function Profile() {
               <p className="text-xs font-medium text-gray-600">
                 Signed in as {displayRole}
               </p>
+            </div>
+
+            <div className="mb-5 rounded-2xl border border-border/60 bg-surface/50 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">
+                    Email verification
+                  </p>
+                  <p className="mt-1 text-sm text-gray-600">
+                    Status:{" "}
+                    <span
+                      className={
+                        isEmailVerified
+                          ? "font-semibold text-green-700"
+                          : "font-semibold text-amber-700"
+                      }
+                    >
+                      {isEmailVerified ? "Verified" : "Not verified"}
+                    </span>
+                  </p>
+                </div>
+
+                {!isEmailVerified && (
+                  <button
+                    type="button"
+                    disabled={verificationState.loading || !user?.email}
+                    onClick={handleResendVerification}
+                    className="inline-flex items-center justify-center rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {verificationState.loading
+                      ? "Sending..."
+                      : "Send verification link"}
+                  </button>
+                )}
+              </div>
+
+              {verificationState.message && (
+                <p className="mt-3 inline-flex items-center gap-1 text-xs text-green-600">
+                  <CheckCircle2 size={14} />
+                  {verificationState.message}
+                </p>
+              )}
+              {verificationState.error && (
+                <p className="mt-3 inline-flex items-center gap-1 text-xs text-red-600">
+                  <AlertCircle size={14} />
+                  {verificationState.error}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.5fr_1fr]">
