@@ -16,6 +16,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import CartSkeleton from "@/components/ui/CartSkeleton";
 import { transition } from "@/motionConfig";
 import { useCart } from "@/hooks/useCart";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
@@ -167,6 +168,51 @@ export default function Cart() {
   const handleCheckout = () => {
     navigate("/checkout");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f5f6f1] text-foreground">
+        <Navbar minimal />
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+          <motion.section
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={transition}
+            className="mb-6 rounded-3xl border border-border/60 bg-white p-5 shadow-sm sm:p-6"
+          >
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-green-100 text-green-700">
+                  <ShoppingCart className="h-5 w-5" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                    Cart
+                  </h1>
+                  <p className="text-sm text-muted">
+                    Review your items, validate, then checkout.
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 rounded-2xl bg-[#f6f8ef] p-2 text-xs sm:text-sm">
+                <div className="rounded-xl bg-primary px-3 py-2 text-center font-semibold text-white">
+                  1. Cart
+                </div>
+                <div className="rounded-xl px-3 py-2 text-center font-medium text-muted">
+                  2. Address
+                </div>
+                <div className="rounded-xl px-3 py-2 text-center font-medium text-muted">
+                  3. Payment
+                </div>
+              </div>
+            </div>
+          </motion.section>
+          <CartSkeleton />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f6f1] text-foreground">

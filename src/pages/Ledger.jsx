@@ -4,12 +4,14 @@ import { useAuth } from "@/context/AuthContext";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import LedgerStatCard from "@/components/ledger/LedgerStatCard";
 import TransactionsTable from "@/components/ledger/TransactionsTable";
+import LedgerSkeleton from "@/components/ledger/LedgerSkeleton";
 import Footer from "@/components/Footer";
 
 const Ledger = () => {
   const { user: authUser } = useAuth();
   const {
     user,
+    loading,
     stats,
     paginated,
     filtered,
@@ -40,6 +42,17 @@ const Ledger = () => {
       user?.avatarUrl ||
       null,
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-surface">
+        <DashboardNavbar user={navbarUser} />
+        <LedgerSkeleton />
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-surface">
       <DashboardNavbar user={navbarUser} />

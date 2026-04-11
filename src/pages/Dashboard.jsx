@@ -9,6 +9,7 @@ import ActiveProductsTable from "@/components/dashboard/ActiveProductsTable";
 import BarterOffersPanel from "@/components/dashboard/BarterOffersPanel";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import HelpBanner from "@/components/dashboard/HelpBanner";
+import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import TradeDetailsModal from "@/components/proposals/TradeDetailsModal";
 import Footer from "@/components/Footer";
 
@@ -16,6 +17,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const {
     user,
+    loading,
     weather,
     stats,
     products,
@@ -94,6 +96,16 @@ const Dashboard = () => {
     name: displayName,
     avatarUrl: user?.profilePhotoUrl || user?.avatarUrl || null,
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-surface">
+        <DashboardNavbar user={navbarUser} />
+        <DashboardSkeleton />
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-surface">

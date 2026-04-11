@@ -4,6 +4,7 @@ import { SlidersHorizontal } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import MarketplaceSkeleton from "@/components/ui/MarketplaceSkeleton";
 import { categoriesService, listingsService } from "@/lib";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 
@@ -246,6 +247,34 @@ const Marketplace = () => {
     // Also clear search param from URL
     navigate("/marketplace", { replace: true });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f5f6f1] text-foreground">
+        <Navbar minimal />
+        <main className="pb-12 pt-6">
+          <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="overflow-hidden rounded-3xl border border-border/60 bg-[radial-gradient(circle_at_top_left,_#eef6e3_0%,_#f8faf4_45%,_#ffffff_100%)] p-6 shadow-sm md:p-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                Buyer Marketplace
+              </p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+                Fresh Produce and Farm Goods
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm text-muted md:text-base">
+                Browse verified listings, compare offers, and buy directly from
+                trusted farmers.
+              </p>
+            </div>
+          </section>
+          <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            <MarketplaceSkeleton />
+          </section>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f6f1] text-foreground">

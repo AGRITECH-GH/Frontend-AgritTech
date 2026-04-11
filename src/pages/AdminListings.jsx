@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { getPrimaryListingImageUrl, listingsService } from "@/lib";
 import AdminLayout from "@/components/admin/AdminLayout";
+import AdminListingsSkeleton from "@/components/admin/AdminListingsSkeleton";
 
 const toNumber = (value) => {
   const parsed = Number(value);
@@ -160,6 +161,22 @@ const AdminListings = () => {
     setLimit(20);
   };
 
+  if (loading) {
+    return (
+      <AdminLayout admin={sidebarAdmin}>
+        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <div className="mb-6 pl-12 lg:pl-0">
+            <h1 className="text-2xl font-bold text-foreground">All Listings</h1>
+            <p className="mt-1 text-sm text-muted">
+              Browse marketplace listings using API filters and pagination.
+            </p>
+          </div>
+          <AdminListingsSkeleton />
+        </main>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout admin={sidebarAdmin}>
       <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
@@ -298,13 +315,7 @@ const AdminListings = () => {
               </tr>
             </thead>
             <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-muted">
-                    Loading listings...
-                  </td>
-                </tr>
-              ) : listings.length === 0 ? (
+              {listings.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-10 text-center text-muted">
                     No listings found.

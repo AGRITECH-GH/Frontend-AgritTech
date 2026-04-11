@@ -64,7 +64,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/verify" element={<VerifyEmail />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/verify-email-change" element={<VerifyEmailChange />} />
           <Route path="/payments/return" element={<PaymentReturn />} />
 

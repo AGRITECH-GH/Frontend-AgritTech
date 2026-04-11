@@ -7,6 +7,7 @@ import StatCard from "@/components/dashboard/StatCard";
 import ListingActivityChart from "@/components/admin/ListingActivityChart";
 import RegionalFocusCard from "@/components/admin/RegionalFocusCard";
 import UserManagementTable from "@/components/admin/UserManagementTable";
+import AdminDashboardSkeleton from "@/components/admin/AdminDashboardSkeleton";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const AdminDashboard = () => {
   const {
     admin,
     stats,
+    loadingStats,
     statsError,
     chartData,
     regionalFocus,
@@ -47,6 +49,14 @@ const AdminDashboard = () => {
       admin?.avatarUrl ||
       null,
   };
+
+  if (loadingStats) {
+    return (
+      <AdminLayout admin={sidebarAdmin}>
+        <AdminDashboardSkeleton />
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout admin={sidebarAdmin}>

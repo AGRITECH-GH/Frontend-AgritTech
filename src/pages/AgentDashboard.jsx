@@ -9,6 +9,7 @@ import CommissionTransparency from "@/components/agent/CommissionTransparency";
 import RegionalHubActivity from "@/components/agent/RegionalHubActivity";
 import FarmersTable from "@/components/agent/FarmersTable";
 import RegisterFarmerModal from "@/components/agent/RegisterFarmerModal";
+import AgentDashboardSkeleton from "@/components/agent/AgentDashboardSkeleton";
 
 const AgentDashboard = () => {
   const navigate = useNavigate();
@@ -52,6 +53,14 @@ const AgentDashboard = () => {
       agent?.avatarUrl ||
       null,
   };
+
+  if (loadingFarmers) {
+    return (
+      <AgentLayout agent={sidebarAgent}>
+        <AgentDashboardSkeleton />
+      </AgentLayout>
+    );
+  }
 
   useEffect(() => {
     if (!successMessage) return;
@@ -151,9 +160,6 @@ const AgentDashboard = () => {
           onSearchChange={setSearchQuery}
           onAction={onFarmerAction}
         />
-        {loadingFarmers && (
-          <p className="mt-3 text-sm text-muted">Loading farmers...</p>
-        )}
       </main>
 
       <RegisterFarmerModal

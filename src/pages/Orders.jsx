@@ -17,6 +17,10 @@ import Navbar from "@/components/Navbar";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import {
+  OrdersBuyerSkeleton,
+  OrdersFarmerSkeleton,
+} from "@/components/ui/OrdersSkeleton";
 import { paymentsService } from "@/lib";
 import { transition } from "@/motionConfig";
 import { useAuth } from "@/context/AuthContext";
@@ -851,9 +855,7 @@ export default function Orders() {
           )}
 
           {loading ? (
-            <div className="flex justify-center py-16">
-              <div className="h-9 w-9 animate-spin rounded-full border-4 border-green-200 border-t-green-500" />
-            </div>
+            <OrdersFarmerSkeleton showHeader={false} showFilters={false} />
           ) : filteredOrders.length === 0 ? (
             <div className="rounded-3xl border border-border/60 bg-white py-16 text-center">
               <ShoppingBag className="mx-auto mb-4 h-12 w-12 text-gray-300" />
@@ -1006,35 +1008,32 @@ export default function Orders() {
           </motion.div>
         )}
 
-        {/* Loading */}
-        {loading && (
-          <div className="flex justify-center py-16">
-            <div className="h-9 w-9 animate-spin rounded-full border-4 border-green-200 border-t-green-500" />
-          </div>
-        )}
-
         {/* Empty state */}
-        {!loading && filteredOrders.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center rounded-3xl border border-border/60 bg-white py-16 text-center"
-          >
-            <ShoppingBag className="mb-4 h-12 w-12 text-gray-300" />
-            <h3 className="text-lg font-semibold text-foreground">
-              No orders found
-            </h3>
-            <p className="mt-2 text-sm text-muted">
-              {statusFilter
-                ? `No ${STATUS_META[statusFilter]?.label?.toLowerCase()} orders.`
-                : "You have no orders yet."}
-            </p>
-            {currentRole === "BUYER" && (
-              <Link to="/marketplace" className="mt-5">
-                <Button size="sm">Browse Marketplace</Button>
-              </Link>
-            )}
-          </motion.div>
+        {loading ? (
+          <OrdersBuyerSkeleton showHeader={false} showFilters={false} />
+        ) : (
+          filteredOrders.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center rounded-3xl border border-border/60 bg-white py-16 text-center"
+            >
+              <ShoppingBag className="mb-4 h-12 w-12 text-gray-300" />
+              <h3 className="text-lg font-semibold text-foreground">
+                No orders found
+              </h3>
+              <p className="mt-2 text-sm text-muted">
+                {statusFilter
+                  ? `No ${STATUS_META[statusFilter]?.label?.toLowerCase()} orders.`
+                  : "You have no orders yet."}
+              </p>
+              {currentRole === "BUYER" && (
+                <Link to="/marketplace" className="mt-5">
+                  <Button size="sm">Browse Marketplace</Button>
+                </Link>
+              )}
+            </motion.div>
+          )
         )}
 
         {/* Order list */}

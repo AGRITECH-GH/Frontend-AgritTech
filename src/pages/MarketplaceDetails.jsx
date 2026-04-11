@@ -17,6 +17,8 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import MarketplaceDetailsSkeleton from "@/components/ui/MarketplaceDetailsSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cartService, listingsService } from "@/lib";
 import {
   getPrimaryListingImageUrl,
@@ -205,9 +207,7 @@ const MarketplaceDetails = () => {
       <Navbar minimal />
       <main className="flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8">
         {loading ? (
-          <div className="rounded-2xl border border-dashed border-border bg-white p-12 text-center text-muted">
-            Loading listing details...
-          </div>
+          <MarketplaceDetailsSkeleton />
         ) : error ? (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
             {error}
@@ -562,8 +562,20 @@ const MarketplaceDetails = () => {
                 Similar Commodities
               </h2>
               {similarLoading ? (
-                <div className="text-center text-muted text-sm">
-                  Loading similar products...
+                <div className="grid gap-4 md:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="overflow-hidden rounded-lg border border-border/40"
+                    >
+                      <Skeleton className="aspect-square w-full" />
+                      <div className="space-y-2 p-3">
+                        <Skeleton className="h-4 w-3/4 rounded-full" />
+                        <Skeleton className="h-3 w-1/2 rounded-full" />
+                        <Skeleton className="h-4 w-16 rounded-full" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : similarProducts && similarProducts.length > 0 ? (
                 <div className="grid gap-4 md:grid-cols-4">

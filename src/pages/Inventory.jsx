@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import StatCard from "@/components/dashboard/StatCard";
 import EditProductModal from "@/components/dashboard/EditProductModal";
+import InventorySkeleton from "@/components/inventory/InventorySkeleton";
 import { listingsService } from "@/lib";
 import {
   Plus,
@@ -61,6 +62,7 @@ const Inventory = () => {
   const {
     products,
     paginatedProducts,
+    loading,
     tabs,
     tabFilter,
     setTabFilter,
@@ -86,6 +88,18 @@ const Inventory = () => {
     name: displayName,
     avatarUrl: user?.profilePhotoUrl || user?.avatarUrl || null,
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-surface">
+        <DashboardNavbar
+          user={navbarUser}
+          searchPlaceholder="Search inventory..."
+        />
+        <InventorySkeleton />
+      </div>
+    );
+  }
 
   const handleAddProduct = () => {
     navigate("/farmer/inventory/add-product");

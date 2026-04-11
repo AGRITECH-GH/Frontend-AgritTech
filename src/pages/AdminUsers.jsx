@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { adminService } from "@/lib";
 import AdminLayout from "@/components/admin/AdminLayout";
+import AdminUsersSkeleton from "@/components/admin/AdminUsersSkeleton";
 
 const toNumber = (value, fallback = 0) => {
   const parsed = Number(value);
@@ -312,6 +313,24 @@ const AdminUsers = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <AdminLayout admin={sidebarAdmin}>
+        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <div className="mb-6 pl-12 lg:pl-0">
+            <h1 className="text-2xl font-bold text-foreground">
+              User Management
+            </h1>
+            <p className="mt-1 text-sm text-muted">
+              Fetch and filter users using the admin users endpoint.
+            </p>
+          </div>
+          <AdminUsersSkeleton />
+        </main>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout admin={sidebarAdmin}>
       <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
@@ -437,13 +456,7 @@ const AdminUsers = () => {
               </tr>
             </thead>
             <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-muted">
-                    Loading users...
-                  </td>
-                </tr>
-              ) : users.length === 0 ? (
+              {users.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-10 text-center text-muted">
                     No users found.

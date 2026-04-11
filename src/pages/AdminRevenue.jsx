@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { adminService } from "@/lib";
 import AdminLayout from "@/components/admin/AdminLayout";
+import AdminRevenueSkeleton from "@/components/admin/AdminRevenueSkeleton";
 
 const toNumber = (value, fallback = 0) => {
   const parsed = Number(value);
@@ -141,6 +142,16 @@ const AdminRevenue = () => {
     };
   }, [ordersQuery, orderPage, orderLimit]);
 
+  if (ordersLoading) {
+    return (
+      <AdminLayout admin={sidebarAdmin}>
+        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <AdminRevenueSkeleton />
+        </main>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout admin={sidebarAdmin}>
       <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
@@ -211,16 +222,7 @@ const AdminRevenue = () => {
                 </tr>
               </thead>
               <tbody>
-                {ordersLoading ? (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="px-4 py-8 text-center text-muted"
-                    >
-                      Loading orders...
-                    </td>
-                  </tr>
-                ) : orders.length === 0 ? (
+                {orders.length === 0 ? (
                   <tr>
                     <td
                       colSpan={4}
