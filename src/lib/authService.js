@@ -1,7 +1,7 @@
 // Authentication API Service
 import api from "./api";
 
-const GOOGLE_OAUTH_URL = "https://api.agritechgh.me/api/auth/google";
+const GOOGLE_OAUTH_URL = import.meta.env.VITE_GOOGLE_OAUTH_URL;
 
 const authService = {
   /**
