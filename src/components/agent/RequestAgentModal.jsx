@@ -71,7 +71,10 @@ const RequestAgentModal = ({
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <h2 id="request-agent-title" className="text-lg font-bold text-foreground">
+            <h2
+              id="request-agent-title"
+              className="text-lg font-bold text-foreground"
+            >
               Request a Field Agent
             </h2>
             <p className="mt-1 text-sm text-muted">
@@ -90,7 +93,8 @@ const RequestAgentModal = ({
 
         {hasAssignedAgent && (
           <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
-            You already have an assigned agent on your account. New requests are disabled.
+            You already have an assigned agent on your account. New requests are
+            disabled.
           </div>
         )}
 
@@ -132,7 +136,9 @@ const RequestAgentModal = ({
             <span className="text-xs font-medium text-muted">{pageLabel}</span>
             <button
               type="button"
-              onClick={() => onPageChange(Math.min(page + 1, Math.max(totalPages || 1, 1)))}
+              onClick={() =>
+                onPageChange(Math.min(page + 1, Math.max(totalPages || 1, 1)))
+              }
               disabled={page >= Math.max(totalPages || 1, 1) || loadingAgents}
               className="rounded-lg border border-border bg-white px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -172,7 +178,8 @@ const RequestAgentModal = ({
               {agents.map((agent) => {
                 const isRequesting = requestingAgentId === agent.id;
                 const isRequested = requestedAgentIds.has(agent.id);
-                const requestDisabled = hasAssignedAgent || isRequested || isRequesting;
+                const requestDisabled =
+                  hasAssignedAgent || isRequested || isRequesting;
 
                 return (
                   <div
@@ -181,8 +188,12 @@ const RequestAgentModal = ({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="text-sm font-semibold text-foreground">{agent.fullName}</p>
-                        <p className="mt-0.5 text-xs text-muted">{agent.email}</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {agent.fullName}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted">
+                          {agent.email}
+                        </p>
                       </div>
                       <span className="inline-flex items-center gap-1 rounded-full bg-yellow-50 px-2 py-0.5 text-[11px] font-semibold text-yellow-700">
                         <Star className="h-3 w-3" />

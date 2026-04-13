@@ -90,7 +90,9 @@ export function useAvailableAgents({
       });
       const normalized = normalizeAgents(response);
       setAgents(normalized);
-      setPagination(normalizePagination(response, page, limit, normalized.length));
+      setPagination(
+        normalizePagination(response, page, limit, normalized.length),
+      );
     } catch (err) {
       setAgentsLoadError(err?.message || "Unable to load available agents.");
     } finally {

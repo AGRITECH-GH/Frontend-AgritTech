@@ -520,7 +520,8 @@ export default function Profile() {
                       Agent support
                     </p>
                     <p className="mt-1 text-sm text-gray-600">
-                      Need hands-on support managing listings or barter activity?
+                      Need hands-on support managing listings or barter
+                      activity?
                     </p>
                   </div>
 
@@ -531,7 +532,9 @@ export default function Profile() {
                     className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <UserRoundPlus size={15} />
-                    {user?.agentId ? "Agent already assigned" : "Request an agent"}
+                    {user?.agentId
+                      ? "Agent already assigned"
+                      : "Request an agent"}
                   </button>
                 </div>
               </div>

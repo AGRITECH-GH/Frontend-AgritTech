@@ -27,16 +27,21 @@ const AgentRequestsTable = ({
         <table className="w-full min-w-[720px] text-sm">
           <thead>
             <tr className="border-b border-border/60">
-              {["Farmer", "Contact", "Region", "Requested", "Status", "Actions"].map(
-                (label) => (
-                  <th
-                    key={label}
-                    className="pb-2 text-left text-[11px] font-semibold uppercase tracking-wide text-muted"
-                  >
-                    {label}
-                  </th>
-                ),
-              )}
+              {[
+                "Farmer",
+                "Contact",
+                "Region",
+                "Requested",
+                "Status",
+                "Actions",
+              ].map((label) => (
+                <th
+                  key={label}
+                  className="pb-2 text-left text-[11px] font-semibold uppercase tracking-wide text-muted"
+                >
+                  {label}
+                </th>
+              ))}
             </tr>
           </thead>
 
@@ -55,7 +60,9 @@ const AgentRequestsTable = ({
                 return (
                   <tr key={request.id}>
                     <td className="py-3 pr-4">
-                      <p className="font-semibold text-foreground">{request.farmerName}</p>
+                      <p className="font-semibold text-foreground">
+                        {request.farmerName}
+                      </p>
                     </td>
 
                     <td className="py-3 pr-4">
@@ -74,7 +81,9 @@ const AgentRequestsTable = ({
                       </span>
                     </td>
 
-                    <td className="py-3 pr-4 text-foreground/70">{request.createdLabel}</td>
+                    <td className="py-3 pr-4 text-foreground/70">
+                      {request.createdLabel}
+                    </td>
 
                     <td className="py-3 pr-4">
                       <span
