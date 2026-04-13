@@ -16,6 +16,7 @@ const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const VerifyEmail = lazy(() => import("@/pages/VerifyEmail"));
 const VerifyEmailChange = lazy(() => import("@/pages/VerifyEmailChange"));
+const GoogleAuthSuccess = lazy(() => import("@/pages/GoogleAuthSuccess"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const AgentDashboard = lazy(() => import("@/pages/AgentDashboard"));
@@ -66,6 +67,7 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/verify-email-change" element={<VerifyEmailChange />} />
+          <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
           <Route path="/payments/return" element={<PaymentReturn />} />
 
           {/* Buyer routes - protected */}

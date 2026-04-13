@@ -20,6 +20,23 @@ const normalizeUser = (nextUser) => {
   };
 };
 
+const decodeJwtPayload = (token) => {
+  if (!token || typeof token !== "string") return null;
+
+  try {
+    const [, payload] = token.split(".");
+    if (!payload) return null;
+
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const base64 = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+
+    return JSON.parse(window.atob(base64));
+  } catch (error) {
+    console.error("Failed to decode JWT payload:", error);
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -141,6 +158,42 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const completeGoogleAuth = async (code) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await authService.exchangeGoogleCode(code);
+      const accessToken = response?.accessToken;
+
+      if (!accessToken) {
+        throw new Error("Google sign-in did not return an access token.");
+      }
+
+      api.setAccessToken(accessToken);
+
+      const payload = decodeJwtPayload(accessToken) || {};
+      const normalizedUser = normalizeUser({
+        id: payload.id,
+        role: payload.role,
+        isVerified: payload.isVerified,
+      });
+
+      setUser(normalizedUser);
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
+
+      return {
+        accessToken,
+        user: normalizedUser,
+      };
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const updateUser = (userData) => {
     const updated = normalizeUser({ ...user, ...userData });
     setUser(updated);
@@ -155,6 +208,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     verifyEmail,
+    completeGoogleAuth,
     updateUser,
     isAuthenticated: !!user,
   };

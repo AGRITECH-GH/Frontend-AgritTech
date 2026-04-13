@@ -1,6 +1,8 @@
 // Authentication API Service
 import api from "./api";
 
+const GOOGLE_OAUTH_URL = "https://api.agritechgh.me/api/auth/google";
+
 const authService = {
   /**
    * Register a new user account
@@ -28,8 +30,19 @@ const authService = {
    * Start Google OAuth sign-in/sign-up flow
    */
   signInWithGoogle: () => {
-    window.location.assign(`${api.API_BASE_URL}/api/auth/google`);
+    window.location.assign(GOOGLE_OAUTH_URL);
   },
+
+  /**
+   * Exchange Google OAuth code for an access token
+   * @param {string} code - OAuth authorization code
+   * @returns {Promise} { accessToken }
+   */
+  exchangeGoogleCode: (code) =>
+    api.apiFetch("/api/auth/google/exchange", {
+      method: "POST",
+      body: JSON.stringify({ code }),
+    }),
 
   /**
    * Refresh access token using httpOnly cookie

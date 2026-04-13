@@ -15,11 +15,14 @@ import {
   EyeOff,
   X,
   Camera,
+  UserRoundPlus,
 } from "lucide-react";
 import logo from "@/assets/logo.svg";
 import { authService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
 import { validateImageFiles } from "@/lib/utils";
+import RequestAgentModal from "@/components/agent/RequestAgentModal";
+import { useAvailableAgents } from "@/hooks/useAvailableAgents";
 
 const GHANA_REGIONS = [
   "Ahafo",
@@ -99,8 +102,28 @@ export default function Profile() {
     message: "",
     error: "",
   });
+  const [isRequestAgentOpen, setIsRequestAgentOpen] = useState(false);
 
   const isAgent = String(user?.role || "").toUpperCase() === "AGENT";
+  const isFarmer = String(user?.role || "").toUpperCase() === "FARMER";
+
+  const {
+    agents,
+    loadingAgents,
+    agentsLoadError,
+    selectedRegion,
+    setSelectedRegion,
+    page,
+    setPage,
+    pagination,
+    requestingAgentId,
+    requestedAgentIds,
+    requestAgent,
+  } = useAvailableAgents({
+    initialRegion: user?.region || "",
+    limit: 6,
+    enabled: isFarmer,
+  });
 
   const displayRole = useMemo(() => {
     const role = String(user?.role || "").toUpperCase();
@@ -488,6 +511,31 @@ export default function Profile() {
                 </p>
               )}
             </div>
+
+            {isFarmer && (
+              <div className="mb-5 rounded-2xl border border-border/60 bg-surface/50 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">
+                      Agent support
+                    </p>
+                    <p className="mt-1 text-sm text-gray-600">
+                      Need hands-on support managing listings or barter activity?
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsRequestAgentOpen(true)}
+                    disabled={Boolean(user?.agentId)}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <UserRoundPlus size={15} />
+                    {user?.agentId ? "Agent already assigned" : "Request an agent"}
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.5fr_1fr]">
               <div className="space-y-5">
@@ -922,6 +970,23 @@ export default function Profile() {
           </section>
         </div>
       </main>
+
+      <RequestAgentModal
+        isOpen={isRequestAgentOpen}
+        onClose={() => setIsRequestAgentOpen(false)}
+        agents={agents}
+        loadingAgents={loadingAgents}
+        agentsLoadError={agentsLoadError}
+        selectedRegion={selectedRegion}
+        onRegionChange={setSelectedRegion}
+        page={page}
+        totalPages={pagination.totalPages}
+        onPageChange={setPage}
+        onRequestAgent={requestAgent}
+        requestingAgentId={requestingAgentId}
+        requestedAgentIds={requestedAgentIds}
+        hasAssignedAgent={Boolean(user?.agentId)}
+      />
     </div>
   );
 }

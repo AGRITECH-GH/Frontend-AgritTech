@@ -54,6 +54,12 @@ const AgentDashboard = () => {
       null,
   };
 
+  useEffect(() => {
+    if (!successMessage) return;
+    const timeoutId = setTimeout(() => setSuccessMessage(""), 3000);
+    return () => clearTimeout(timeoutId);
+  }, [successMessage]);
+
   if (loadingFarmers) {
     return (
       <AgentLayout agent={sidebarAgent}>
@@ -61,12 +67,6 @@ const AgentDashboard = () => {
       </AgentLayout>
     );
   }
-
-  useEffect(() => {
-    if (!successMessage) return;
-    const timeoutId = setTimeout(() => setSuccessMessage(""), 3000);
-    return () => clearTimeout(timeoutId);
-  }, [successMessage]);
 
   const handleRegisterFarmer = async (formData) => {
     const result = await registerFarmer(formData);
