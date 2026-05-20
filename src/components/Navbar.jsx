@@ -200,11 +200,11 @@ const Navbar = ({ minimal = false }) => {
             >
               <img
                 src={logo}
-                alt="AgriTech"
+                alt="FarmBridge"
                 className="h-7 w-7 brightness-0 invert"
               />
               <span className="hidden text-lg font-bold text-white sm:block">
-                AgriTech
+                FarmBridge
               </span>
             </Link>
 
@@ -349,8 +349,8 @@ const Navbar = ({ minimal = false }) => {
           onClick={() => scrollToSection("hero")}
           className="flex flex-1 items-center gap-1.5 text-base font-semibold text-foreground transition-colors duration-300"
         >
-          <img src={logo} alt="AgriTech logo" className="h-6 w-6 shrink-0" />
-          <span>AgriTech</span>
+          <img src={logo} alt="FarmBridge logo" className="h-6 w-6 shrink-0" />
+          <span>FarmBridge</span>
         </button>
 
         {/* Desktop nav — centered */}

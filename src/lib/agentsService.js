@@ -43,7 +43,7 @@ const agentsService = {
 
   /**
    * Register farmer as agent
-   * @param {Object} farmerData - { fullName, email, password, region, phoneNumber }
+   * @param {Object} farmerData - { fullName, email, password, region, phoneNumber, nationalIdNumber, farmRegistrationNumber, businessCertificateNumber }
    * @returns {Promise}
    */
   registerFarmer: (farmerData) =>

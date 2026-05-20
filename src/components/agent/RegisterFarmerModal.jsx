@@ -26,6 +26,9 @@ const INITIAL_FORM = {
   password: "",
   region: "",
   phoneNumber: "",
+  nationalIdImage: null,
+  farmRegistrationImage: null,
+  businessCertificateImage: null,
 };
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -49,7 +52,10 @@ const RegisterFarmerModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
       emailPattern.test(formData.email.trim()) &&
       formData.password.length >= 8 &&
       formData.region &&
-      phonePattern.test(formData.phoneNumber.trim()),
+      phonePattern.test(formData.phoneNumber.trim()) &&
+      formData.nationalIdImage &&
+      formData.farmRegistrationImage &&
+      formData.businessCertificateImage,
     [formData],
   );
 
@@ -76,6 +82,19 @@ const RegisterFarmerModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
       nextErrors.phoneNumber = "Enter a valid phone number.";
     }
 
+    if (!formData.nationalIdImage) {
+      nextErrors.nationalIdImage = "National ID image is required.";
+    }
+
+    if (!formData.farmRegistrationImage) {
+      nextErrors.farmRegistrationImage = "Farm registration image is required.";
+    }
+
+    if (!formData.businessCertificateImage) {
+      nextErrors.businessCertificateImage =
+        "Business certificate image is required.";
+    }
+
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
@@ -94,13 +113,17 @@ const RegisterFarmerModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
     e.preventDefault();
     if (!validate()) return;
 
-    const result = await onSubmit({
-      fullName: formData.fullName.trim(),
-      email: formData.email.trim(),
-      password: formData.password,
-      region: formData.region,
-      phoneNumber: formData.phoneNumber.trim(),
-    });
+    const payload = new FormData();
+    payload.append("fullName", formData.fullName.trim());
+    payload.append("email", formData.email.trim());
+    payload.append("password", formData.password);
+    payload.append("region", formData.region);
+    payload.append("phoneNumber", formData.phoneNumber.trim());
+    payload.append("nationalId", formData.nationalIdImage);
+    payload.append("farmRegistration", formData.farmRegistrationImage);
+    payload.append("businessCertificate", formData.businessCertificateImage);
+
+    const result = await onSubmit(payload);
 
     if (result?.success) {
       setFormData(INITIAL_FORM);
@@ -256,6 +279,98 @@ const RegisterFarmerModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
                 </p>
               )}
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="nationalIdImage"
+                className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted"
+              >
+                National ID Image
+              </label>
+              <input
+                id="nationalIdImage"
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => {
+                  handleChange("nationalIdImage", e.target.files?.[0] || null);
+                }}
+                className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              />
+              {formData.nationalIdImage && (
+                <p className="mt-1 text-xs text-green-600">
+                  ✓ {formData.nationalIdImage.name}
+                </p>
+              )}
+              {errors.nationalIdImage && (
+                <p className="mt-1 text-xs text-red-600">
+                  {errors.nationalIdImage}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="farmRegistrationImage"
+                className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted"
+              >
+                Farm Registration Image
+              </label>
+              <input
+                id="farmRegistrationImage"
+                type="file"
+                accept="image/*,.pdf"
+                onChange={(e) => {
+                  handleChange(
+                    "farmRegistrationImage",
+                    e.target.files?.[0] || null,
+                  );
+                }}
+                className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              />
+              {formData.farmRegistrationImage && (
+                <p className="mt-1 text-xs text-green-600">
+                  ✓ {formData.farmRegistrationImage.name}
+                </p>
+              )}
+              {errors.farmRegistrationImage && (
+                <p className="mt-1 text-xs text-red-600">
+                  {errors.farmRegistrationImage}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="businessCertificateImage"
+              className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted"
+            >
+              Business Certificate Image
+            </label>
+            <input
+              id="businessCertificateImage"
+              type="file"
+              accept="image/*,.pdf"
+              onChange={(e) => {
+                handleChange(
+                  "businessCertificateImage",
+                  e.target.files?.[0] || null,
+                );
+              }}
+              className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            />
+            {formData.businessCertificateImage && (
+              <p className="mt-1 text-xs text-green-600">
+                ✓ {formData.businessCertificateImage.name}
+              </p>
+            )}
+            {errors.businessCertificateImage && (
+              <p className="mt-1 text-xs text-red-600">
+                {errors.businessCertificateImage}
+              </p>
+            )}
           </div>
 
           {submitError && (

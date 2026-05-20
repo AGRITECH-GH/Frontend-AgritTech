@@ -22,6 +22,7 @@ const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const AgentDashboard = lazy(() => import("@/pages/AgentDashboard"));
 const AgentFarmers = lazy(() => import("@/pages/AgentFarmers"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const AdminKYC = lazy(() => import("@/pages/AdminKYC"));
 const AdminListings = lazy(() => import("@/pages/AdminListings"));
 const AdminUsers = lazy(() => import("@/pages/AdminUsers"));
 const AdminRevenue = lazy(() => import("@/pages/AdminRevenue"));
@@ -220,6 +221,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["ADMIN"]}>
                 <AdminUsers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/kyc"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminKYC />
               </ProtectedRoute>
             }
           />

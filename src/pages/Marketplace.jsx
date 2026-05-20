@@ -223,6 +223,39 @@ const Marketplace = () => {
   }, [listings, sortBy]);
 
   const applyFilters = () => {
+    // Validate price filters
+    const minPriceNum = minPrice.trim() ? parseFloat(minPrice.trim()) : null;
+    const maxPriceNum = maxPrice.trim() ? parseFloat(maxPrice.trim()) : null;
+
+    // Check for invalid numbers
+    if (
+      (minPrice.trim() && isNaN(minPriceNum)) ||
+      (maxPrice.trim() && isNaN(maxPriceNum))
+    ) {
+      setError("Please enter valid price values");
+      return;
+    }
+
+    // Check for negative prices
+    if (
+      (minPriceNum !== null && minPriceNum < 0) ||
+      (maxPriceNum !== null && maxPriceNum < 0)
+    ) {
+      setError("Price values cannot be negative");
+      return;
+    }
+
+    // Check for logical price range
+    if (
+      minPriceNum !== null &&
+      maxPriceNum !== null &&
+      minPriceNum > maxPriceNum
+    ) {
+      setError("Minimum price cannot be greater than maximum price");
+      return;
+    }
+
+    setError("");
     setAppliedCategory(category);
     setAppliedRegion(region);
     setAppliedMinPrice(minPrice.trim());
@@ -324,7 +357,7 @@ const Marketplace = () => {
                   {categories.map((item, idx) => (
                     <option
                       key={String(item?.id || item?._id || idx)}
-                      value={item?.name || ""}
+                      value={String(item?.id || item?._id || "")}
                     >
                       {item?.name || "Unknown"}
                     </option>

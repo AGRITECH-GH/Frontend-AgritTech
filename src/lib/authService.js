@@ -6,13 +6,13 @@ const GOOGLE_OAUTH_URL = import.meta.env.VITE_GOOGLE_OAUTH_URL;
 const authService = {
   /**
    * Register a new user account
-   * @param {Object} userData - { fullName, email, password, role, assignedRegion?, commissionRate?, bio? }
+   * @param {Object|FormData} userData - { fullName, email, password, role, assignedRegion?, commissionRate?, bio? } or FormData
    * @returns {Promise} { message, accessToken, user }
    */
   register: (userData) =>
     api.apiFetch("/api/auth/register", {
       method: "POST",
-      body: JSON.stringify(userData),
+      body: userData instanceof FormData ? userData : JSON.stringify(userData),
     }),
 
   /**
