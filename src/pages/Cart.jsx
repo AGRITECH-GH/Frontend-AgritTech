@@ -40,6 +40,7 @@ export default function Cart() {
   const [validationError, setValidationError] = useState("");
   const [selectedItemIds, setSelectedItemIds] = useState([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showClearCartModal, setShowClearCartModal] = useState(false);
 
   const items = cart?.items || [];
 
@@ -139,13 +140,16 @@ export default function Cart() {
     }
   };
 
-  const handleClearCart = async () => {
-    if (window.confirm("Are you sure you want to clear your entire cart?")) {
-      try {
-        await clearCart();
-      } catch (err) {
-        console.error("Failed to clear cart:", err);
-      }
+  const handleClearCart = () => {
+    setShowClearCartModal(true);
+  };
+
+  const confirmClearCart = async () => {
+    try {
+      await clearCart();
+      setShowClearCartModal(false);
+    } catch (err) {
+      console.error("Failed to clear cart:", err);
     }
   };
 
@@ -579,6 +583,36 @@ export default function Cart() {
             >
               Not now
             </button>
+          </div>
+        </div>
+      )}
+
+      {showClearCartModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 px-4">
+          <div className="w-full max-w-md rounded-2xl border border-border/60 bg-white p-5 shadow-xl sm:p-6">
+            <h3 className="text-lg font-semibold text-foreground">
+              Clear your cart?
+            </h3>
+            <p className="mt-2 text-sm text-muted">
+              This will remove all items from your cart.
+            </p>
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowClearCartModal(false)}
+                className="w-full"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={confirmClearCart}
+                className="w-full bg-red-600 hover:bg-red-700"
+              >
+                Yes, Clear Cart
+              </Button>
+            </div>
           </div>
         </div>
       )}
