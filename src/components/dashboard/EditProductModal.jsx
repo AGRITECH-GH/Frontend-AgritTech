@@ -16,6 +16,8 @@ const EditProductModal = ({
     category: "",
     pricePerUnit: 0,
     quantityAvailable: 0,
+    minimumOrderQty: 0,
+    negotiable: false,
     unit: "",
     status: "active",
   });
@@ -33,6 +35,8 @@ const EditProductModal = ({
         category: product.category || "",
         pricePerUnit: product.pricePerUnit || 0,
         quantityAvailable: product.quantityAvailable || 0,
+        minimumOrderQty: product.minimumOrderQty || 0,
+        negotiable: Boolean(product.negotiable),
         unit: product.unit || "KG",
         status: product.status || "active",
       });
@@ -43,11 +47,17 @@ const EditProductModal = ({
   }, [product, isOpen]);
 
   const handleInputChange = (e) => {
-    const { name, value, type } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]:
-        type === "number" ? (value === "" ? 0 : parseFloat(value)) : value,
+        type === "checkbox"
+          ? checked
+          : type === "number"
+            ? value === ""
+              ? 0
+              : parseFloat(value)
+            : value,
     }));
     setError("");
   };
@@ -212,6 +222,40 @@ const EditProductModal = ({
                 placeholder="0"
               />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Minimum Order Quantity
+              </label>
+              <input
+                type="number"
+                name="minimumOrderQty"
+                value={formData.minimumOrderQty}
+                onChange={handleInputChange}
+                step="0.01"
+                min="0"
+                className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="0"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-3">
+            <div>
+              <p className="text-sm font-medium text-gray-900">
+                Price Negotiable
+              </p>
+              <p className="text-xs text-gray-600">
+                Allow buyers to negotiate this listing price.
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              name="negotiable"
+              checked={!!formData.negotiable}
+              onChange={handleInputChange}
+              className="h-4 w-4 rounded border-gray-300"
+            />
           </div>
 
           {/* ── Unit Selection ── */}

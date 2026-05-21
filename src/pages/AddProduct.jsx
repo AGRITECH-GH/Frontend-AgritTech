@@ -7,6 +7,49 @@ import StatCard from "@/components/dashboard/StatCard";
 import { ChevronLeft, Upload, X } from "lucide-react";
 import { useEffect } from "react";
 
+const CSV_TEMPLATE_HEADERS = [
+  "title",
+  "categoryId",
+  "pricePerUnit",
+  "quantity",
+  "unit",
+  "location",
+  "description",
+  "listingType",
+  "harvestDate",
+  "minimumOrderQty",
+  "negotiable",
+  "isDraft",
+];
+
+const CSV_TEMPLATE_SAMPLE = [
+  "Fresh Tomatoes",
+  "YOUR_CATEGORY_ID",
+  "15.5",
+  "200",
+  "KG",
+  "Tamale Warehouse A",
+  "A-grade tomatoes",
+  "SELL",
+  "2026-05-20",
+  "25",
+  "true",
+  "false",
+];
+
+const downloadCsvTemplate = () => {
+  const content = `${CSV_TEMPLATE_HEADERS.join(",")}\n${CSV_TEMPLATE_SAMPLE.join(",")}\n`;
+  const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "listing_bulk_upload_template.csv";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
 const AddProduct = () => {
   const navigate = useNavigate();
   const { stats } = useInventory();
@@ -19,6 +62,9 @@ const AddProduct = () => {
     category: "",
     pricePerUnit: "",
     quantity: "",
+    minimumOrderQty: "",
+    harvestDate: "",
+    negotiable: false,
     unit: "KG",
     storageLocation: "",
     description: "",
@@ -30,6 +76,10 @@ const AddProduct = () => {
   const [imageErrors, setImageErrors] = useState("");
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [createdListingId, setCreatedListingId] = useState(null);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [csvFile, setCsvFile] = useState(null);
+  const [csvUploadResult, setCsvUploadResult] = useState(null);
+  const [isCsvUploading, setIsCsvUploading] = useState(false);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -46,7 +96,7 @@ const AddProduct = () => {
     fetchCategories();
   }, []);
 
-  const validateForm = () => {
+  const validateForm = (allowDraft = false) => {
     const newErrors = {};
 
     if (!formData.productName.trim()) {
@@ -55,16 +105,22 @@ const AddProduct = () => {
     if (!formData.category) {
       newErrors.category = "Category is required";
     }
-    if (!formData.pricePerUnit || parseFloat(formData.pricePerUnit) <= 0) {
+    if (
+      !allowDraft &&
+      (!formData.pricePerUnit || parseFloat(formData.pricePerUnit) <= 0)
+    ) {
       newErrors.pricePerUnit = "Price must be greater than 0";
     }
-    if (!formData.quantity || parseFloat(formData.quantity) <= 0) {
+    if (
+      !allowDraft &&
+      (!formData.quantity || parseFloat(formData.quantity) <= 0)
+    ) {
       newErrors.quantity = "Quantity must be greater than 0";
     }
-    if (!formData.unit) {
+    if (!allowDraft && !formData.unit) {
       newErrors.unit = "Unit is required";
     }
-    if (!formData.storageLocation.trim()) {
+    if (!allowDraft && !formData.storageLocation.trim()) {
       newErrors.storageLocation = "Storage location is required";
     }
 
@@ -73,10 +129,10 @@ const AddProduct = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
     // Clear error for this field when user starts typing
     if (errors[name]) {
@@ -138,37 +194,51 @@ const AddProduct = () => {
     setUploadedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
+  const submitListing = async ({ saveAsDraft = false } = {}) => {
+    if (!validateForm(saveAsDraft)) {
       return;
     }
 
-    setIsSubmitting(true);
+    if (saveAsDraft) {
+      setIsSavingDraft(true);
+    } else {
+      setIsSubmitting(true);
+    }
 
     try {
       const safeUnit = PRODUCT_UNITS.includes(formData.unit)
         ? formData.unit
         : "KG";
 
-      const res = await listingsService.createListing({
+      const payload = {
         title: formData.productName.trim(),
         description: (formData.description || formData.productName).trim(),
-        pricePerUnit: parseFloat(formData.pricePerUnit),
-        quantity: parseFloat(formData.quantity),
-        quantityAvailable: parseFloat(formData.quantity),
+        pricePerUnit: formData.pricePerUnit
+          ? parseFloat(formData.pricePerUnit)
+          : undefined,
+        quantity: formData.quantity ? parseFloat(formData.quantity) : undefined,
+        quantityAvailable: formData.quantity
+          ? parseFloat(formData.quantity)
+          : undefined,
         unit: safeUnit,
         location: formData.storageLocation.trim(),
         listingType: "SELL",
         categoryId: formData.category,
-      });
+        harvestDate: formData.harvestDate || undefined,
+        minimumOrderQty: formData.minimumOrderQty
+          ? parseFloat(formData.minimumOrderQty)
+          : undefined,
+        negotiable: !!formData.negotiable,
+      };
+
+      const res = saveAsDraft
+        ? await listingsService.createDraft(payload)
+        : await listingsService.createListing(payload);
 
       const listingId = res.listing?.id;
       setCreatedListingId(listingId);
 
-      // Upload images if any
-      if (uploadedImages.length > 0 && listingId) {
+      if (!saveAsDraft && uploadedImages.length > 0 && listingId) {
         setIsUploadingImages(true);
         try {
           await listingsService.uploadListingImages(listingId, uploadedImages);
@@ -180,7 +250,6 @@ const AddProduct = () => {
         }
       }
 
-      // Success - navigate after brief delay
       setTimeout(() => {
         navigate("/farmer/inventory");
       }, 500);
@@ -193,6 +262,64 @@ const AddProduct = () => {
       });
     } finally {
       setIsSubmitting(false);
+      setIsSavingDraft(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await submitListing({ saveAsDraft: false });
+  };
+
+  const handleSaveDraft = async () => {
+    await submitListing({ saveAsDraft: true });
+  };
+
+  const handleCsvFileChange = (e) => {
+    const selected = e.target.files?.[0] || null;
+    setCsvFile(selected);
+    setCsvUploadResult(null);
+  };
+
+  const handleCsvUpload = async () => {
+    if (!csvFile) {
+      setCsvUploadResult({
+        message: "Please select a CSV file first.",
+        isError: true,
+      });
+      return;
+    }
+
+    if (!csvFile.name.toLowerCase().endsWith(".csv")) {
+      setCsvUploadResult({
+        message: "Only .csv files are supported.",
+        isError: true,
+      });
+      return;
+    }
+
+    setIsCsvUploading(true);
+    setCsvUploadResult(null);
+    try {
+      const response = await listingsService.bulkUploadCsv(csvFile);
+      const failedRows = Array.isArray(response?.results)
+        ? response.results.filter((row) => row?.status === "failed")
+        : [];
+
+      setCsvUploadResult({
+        isError: false,
+        message: `Processed ${response?.summary?.totalRows || 0} rows. Created ${response?.summary?.createdCount || 0}, failed ${response?.summary?.failedCount || 0}.`,
+        summary: response?.summary || null,
+        failedRows,
+      });
+    } catch (err) {
+      setCsvUploadResult({
+        isError: true,
+        message: err.message || "CSV upload failed.",
+        failedRows: [],
+      });
+    } finally {
+      setIsCsvUploading(false);
     }
   };
 
@@ -220,6 +347,83 @@ const AddProduct = () => {
 
         {/* Form Card */}
         <div className="mb-6 rounded-lg bg-white p-6 shadow-sm lg:p-8">
+          <div className="mb-6 rounded-lg border border-border bg-surface/30 p-4">
+            <p className="text-sm font-semibold text-foreground">
+              Bulk CSV Upload
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              Required CSV columns: title, categoryId, pricePerUnit, quantity,
+              unit, location. Optional: description, listingType, harvestDate,
+              minimumOrderQty, negotiable, isDraft.
+            </p>
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                onChange={handleCsvFileChange}
+                className="block w-full rounded-lg border border-border bg-white px-3 py-2 text-sm sm:max-w-md"
+              />
+              <button
+                type="button"
+                onClick={downloadCsvTemplate}
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-surface"
+              >
+                Download Template
+              </button>
+              <button
+                type="button"
+                onClick={handleCsvUpload}
+                disabled={isCsvUploading}
+                className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-60"
+              >
+                {isCsvUploading ? "Uploading CSV..." : "Upload CSV"}
+              </button>
+            </div>
+            {csvUploadResult && (
+              <p
+                className={`mt-2 text-xs ${
+                  csvUploadResult.isError ? "text-red-600" : "text-green-700"
+                }`}
+              >
+                {csvUploadResult.message}
+              </p>
+            )}
+
+            {!!csvUploadResult?.failedRows?.length && (
+              <div className="mt-3 overflow-x-auto rounded-lg border border-red-200 bg-red-50/30">
+                <table className="w-full min-w-[520px] text-left text-xs">
+                  <thead className="border-b border-red-200 bg-red-50">
+                    <tr>
+                      <th className="px-3 py-2 font-semibold text-red-700">
+                        Row
+                      </th>
+                      <th className="px-3 py-2 font-semibold text-red-700">
+                        Errors
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {csvUploadResult.failedRows.map((row) => (
+                      <tr
+                        key={`csv-row-${row.row}`}
+                        className="border-b border-red-100 last:border-b-0"
+                      >
+                        <td className="px-3 py-2 align-top font-medium text-red-700">
+                          {row.row}
+                        </td>
+                        <td className="px-3 py-2 text-red-700">
+                          {Array.isArray(row.errors)
+                            ? row.errors.join(", ")
+                            : "Unknown validation error"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
           <form onSubmit={handleSubmit}>
             {/* Row 1: Product Name */}
             <div className="mb-6">
@@ -381,6 +585,54 @@ const AddProduct = () => {
               </div>
             </div>
 
+            {/* Row 4: MOQ, Harvest Date, Negotiable */}
+            <div className="mb-6 grid gap-6 md:grid-cols-3">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-foreground">
+                  Minimum Order Quantity
+                </label>
+                <input
+                  type="number"
+                  name="minimumOrderQty"
+                  value={formData.minimumOrderQty}
+                  onChange={handleInputChange}
+                  placeholder="Optional"
+                  step="0.1"
+                  min="0"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-foreground">
+                  Harvest Date
+                </label>
+                <input
+                  type="date"
+                  name="harvestDate"
+                  value={formData.harvestDate}
+                  onChange={handleInputChange}
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-foreground">
+                  Price Negotiable
+                </label>
+                <label className="mt-1 inline-flex items-center gap-2 text-sm text-foreground">
+                  <input
+                    type="checkbox"
+                    name="negotiable"
+                    checked={!!formData.negotiable}
+                    onChange={handleInputChange}
+                    className="h-4 w-4 rounded border-border"
+                  />
+                  Allow negotiation requests
+                </label>
+              </div>
+            </div>
+
             {/* Photo Upload */}
             <div className="mb-6">
               <label className="mb-2 block text-sm font-medium text-foreground">
@@ -461,6 +713,14 @@ const AddProduct = () => {
             <div className="flex justify-end gap-4">
               <button
                 type="button"
+                onClick={handleSaveDraft}
+                disabled={isSubmitting || isSavingDraft || isUploadingImages}
+                className="rounded-lg border border-border px-6 py-2 text-sm font-medium text-foreground transition hover:bg-surface disabled:opacity-60"
+              >
+                {isSavingDraft ? "Saving Draft..." : "Save Draft"}
+              </button>
+              <button
+                type="button"
                 onClick={() => navigate("/farmer/inventory")}
                 className="rounded-lg border border-border px-6 py-2 text-sm font-medium text-foreground transition hover:bg-surface"
               >
@@ -468,7 +728,7 @@ const AddProduct = () => {
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || isUploadingImages}
+                disabled={isSubmitting || isSavingDraft || isUploadingImages}
                 className="flex items-center gap-2 rounded-full bg-green-600 px-8 py-2 text-sm font-medium text-white transition disabled:opacity-60 hover:bg-green-700"
               >
                 {isSubmitting

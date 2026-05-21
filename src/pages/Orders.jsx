@@ -508,6 +508,23 @@ function OrderRow({ order, onUpdateStatus, currentRole, forceOpen = false }) {
                   })}
                 </div>
               )}
+
+              {currentRole === "BUYER" && order.status === "DELIVERED" && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    to={`/reviews/new?orderId=${order.id}`}
+                    className="inline-flex items-center rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-surface"
+                  >
+                    Leave Review
+                  </Link>
+                  <Link
+                    to={`/disputes/new?orderId=${order.id}`}
+                    className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+                  >
+                    Open Dispute
+                  </Link>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

@@ -47,6 +47,14 @@ const toEditableProduct = (listing, fallback = {}) => {
         fallback.stockLevel ??
         0,
     ),
+    minimumOrderQty: Number(
+      safeListing.minimumOrderQty ??
+        safeListing.minOrder ??
+        safeListing.min_order ??
+        fallback.minimumOrderQty ??
+        0,
+    ),
+    negotiable: Boolean(safeListing.negotiable ?? fallback.negotiable ?? false),
     unit: safeListing.unit || fallback.unit || "KG",
     status:
       statusValue === "PAUSED" || statusValue === "INACTIVE"
@@ -74,6 +82,7 @@ const Inventory = () => {
     updateProduct,
     deleteProduct,
     uploadProductImages,
+    publishProduct,
   } = useInventory();
 
   const [showFilter, setShowFilter] = useState(false);
@@ -81,6 +90,7 @@ const Inventory = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [editingProductId, setEditingProductId] = useState("");
+  const [publishingProductId, setPublishingProductId] = useState("");
   const displayName = user?.name || user?.fullName || "Farmer Joe";
   const navbarUser = {
     name: displayName,
@@ -134,7 +144,14 @@ const Inventory = () => {
   const handleSaveProduct = async (updatedData) => {
     setIsSaving(true);
     try {
-      await updateProduct(selectedProduct.id, updatedData);
+      const payload = {
+        ...updatedData,
+        ...(updatedData.status && {
+          status: updatedData.status === "inactive" ? "PAUSED" : "ACTIVE",
+        }),
+      };
+
+      await updateProduct(selectedProduct.id, payload);
       setShowEditModal(false);
       setSelectedProduct(null);
     } catch (error) {
@@ -154,18 +171,30 @@ const Inventory = () => {
     }
   };
 
+  const handlePublishDraft = async (productId) => {
+    setPublishingProductId(productId);
+    const result = await publishProduct(productId);
+    setPublishingProductId("");
+
+    if (!result.success) {
+      alert(result.error || "Failed to publish draft. Please try again.");
+    }
+  };
+
   const getStatusBadge = (status) => {
     const styles = {
       active: "bg-green-100 text-green-700",
       low: "bg-orange-100 text-orange-700",
       critical: "bg-red-100 text-red-700",
       outofstock: "bg-gray-100 text-gray-700",
+      draft: "bg-amber-100 text-amber-700",
     };
     const labels = {
       active: "Active",
       low: "Low Stock",
       critical: "Critical",
       outofstock: "Out of Stock",
+      draft: "Draft",
     };
     return (
       <span
@@ -184,6 +213,8 @@ const Inventory = () => {
         return "bg-orange-500";
       case "critical":
         return "bg-red-500";
+      case "draft":
+        return "bg-amber-400";
       default:
         return "bg-gray-300";
     }
@@ -313,22 +344,30 @@ const Inventory = () => {
                     </td>
                     <td className="px-4 py-3">
                       <div className="w-32">
-                        <div className="mb-1 flex items-center justify-between">
-                          <span className="text-xs font-medium text-foreground">
-                            {Math.round(
-                              (product.stockLevel / product.maxStock) * 100,
-                            )}
-                            % full
-                          </span>
+                        {product.status === "draft" ? (
                           <span className="text-xs text-muted">
-                            {product.stockLevel} kg
+                            Not published
                           </span>
-                        </div>
+                        ) : (
+                          <div className="mb-1 flex items-center justify-between">
+                            <span className="text-xs font-medium text-foreground">
+                              {Math.round(
+                                (product.stockLevel /
+                                  Math.max(1, product.maxStock)) *
+                                  100,
+                              )}
+                              % full
+                            </span>
+                            <span className="text-xs text-muted">
+                              {product.stockLevel} kg
+                            </span>
+                          </div>
+                        )}
                         <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
                           <div
                             className={`h-full ${getStockBarColor(product.status)}`}
                             style={{
-                              width: `${(product.stockLevel / product.maxStock) * 100}%`,
+                              width: `${Math.min(100, (product.stockLevel / Math.max(1, product.maxStock)) * 100)}%`,
                             }}
                           />
                         </div>
@@ -363,6 +402,18 @@ const Inventory = () => {
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
+                        {product.status === "draft" && (
+                          <button
+                            onClick={() => handlePublishDraft(product.id)}
+                            disabled={publishingProductId === product.id}
+                            className="rounded border border-green-200 px-2 py-1 text-xs font-medium text-green-700 transition hover:bg-green-50 disabled:opacity-50"
+                            title="Publish draft"
+                          >
+                            {publishingProductId === product.id
+                              ? "Publishing..."
+                              : "Publish"}
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

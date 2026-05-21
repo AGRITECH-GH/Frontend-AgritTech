@@ -13,6 +13,8 @@ import {
   Shield,
   Award,
   X,
+  DollarSign,
+  Loader2,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -22,6 +24,9 @@ import {
   getPrimaryListingImageUrl,
   getListingImageGalleryUrls,
 } from "@/lib/listingImages";
+import * as chatService from "@/lib/chatService";
+import * as negotiationsService from "@/lib/negotiationsService";
+import { useAuth } from "@/context/AuthContext";
 
 const normalizeListing = (response) => {
   if (!response || typeof response !== "object") return null;
@@ -70,6 +75,7 @@ const getListingId = (item) => String(item?.id || item?._id || "").trim();
 const MarketplaceDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [listing, setListing] = useState(null);
   const [similarProducts, setSimilarProducts] = useState([]);
@@ -81,6 +87,17 @@ const MarketplaceDetails = () => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [cartAdded, setCartAdded] = useState(false);
   const [message, setMessage] = useState(null);
+
+  // Negotiation offer modal
+  const [offerModalOpen, setOfferModalOpen] = useState(false);
+  const [offerPrice, setOfferPrice] = useState("");
+  const [offerQty, setOfferQty] = useState("");
+  const [offerNote, setOfferNote] = useState("");
+  const [offerSubmitting, setOfferSubmitting] = useState(false);
+  const [offerSuccess, setOfferSuccess] = useState(false);
+
+  // Messaging
+  const [msgStarting, setMsgStarting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -193,11 +210,55 @@ const MarketplaceDetails = () => {
     navigate("/farmer/proposals");
   };
 
-  const handleMessageSeller = () => {
-    setMessage({
-      type: "info",
-      text: "Messaging is coming soon. You can continue browsing or add this item to cart.",
-    });
+  const handleMessageSeller = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    if (!listing?.seller?.id) return;
+    setMsgStarting(true);
+    try {
+      const conv = await chatService.getOrCreateConversation(
+        listing.seller.id,
+        id,
+      );
+      navigate(`/messages/${conv.id}`);
+    } catch {
+      setMessage({
+        type: "error",
+        text: "Could not open conversation. Please try again.",
+      });
+    } finally {
+      setMsgStarting(false);
+    }
+  };
+
+  const handleSubmitOffer = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    const price = parseFloat(offerPrice);
+    if (isNaN(price) || price <= 0) return;
+    setOfferSubmitting(true);
+    try {
+      await negotiationsService.makeOffer({
+        listingId: id,
+        offeredPrice: price,
+        quantity: offerQty ? parseFloat(offerQty) : undefined,
+        note: offerNote.trim() || undefined,
+      });
+      setOfferSuccess(true);
+    } catch {
+      setMessage({
+        type: "error",
+        text: "Failed to submit offer. Please try again.",
+      });
+      setOfferModalOpen(false);
+    } finally {
+      setOfferSubmitting(false);
+    }
   };
 
   return (
@@ -320,6 +381,21 @@ const MarketplaceDetails = () => {
                   <p className="text-xs text-muted mt-2">
                     per {listing?.unit || "unit"}
                   </p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <span className="rounded-full bg-[#eef5e5] px-2 py-0.5 text-[11px] font-medium text-[#365b2b]">
+                      MOQ{" "}
+                      {listing?.minimumOrderQty ||
+                        listing?.minOrder ||
+                        listing?.min_order ||
+                        1}{" "}
+                      {listing?.unit || "unit"}
+                    </span>
+                    {listing?.negotiable && (
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+                        Price Negotiable
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Quantity Controls */}
@@ -372,6 +448,23 @@ const MarketplaceDetails = () => {
                     <Gift className="mr-2 h-4 w-4" />
                     Propose Barter Exchange
                   </button>
+
+                  {listing?.negotiable && listing?.seller?.id !== user?.id && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOfferModalOpen(true);
+                        setOfferSuccess(false);
+                        setOfferPrice("");
+                        setOfferQty("");
+                        setOfferNote("");
+                      }}
+                      className="w-full h-12 border-2 border-amber-500 text-amber-700 font-semibold rounded-lg hover:bg-amber-50 transition flex items-center justify-center"
+                    >
+                      <DollarSign className="mr-2 h-4 w-4" />
+                      Make an Offer
+                    </button>
+                  )}
                 </div>
 
                 {/* Cart confirmation banner */}
@@ -457,9 +550,14 @@ const MarketplaceDetails = () => {
                 <button
                   type="button"
                   onClick={handleMessageSeller}
-                  className="flex h-10 flex-1 items-center justify-center rounded-lg border border-primary font-semibold text-primary transition hover:bg-[#f5f6f1]"
+                  disabled={msgStarting}
+                  className="flex h-10 flex-1 items-center justify-center rounded-lg border border-primary font-semibold text-primary transition hover:bg-[#f5f6f1] disabled:opacity-60"
                 >
-                  <MessageCircle className="mr-2 h-4 w-4" />
+                  {msgStarting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                  )}
                   Contact Seller
                 </button>
                 {listing?.seller?.id && (
@@ -495,7 +593,10 @@ const MarketplaceDetails = () => {
                     Min Order
                   </p>
                   <p className="text-lg font-bold text-foreground mt-1">
-                    {listing?.minOrder || listing?.min_order || "1"}{" "}
+                    {listing?.minimumOrderQty ||
+                      listing?.minOrder ||
+                      listing?.min_order ||
+                      "1"}{" "}
                     {listing?.unit || ""}
                   </p>
                 </div>
@@ -648,6 +749,116 @@ const MarketplaceDetails = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Make Offer Modal ─────────────────────────────────────────── */}
+      {offerModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-foreground">
+                Make an Offer
+              </h3>
+              <button
+                type="button"
+                onClick={() => setOfferModalOpen(false)}
+                className="rounded-full p-1.5 hover:bg-muted/10"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {offerSuccess ? (
+              <div className="flex flex-col items-center gap-3 py-6 text-center">
+                <CheckCircle2 className="h-12 w-12 text-green-500" />
+                <p className="font-semibold text-foreground">Offer Sent!</p>
+                <p className="text-sm text-muted">
+                  The seller will be notified and can accept, decline, or
+                  counter your offer.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setOfferModalOpen(false)}
+                  className="mt-2 rounded-lg bg-green-600 px-6 py-2 text-sm font-semibold text-white hover:bg-green-700"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitOffer} className="space-y-4">
+                <div>
+                  <p className="text-sm text-muted mb-3">
+                    Listed at{" "}
+                    <span className="font-semibold text-foreground">
+                      {formatCurrency(listingPrice)}
+                    </span>{" "}
+                    per {listing?.unit || "unit"}
+                  </p>
+                  <label className="block text-sm font-medium text-foreground mb-1">
+                    Your Offer Price (GHS){" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    required
+                    value={offerPrice}
+                    onChange={(e) => setOfferPrice(e.target.value)}
+                    placeholder={`e.g. ${(listingPrice * 0.9).toFixed(2)}`}
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">
+                    Quantity ({listing?.unit || "unit"})
+                  </label>
+                  <input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={offerQty}
+                    onChange={(e) => setOfferQty(e.target.value)}
+                    placeholder="Optional"
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-1">
+                    Note to Seller
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={offerNote}
+                    onChange={(e) => setOfferNote(e.target.value)}
+                    placeholder="E.g. willing to pay cash on delivery…"
+                    className="w-full resize-none rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                <div className="flex gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setOfferModalOpen(false)}
+                    className="flex-1 rounded-lg border border-border py-2 text-sm font-medium hover:bg-muted/5"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={offerSubmitting || !offerPrice}
+                    className="flex-1 rounded-lg bg-amber-500 py-2 text-sm font-semibold text-white hover:bg-amber-600 disabled:opacity-60 flex items-center justify-center gap-2"
+                  >
+                    {offerSubmitting && (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
+                    Submit Offer
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

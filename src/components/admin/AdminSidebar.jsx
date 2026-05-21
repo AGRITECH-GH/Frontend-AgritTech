@@ -5,6 +5,7 @@ import {
   ListChecks,
   Users,
   BarChart2,
+  ShieldAlert,
   Settings,
   Menu,
   X,
@@ -22,6 +23,7 @@ const navItems = [
   },
   { label: "Active Listings", to: "/admin/listings", icon: ListChecks },
   { label: "User Management", to: "/admin/users", icon: Users },
+  { label: "Disputes", to: "/admin/disputes", icon: ShieldAlert },
   { label: "Revenue Reports", to: "/admin/revenue", icon: BarChart2 },
   { label: "System Settings", to: "/admin/settings", icon: Settings },
 ];
