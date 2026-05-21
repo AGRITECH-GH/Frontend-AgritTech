@@ -51,7 +51,7 @@ function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      <main>
+      <main className="flex-1">
         <HeroSection />
         <StakeholdersSection />
         <TechnologySection />

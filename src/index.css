@@ -35,6 +35,16 @@
   body {
     @apply min-h-screen bg-surface text-foreground;
   }
+
+  /* Keep footer pinned to the viewport bottom on short pages. */
+  body .min-h-screen:has(> footer) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  body .min-h-screen:has(> footer) > main {
+    flex: 1 1 auto;
+  }
 }
 
 @layer components {
