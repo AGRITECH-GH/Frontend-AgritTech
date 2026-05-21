@@ -3,6 +3,7 @@ import { useNavigate, NavLink } from "react-router-dom";
 import { Search, User, Menu, X, ChevronDown, LogOut } from "lucide-react";
 import logo from "@/assets/logo.svg";
 import { useAuth } from "@/context/AuthContext";
+import NotificationCenter from "@/components/ui/NotificationCenter";
 
 const defaultNavLinks = [
   { label: "Dashboard", to: "/farmer/dashboard" },
@@ -94,7 +95,7 @@ const DashboardNavbar = ({
           onClick={() => navigate("/farmer/dashboard")}
           className="flex shrink-0 items-center gap-1.5 text-base font-semibold text-foreground"
         >
-          <img src={logo} alt="AgriTech logo" className="h-6 w-6" />
+          <img src={logo} alt="FarmBridge logo" className="h-6 w-6" />
           <span>
             Agri<span className="text-green-600">Tech</span>
           </span>
@@ -142,6 +143,8 @@ const DashboardNavbar = ({
 
         {/* Right controls */}
         <div className="flex shrink-0 items-center gap-3">
+          {/* Notification bell */}
+          <NotificationCenter />
           {/* Avatar + User menu */}
           <div className="relative" ref={profileMenuRef}>
             <button

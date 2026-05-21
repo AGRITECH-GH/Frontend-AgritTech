@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import Footer from "@/components/Footer";
@@ -86,6 +86,7 @@ const itemVariants = {
 export default function SignUp() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedRole, setSelectedRole] = useState("FARMER");
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
@@ -104,6 +105,12 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const redirectParam = new URLSearchParams(location.search).get("redirect") || "";
+  const redirectPath = redirectParam.startsWith("/") ? redirectParam : "";
+  const loginPath = redirectPath
+    ? `/login?redirect=${encodeURIComponent(redirectPath)}`
+    : "/login";
 
   const handleGoogleAuth = () => {
     authService.signInWithGoogle();
@@ -201,7 +208,10 @@ export default function SignUp() {
       setSuccess(true);
 
       setTimeout(() => {
-        navigate(`/verify-email?email=${encodeURIComponent(form.email)}`);
+        const verifyUrl = redirectPath
+          ? `/verify-email?email=${encodeURIComponent(form.email)}&redirect=${encodeURIComponent(redirectPath)}`
+          : `/verify-email?email=${encodeURIComponent(form.email)}`;
+        navigate(verifyUrl);
       }, 900);
     } catch (err) {
       setErrors({
@@ -225,8 +235,8 @@ export default function SignUp() {
             to="/"
             className="flex items-center gap-1.5 text-base font-semibold text-foreground"
           >
-            <img src={logo} alt="AgriTech logo" className="h-6 w-6 shrink-0" />
-            <span>AgriTech</span>
+            <img src={logo} alt="FarmBridge logo" className="h-6 w-6 shrink-0" />
+            <span>FarmBridge</span>
           </Link>
 
           {/* Desktop: nav links + Sign In */}
@@ -243,7 +253,7 @@ export default function SignUp() {
               ))}
             </div>
             <Link
-              to="/login"
+              to={loginPath}
               className="text-sm font-bold px-5 py-2 rounded-full bg-green-100 text-gray-900 hover:bg-green-200 transition-colors"
             >
               Sign In
@@ -285,7 +295,7 @@ export default function SignUp() {
               </a>
             ))}
             <Link
-              to="/login"
+              to={loginPath}
               className="mt-2 text-sm font-bold px-5 py-2 rounded-full bg-green-100 text-center text-gray-900 hover:bg-green-200 transition-colors"
             >
               Sign In
@@ -314,7 +324,7 @@ export default function SignUp() {
                 Account created!
               </h2>
               <p className="text-gray-500 mb-6">
-                Welcome to AgriTech, <strong>{form.name}</strong>. Your journey
+                Welcome to FarmBridge, <strong>{form.name}</strong>. Your journey
                 starts now.
               </p>
               <Link
@@ -800,7 +810,7 @@ export default function SignUp() {
               >
                 Already have an account?{" "}
                 <Link
-                  to="/login"
+                  to={loginPath}
                   className="text-green-600 font-bold hover:underline"
                 >
                   Log In

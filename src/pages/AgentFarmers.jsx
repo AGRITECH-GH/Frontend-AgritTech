@@ -5,7 +5,7 @@ import AgentLayout from "@/components/agent/AgentLayout";
 import FarmersTable from "@/components/agent/FarmersTable";
 import AgentRequestsTable from "@/components/agent/AgentRequestsTable";
 import { useMyFarmers } from "@/hooks/useMyFarmers";
-import { useAgentRequests } from "@/hooks/useAgentRequests";
+import Skeleton from "@/components/ui/skeleton";
 
 const AgentFarmers = () => {
   const { user: authUser } = useAuth();
@@ -175,22 +175,23 @@ const AgentFarmers = () => {
               onAction={() => {}}
             />
 
-            {loadingFarmers && (
-              <p className="mt-3 text-sm text-muted">Loading farmers...</p>
-            )}
-          </>
-        ) : (
-          <>
-            <AgentRequestsTable
-              requests={requests}
-              processingRequestId={processingRequestId}
-              onAccept={handleAcceptRequest}
-              onReject={handleRejectRequest}
-            />
-            {loadingRequests && (
-              <p className="mt-3 text-sm text-muted">Loading requests...</p>
-            )}
-          </>
+        {loadingFarmers && (
+          <div className="mt-3 rounded-2xl border border-border/60 bg-white p-4 shadow-sm">
+            <div className="space-y-3">
+              {[...Array(4)].map((_, idx) => (
+                <div
+                  key={`my-farmers-skeleton-${idx}`}
+                  className="grid grid-cols-12 gap-3"
+                >
+                  <Skeleton className="col-span-3 h-4" />
+                  <Skeleton className="col-span-3 h-4" />
+                  <Skeleton className="col-span-2 h-4" />
+                  <Skeleton className="col-span-2 h-4" />
+                  <Skeleton className="col-span-2 h-4" />
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </main>
     </AgentLayout>

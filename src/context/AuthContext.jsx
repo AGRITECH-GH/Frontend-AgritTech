@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { authService, api } from "@/lib";
+import { authService, api, cartService, getGuestCart, clearGuestCart } from "@/lib";
 
 const AuthContext = createContext(null);
 
@@ -41,6 +41,31 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const mergeGuestCartIntoAccount = async (role) => {
+    if (role !== "BUYER") return;
+
+    const guestItems = getGuestCart().items || [];
+    if (guestItems.length === 0) return;
+
+    try {
+      for (const item of guestItems) {
+        const listingId = String(item?.listingId || "").trim();
+        const quantity = Number(item?.quantity || 1);
+
+        if (!listingId || !Number.isFinite(quantity) || quantity <= 0) {
+          continue;
+        }
+
+        await cartService.addItemToCart({ listingId, quantity });
+      }
+
+      clearGuestCart();
+    } catch (err) {
+      // Keep local guest cart if merge fails so user does not lose items.
+      console.error("Failed to merge guest cart after login:", err);
+    }
+  };
 
   // Check if user is already logged in on mount
   useEffect(() => {
@@ -88,6 +113,7 @@ export const AuthProvider = ({ children }) => {
       const normalizedUser = normalizeUser(response.user);
       setUser(normalizedUser);
       localStorage.setItem("user", JSON.stringify(normalizedUser));
+      await mergeGuestCartIntoAccount(normalizedUser?.role);
 
       return response;
     } catch (err) {
@@ -108,6 +134,7 @@ export const AuthProvider = ({ children }) => {
       const normalizedUser = normalizeUser(response.user);
       setUser(normalizedUser);
       localStorage.setItem("user", JSON.stringify(normalizedUser));
+      await mergeGuestCartIntoAccount(normalizedUser?.role);
 
       return response;
     } catch (err) {

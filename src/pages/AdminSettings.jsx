@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { adminService } from "@/lib";
 import AdminLayout from "@/components/admin/AdminLayout";
+import Skeleton from "@/components/ui/skeleton";
 
 const extractCategories = (response) => {
   if (Array.isArray(response)) return response;
@@ -278,14 +279,25 @@ const AdminSettings = () => {
               </thead>
               <tbody>
                 {categoriesLoading ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="px-4 py-8 text-center text-muted"
-                    >
-                      Loading categories...
-                    </td>
-                  </tr>
+                  [...Array(5)].map((_, idx) => (
+                    <tr key={`categories-skeleton-${idx}`}>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-6" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-28" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-44" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-8" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-8 w-16 rounded-lg" />
+                      </td>
+                    </tr>
+                  ))
                 ) : categories.length === 0 ? (
                   <tr>
                     <td

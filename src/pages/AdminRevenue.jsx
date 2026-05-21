@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { adminService } from "@/lib";
 import AdminLayout from "@/components/admin/AdminLayout";
+import Skeleton from "@/components/ui/skeleton";
 import AdminRevenueSkeleton from "@/components/admin/AdminRevenueSkeleton";
 
 const toNumber = (value, fallback = 0) => {
@@ -222,7 +223,24 @@ const AdminRevenue = () => {
                 </tr>
               </thead>
               <tbody>
-                {orders.length === 0 ? (
+                {ordersLoading ? (
+                  [...Array(6)].map((_, idx) => (
+                    <tr key={`orders-skeleton-${idx}`}>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-32" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-24" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                    </tr>
+                  ))
+                ) : orders.length === 0 ? (
                   <tr>
                     <td
                       colSpan={4}

@@ -84,8 +84,12 @@ export default function VerifyEmailChange() {
             to="/"
             className="flex items-center gap-1.5 text-base font-semibold text-foreground"
           >
-            <img src={logo} alt="AgriTech logo" className="h-6 w-6 shrink-0" />
-            <span>AgriTech</span>
+            <img
+              src={logo}
+              alt="FarmBridge logo"
+              className="h-6 w-6 shrink-0"
+            />
+            <span>FarmBridge</span>
           </Link>
           <Link
             to="/login"

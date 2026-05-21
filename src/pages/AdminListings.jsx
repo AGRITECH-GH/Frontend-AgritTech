@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { getPrimaryListingImageUrl, listingsService } from "@/lib";
 import AdminLayout from "@/components/admin/AdminLayout";
+import Skeleton from "@/components/ui/skeleton";
 import AdminListingsSkeleton from "@/components/admin/AdminListingsSkeleton";
 
 const toNumber = (value) => {
@@ -315,7 +316,13 @@ const AdminListings = () => {
               </tr>
             </thead>
             <tbody>
-              {listings.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-10 text-center text-muted">
+                    Loading listings...
+                  </td>
+                </tr>
+              ) : listings.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-10 text-center text-muted">
                     No listings found.

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
@@ -39,7 +39,12 @@ const Checkout = lazy(() => import("@/pages/Checkout"));
 const Orders = lazy(() => import("@/pages/Orders"));
 const PaymentReturn = lazy(() => import("@/pages/PaymentReturn"));
 const Profile = lazy(() => import("@/pages/Profile"));
+const PublicProfile = lazy(() => import("@/pages/PublicProfile"));
 const Activity = lazy(() => import("@/pages/Activity"));
+const Messages = lazy(() => import("@/pages/Messages"));
+const Reviews = lazy(() => import("@/pages/Reviews"));
+const Disputes = lazy(() => import("@/pages/Disputes"));
+const AdminDisputes = lazy(() => import("@/pages/AdminDisputes"));
 
 function HomePage() {
   return (
@@ -63,7 +68,7 @@ function App() {
       <Suspense fallback={<Loader />}>
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<Navigate to="/marketplace" replace />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -72,32 +77,12 @@ function App() {
           <Route path="/verify-email-change" element={<VerifyEmailChange />} />
           <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
           <Route path="/payments/return" element={<PaymentReturn />} />
+          <Route path="/profile/:userId" element={<PublicProfile />} />
 
-          {/* Buyer routes - protected */}
-          <Route
-            path="/marketplace"
-            element={
-              <ProtectedRoute allowedRoles={["BUYER"]}>
-                <Marketplace />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/marketplace/:id"
-            element={
-              <ProtectedRoute allowedRoles={["BUYER"]}>
-                <MarketplaceDetails />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/cart"
-            element={
-              <ProtectedRoute allowedRoles={["BUYER"]}>
-                <Cart />
-              </ProtectedRoute>
-            }
-          />
+          {/* Buyer routes */}
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/marketplace/:id" element={<MarketplaceDetails />} />
+          <Route path="/cart" element={<Cart />} />
           <Route
             path="/checkout"
             element={
@@ -119,6 +104,38 @@ function App() {
             element={
               <ProtectedRoute>
                 <Orders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reviews"
+            element={
+              <ProtectedRoute>
+                <Reviews />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reviews/new"
+            element={
+              <ProtectedRoute>
+                <Reviews />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/disputes"
+            element={
+              <ProtectedRoute>
+                <Disputes />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/disputes/new"
+            element={
+              <ProtectedRoute>
+                <Disputes />
               </ProtectedRoute>
             }
           />
@@ -201,6 +218,24 @@ function App() {
             }
           />
 
+          {/* Messages / inbox routes - protected */}
+          <Route
+            path="/messages"
+            element={
+              <ProtectedRoute>
+                <Messages />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/messages/:conversationId"
+            element={
+              <ProtectedRoute>
+                <Messages />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Admin routes - protected */}
           <Route
             path="/admin/dashboard"
@@ -247,6 +282,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["ADMIN"]}>
                 <AdminSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/disputes"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminDisputes />
               </ProtectedRoute>
             }
           />

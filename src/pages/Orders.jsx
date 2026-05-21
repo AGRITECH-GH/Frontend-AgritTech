@@ -17,6 +17,7 @@ import Navbar from "@/components/Navbar";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import Skeleton from "@/components/ui/skeleton";
 import {
   OrdersBuyerSkeleton,
   OrdersFarmerSkeleton,
@@ -511,6 +512,23 @@ function OrderRow({ order, onUpdateStatus, currentRole, forceOpen = false }) {
                   })}
                 </div>
               )}
+
+              {currentRole === "BUYER" && order.status === "DELIVERED" && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    to={`/reviews/new?orderId=${order.id}`}
+                    className="inline-flex items-center rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-surface"
+                  >
+                    Leave Review
+                  </Link>
+                  <Link
+                    to={`/disputes/new?orderId=${order.id}`}
+                    className="inline-flex items-center rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100"
+                  >
+                    Open Dispute
+                  </Link>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
@@ -855,7 +873,64 @@ export default function Orders() {
           )}
 
           {loading ? (
-            <OrdersFarmerSkeleton showHeader={false} showFilters={false} />
+            <div className="overflow-x-auto rounded-2xl border border-border/60 bg-white shadow-sm">
+              <table className="w-full min-w-[860px] text-left">
+                <thead className="border-b border-border bg-surface/60">
+                  <tr>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Order
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Buyer
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Date
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Items
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Total
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted">
+                      Details
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...Array(6)].map((_, idx) => (
+                    <tr key={`farmer-orders-skeleton-${idx}`}>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-24" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-28" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-14" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <Skeleton className="h-6 w-20 rounded-full" />
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end">
+                          <Skeleton className="h-8 w-16 rounded-lg" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : filteredOrders.length === 0 ? (
             <div className="rounded-3xl border border-border/60 bg-white py-16 text-center">
               <ShoppingBag className="mx-auto mb-4 h-12 w-12 text-gray-300" />
@@ -1006,6 +1081,62 @@ export default function Orders() {
             )}
             {paymentNotice.message}
           </motion.div>
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <div className="overflow-x-auto rounded-2xl border border-border/60 bg-white shadow-sm">
+            <table className="w-full min-w-[760px] text-left">
+              <thead className="border-b border-border bg-surface/60">
+                <tr>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                    Order
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                    Date
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                    Items
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                    Total
+                  </th>
+                  <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...Array(6)].map((_, idx) => (
+                  <tr key={`buyer-orders-skeleton-${idx}`}>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-24" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-14" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-2">
+                        <Skeleton className="h-8 w-16 rounded-lg" />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {/* Empty state */}

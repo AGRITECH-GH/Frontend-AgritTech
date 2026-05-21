@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { adminService } from "@/lib";
 import AdminLayout from "@/components/admin/AdminLayout";
+import Skeleton from "@/components/ui/skeleton";
 import AdminUsersSkeleton from "@/components/admin/AdminUsersSkeleton";
 
 const toNumber = (value, fallback = 0) => {
@@ -456,7 +457,33 @@ const AdminUsers = () => {
               </tr>
             </thead>
             <tbody>
-              {users.length === 0 ? (
+              {loading ? (
+                [...Array(7)].map((_, idx) => (
+                  <tr key={`users-skeleton-${idx}`}>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-28" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-36" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-6 w-16 rounded-full" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-8 w-16 rounded-lg" />
+                    </td>
+                  </tr>
+                ))
+              ) : users.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-10 text-center text-muted">
                     No users found.

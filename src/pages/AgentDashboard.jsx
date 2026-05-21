@@ -9,6 +9,7 @@ import CommissionTransparency from "@/components/agent/CommissionTransparency";
 import RegionalHubActivity from "@/components/agent/RegionalHubActivity";
 import FarmersTable from "@/components/agent/FarmersTable";
 import RegisterFarmerModal from "@/components/agent/RegisterFarmerModal";
+import Skeleton from "@/components/ui/skeleton";
 import AgentDashboardSkeleton from "@/components/agent/AgentDashboardSkeleton";
 
 const AgentDashboard = () => {
@@ -160,6 +161,24 @@ const AgentDashboard = () => {
           onSearchChange={setSearchQuery}
           onAction={onFarmerAction}
         />
+        {loadingFarmers && (
+          <div className="mt-3 rounded-2xl border border-border/60 bg-white p-4 shadow-sm">
+            <div className="space-y-3">
+              {[...Array(4)].map((_, idx) => (
+                <div
+                  key={`agent-farmers-skeleton-${idx}`}
+                  className="grid grid-cols-12 gap-3"
+                >
+                  <Skeleton className="col-span-3 h-4" />
+                  <Skeleton className="col-span-3 h-4" />
+                  <Skeleton className="col-span-2 h-4" />
+                  <Skeleton className="col-span-2 h-4" />
+                  <Skeleton className="col-span-2 h-4" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
       <RegisterFarmerModal

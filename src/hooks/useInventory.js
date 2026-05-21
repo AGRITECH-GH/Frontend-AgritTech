@@ -30,10 +30,32 @@ export const PRODUCT_CATEGORIES = [
   "Leafy Green",
   "Pantry",
   "Dairy",
+  "Livestock",
 ];
 
 // Units of measurement
 export const PRODUCT_UNITS = ["KG", "BAG", "CRATE", "PIECE", "LITRE", "BUNDLE"];
+
+const deriveInventoryStatus = (listing) => {
+  if (!listing) return "active";
+
+  const rawStatus = String(listing.status || "").toUpperCase();
+  if (rawStatus === "PAUSED") return "draft";
+  if (rawStatus === "SOLD") return "outofstock";
+
+  const quantityAvailable = Number.parseFloat(listing.quantityAvailable ?? 0);
+  const quantity = Number.parseFloat(listing.quantity ?? 0);
+
+  if (!Number.isFinite(quantityAvailable) || quantityAvailable <= 0) {
+    return "outofstock";
+  }
+
+  if (Number.isFinite(quantity) && quantity > 0) {
+    if (quantityAvailable < quantity * 0.2) return "low";
+  }
+
+  return "active";
+};
 
 /**
  * useInventory – manage product inventory data, filtering, and pagination
@@ -72,17 +94,11 @@ export const useInventory = () => {
             category: listing.category?.name || "General",
             stockLevel: parseInt(listing.quantityAvailable) || 0,
             maxStock: parseInt(listing.quantity) || 0,
+            minimumOrderQty: parseFloat(listing.minimumOrderQty) || 0,
+            negotiable: Boolean(listing.negotiable),
             price: parseFloat(listing.pricePerUnit) || 0,
             unit: listing.unit || "KG",
-            status:
-              listing.status === "SOLD"
-                ? "outofstock"
-                : listing.quantityAvailable === 0
-                  ? "outofstock"
-                  : parseInt(listing.quantityAvailable) <
-                      parseInt(listing.quantity) * 0.2
-                    ? "low"
-                    : "active",
+            status: deriveInventoryStatus(listing),
           }));
         setProducts(listings);
       } catch (err) {
@@ -107,6 +123,8 @@ export const useInventory = () => {
       result = result.filter((p) => p.status === "low");
     } else if (tabFilter === "outofstock") {
       result = result.filter((p) => p.status === "outofstock");
+    } else if (tabFilter === "draft") {
+      result = result.filter((p) => p.status === "draft");
     }
 
     // Apply search filter
@@ -169,6 +187,11 @@ export const useInventory = () => {
       label: "Out of Stock",
       count: products.filter((p) => p.status === "outofstock").length,
     },
+    {
+      id: "draft",
+      label: "Drafts",
+      count: products.filter((p) => p.status === "draft").length,
+    },
   ];
 
   // Update product listing
@@ -189,12 +212,18 @@ export const useInventory = () => {
               ...(updateData.quantityAvailable && {
                 stockLevel: updateData.quantityAvailable,
               }),
+              ...(updateData.minimumOrderQty !== undefined && {
+                minimumOrderQty: updateData.minimumOrderQty,
+              }),
+              ...(updateData.negotiable !== undefined && {
+                negotiable: Boolean(updateData.negotiable),
+              }),
               ...(updateData.status && {
                 status:
                   updateData.status === "SOLD"
                     ? "outofstock"
                     : updateData.status === "PAUSED"
-                      ? "inactive"
+                      ? "draft"
                       : "active",
               }),
             };
@@ -248,6 +277,35 @@ export const useInventory = () => {
     }
   };
 
+  const publishProduct = async (productId) => {
+    try {
+      await listingsService.publishDraft(productId);
+
+      setProducts((prev) =>
+        prev.map((p) => {
+          if (p.id !== productId) return p;
+
+          const nextStatus =
+            p.stockLevel <= 0
+              ? "outofstock"
+              : p.maxStock > 0 && p.stockLevel < p.maxStock * 0.2
+                ? "low"
+                : "active";
+
+          return {
+            ...p,
+            status: nextStatus,
+          };
+        }),
+      );
+
+      return { success: true };
+    } catch (err) {
+      console.error("Failed to publish draft:", err);
+      return { success: false, error: err.message };
+    }
+  };
+
   return {
     products,
     filteredProducts,
@@ -266,5 +324,6 @@ export const useInventory = () => {
     updateProduct,
     deleteProduct,
     uploadProductImages,
+    publishProduct,
   };
 };

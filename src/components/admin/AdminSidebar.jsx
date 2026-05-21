@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   Users,
   BarChart2,
+  ShieldAlert,
   Settings,
   Menu,
   X,
@@ -24,6 +25,7 @@ const navItems = [
   { label: "KYC Reviews", to: "/admin/kyc", icon: ShieldCheck },
   { label: "Active Listings", to: "/admin/listings", icon: ListChecks },
   { label: "User Management", to: "/admin/users", icon: Users },
+  { label: "Disputes", to: "/admin/disputes", icon: ShieldAlert },
   { label: "Revenue Reports", to: "/admin/revenue", icon: BarChart2 },
   { label: "System Settings", to: "/admin/settings", icon: Settings },
 ];
@@ -93,8 +95,8 @@ const AdminNavContent = ({ admin, onNavigate }) => {
         }}
         className="flex items-center gap-2 px-5 py-5 text-base font-bold text-primary"
       >
-        <img src={logo} alt="AgriTech" className="h-6 w-6" />
-        <span>AgriTech</span>
+        <img src={logo} alt="FarmBridge" className="h-6 w-6" />
+        <span>FarmBridge</span>
       </button>
 
       {/* Nav links */}

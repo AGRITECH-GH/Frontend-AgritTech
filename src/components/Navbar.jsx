@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.svg";
 import { transition } from "@/motionConfig";
 import { useAuth } from "@/context/AuthContext";
-import { cartService } from "@/lib";
+import { cartService, getGuestCartCount } from "@/lib";
 import VerificationBanner from "@/components/VerificationBanner";
 
 const navItems = [
@@ -60,19 +60,42 @@ const Navbar = ({ minimal = false }) => {
 
   // Fetch cart count when minimal (marketplace) mode
   useEffect(() => {
-    if (!minimal || !user) return;
-    cartService
-      .getCart()
-      .then((res) => {
-        const items =
-          res?.cart?.items ||
-          res?.items ||
-          res?.data?.items ||
-          res?.data?.cart?.items ||
-          [];
-        setCartCount(Array.isArray(items) ? items.length : 0);
-      })
-      .catch(() => {});
+    if (!minimal) return;
+
+    const syncCartCount = () => {
+      if (!user) {
+        setCartCount(getGuestCartCount());
+        return;
+      }
+
+      cartService
+        .getCart()
+        .then((res) => {
+          const items =
+            res?.cart?.items ||
+            res?.items ||
+            res?.data?.items ||
+            res?.data?.cart?.items ||
+            [];
+          setCartCount(Array.isArray(items) ? items.length : 0);
+        })
+        .catch(() => {
+          setCartCount(0);
+        });
+    };
+
+    const handleGuestCartChanged = () => {
+      if (!user) {
+        setCartCount(getGuestCartCount());
+      }
+    };
+
+    syncCartCount();
+    window.addEventListener("guest-cart:changed", handleGuestCartChanged);
+
+    return () => {
+      window.removeEventListener("guest-cart:changed", handleGuestCartChanged);
+    };
   }, [minimal, user]);
 
   // Close user menu on outside click

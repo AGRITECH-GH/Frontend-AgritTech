@@ -33,6 +33,12 @@ const listingsService = {
       body: JSON.stringify(listingData),
     }),
 
+  createDraft: (listingData) =>
+    api.apiFetch("/api/listings", {
+      method: "POST",
+      body: JSON.stringify({ ...listingData, isDraft: true }),
+    }),
+
   /**
    * Get all listings with filters and pagination
    * @param {Object} params - { search?, category?, listingType?, location?, minPrice?, maxPrice?, page?, limit? }
@@ -83,6 +89,12 @@ const listingsService = {
       body: JSON.stringify(updateData),
     }),
 
+  publishDraft: (id) =>
+    api.apiFetch(`/api/listings/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ publish: true }),
+    }),
+
   /**
    * Delete listing
    * @param {string} id - Listing ID
@@ -106,6 +118,16 @@ const listingsService = {
     });
 
     return api.apiFetch(`/api/listings/${id}/images`, {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  bulkUploadCsv: (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return api.apiFetch("/api/listings/bulk-upload", {
       method: "POST",
       body: formData,
     });

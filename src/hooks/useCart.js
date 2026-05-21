@@ -1,7 +1,35 @@
 import { useCallback, useEffect, useState } from "react";
-import { cartService } from "@/lib";
+import {
+  cartService,
+  getGuestCart,
+  setGuestCartItemQuantity,
+  removeGuestCartItem,
+  clearGuestCart,
+} from "@/lib";
+import { useAuth } from "@/context/AuthContext";
+
+const getItemPrice = (item) => {
+  const listing = item?.listing || item || {};
+  const raw = Number(listing?.pricePerUnit ?? listing?.price ?? item?.price ?? 0);
+  return Number.isFinite(raw) ? raw : 0;
+};
+
+const buildGuestValidation = (items = []) => {
+  const subtotal = items.reduce((sum, item) => {
+    return sum + getItemPrice(item) * Number(item?.quantity || 1);
+  }, 0);
+
+  const total = subtotal + subtotal * 0.05;
+
+  return {
+    valid: true,
+    issues: [],
+    total,
+  };
+};
 
 export const useCart = () => {
+  const { isAuthenticated } = useAuth();
   const [cart, setCart] = useState(null);
   const [validationResult, setValidationResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -11,6 +39,15 @@ export const useCart = () => {
   const fetchCart = useCallback(async () => {
     setLoading(true);
     setError("");
+
+    if (!isAuthenticated) {
+      const guestCart = getGuestCart();
+      setCart(guestCart);
+      setValidationResult(buildGuestValidation(guestCart.items || []));
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await cartService.getCart();
       setCart(response?.cart || response?.data || {});
@@ -19,13 +56,20 @@ export const useCart = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Add item to cart
   const addItem = useCallback(
     async (listingId, quantity) => {
       setError("");
       try {
+        if (!isAuthenticated) {
+          const nextCart = setGuestCartItemQuantity(listingId, quantity);
+          setCart(nextCart);
+          setValidationResult(buildGuestValidation(nextCart.items || []));
+          return nextCart;
+        }
+
         const response = await cartService.addItemToCart({
           listingId,
           quantity,
@@ -38,7 +82,7 @@ export const useCart = () => {
         throw err;
       }
     },
-    [fetchCart],
+    [fetchCart, isAuthenticated],
   );
 
   // Remove item from cart
@@ -46,6 +90,13 @@ export const useCart = () => {
     async (listingId) => {
       setError("");
       try {
+        if (!isAuthenticated) {
+          const nextCart = removeGuestCartItem(listingId);
+          setCart(nextCart);
+          setValidationResult(buildGuestValidation(nextCart.items || []));
+          return;
+        }
+
         await cartService.removeItemFromCart(listingId);
         await fetchCart();
       } catch (err) {
@@ -54,12 +105,20 @@ export const useCart = () => {
         throw err;
       }
     },
-    [fetchCart],
+    [fetchCart, isAuthenticated],
   );
 
   // Validate cart
   const validateCart = useCallback(async () => {
     setError("");
+
+    if (!isAuthenticated) {
+      const guestCart = getGuestCart();
+      const result = buildGuestValidation(guestCart.items || []);
+      setValidationResult(result);
+      return result;
+    }
+
     try {
       const response = await cartService.validateCart();
       setValidationResult(response);
@@ -69,12 +128,19 @@ export const useCart = () => {
       setError(errorMsg);
       throw err;
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Clear cart
   const clearCart = useCallback(async () => {
     setError("");
     try {
+      if (!isAuthenticated) {
+        const next = clearGuestCart();
+        setCart(next);
+        setValidationResult(buildGuestValidation([]));
+        return;
+      }
+
       await cartService.clearCart();
       setCart({ items: [] });
       setValidationResult(null);
@@ -83,12 +149,12 @@ export const useCart = () => {
       setError(errorMsg);
       throw err;
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Initial fetch
   useEffect(() => {
     fetchCart();
-  }, [fetchCart]);
+  }, [fetchCart, isAuthenticated]);
 
   return {
     cart,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Sprout } from "lucide-react";
 import logo from "@/assets/logo.svg";
@@ -71,11 +71,18 @@ const Spinner = () => (
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  const redirectParam = new URLSearchParams(location.search).get("redirect") || "";
+  const redirectPath = redirectParam.startsWith("/") ? redirectParam : "";
+  const signUpPath = redirectPath
+    ? `/signup?redirect=${encodeURIComponent(redirectPath)}`
+    : "/signup";
 
   const handleGoogleAuth = () => {
     authService.signInWithGoogle();
@@ -112,6 +119,10 @@ export default function Login() {
       // Route based on role
       const { role } = response.user;
       setTimeout(() => {
+        if (redirectPath && role === "BUYER") {
+          navigate(redirectPath, { replace: true });
+          return;
+        }
         if (role === "ADMIN") navigate("/admin/dashboard");
         else if (role === "AGENT") navigate("/agent/dashboard");
         else if (role === "BUYER") navigate("/marketplace");
@@ -146,9 +157,9 @@ export default function Login() {
         {/* Brand + tagline */}
         <div className="relative z-10">
           <Link to="/" className="flex items-center gap-2 mb-6">
-            <img src={logo} alt="AgriTech logo" className="h-7 w-7 shrink-0" />
+            <img src={logo} alt="FarmBridge logo" className="h-7 w-7 shrink-0" />
             <span className="text-white font-semibold text-lg tracking-tight">
-              AgriTech
+              FarmBridge
             </span>
           </Link>
 
@@ -175,9 +186,9 @@ export default function Login() {
         {/* Minimal top bar — logo visible on mobile only */}
         <header className="flex items-center px-4 pb-2 pt-5 sm:px-8 sm:pt-6 lg:hidden">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="AgriTech logo" className="h-6 w-6 shrink-0" />
+            <img src={logo} alt="FarmBridge logo" className="h-6 w-6 shrink-0" />
             <span className="font-semibold text-gray-900 text-base">
-              AgriTech
+              FarmBridge
             </span>
           </Link>
         </header>
@@ -364,7 +375,7 @@ export default function Login() {
                 >
                   Don&apos;t have an account?{" "}
                   <Link
-                    to="/signup"
+                    to={signUpPath}
                     className="text-green-500 font-bold hover:text-green-600 hover:underline transition-colors"
                   >
                     Sign Up
