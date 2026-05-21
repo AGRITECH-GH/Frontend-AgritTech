@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { SlidersHorizontal } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SeoMeta from "@/components/SeoMeta";
 import { Button } from "@/components/ui/button";
 import MarketplaceSkeleton from "@/components/ui/MarketplaceSkeleton";
 import { categoriesService, listingsService } from "@/lib";
@@ -222,6 +223,37 @@ const Marketplace = () => {
     return copy;
   }, [listings, sortBy]);
 
+  const marketplaceJsonLd = useMemo(() => {
+    const origin =
+      typeof window !== "undefined" && window.location?.origin
+        ? window.location.origin
+        : "";
+
+    const itemListElement = sortedListings.slice(0, 12).map((item, index) => {
+      const id = getListingId(item);
+      const url = id && origin ? `${origin}/marketplace/${id}` : undefined;
+      return {
+        "@type": "ListItem",
+        position: index + 1,
+        url,
+        name: getListingTitle(item),
+      };
+    });
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "FarmBridge Marketplace",
+      description:
+        "Browse agricultural products from trusted sellers and farmers across Ghana.",
+      ...(origin ? { url: `${origin}/marketplace` } : {}),
+      mainEntity: {
+        "@type": "ItemList",
+        itemListElement,
+      },
+    };
+  }, [sortedListings]);
+
   const applyFilters = () => {
     // Validate price filters
     const minPriceNum = minPrice.trim() ? parseFloat(minPrice.trim()) : null;
@@ -311,6 +343,12 @@ const Marketplace = () => {
 
   return (
     <div className="min-h-screen bg-[#f5f6f1] text-foreground">
+      <SeoMeta
+        title="Marketplace | FarmBridge Ghana"
+        description="Buy fresh produce, pantry goods, dairy, and livestock from verified sellers on FarmBridge."
+        canonicalPath="/marketplace"
+        jsonLd={marketplaceJsonLd}
+      />
       <Navbar minimal />
       <main className="pb-12 pt-6">
         <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
@@ -8,6 +8,7 @@ import TechnologySection from "@/components/TechnologySection";
 import StakeholdersSection from "@/components/StakeholdersSection";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
+import SeoMeta from "@/components/SeoMeta";
 import Loader from "@/components/ui/loader";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -61,10 +62,93 @@ function HomePage() {
   );
 }
 
+function AppSeo() {
+  const location = useLocation();
+  const { pathname } = location;
+
+  if (pathname === "/marketplace") {
+    return (
+      <SeoMeta
+        title="Marketplace | FarmBridge Ghana"
+        description="Browse fresh produce, pantry goods, dairy, and livestock from verified sellers across Ghana."
+        canonicalPath="/marketplace"
+      />
+    );
+  }
+
+  if (pathname.startsWith("/marketplace/")) {
+    return (
+      <SeoMeta
+        title="Product Details | FarmBridge Ghana"
+        description="View product details, pricing, and seller information before checkout on FarmBridge."
+        canonicalPath={pathname}
+      />
+    );
+  }
+
+  if (pathname === "/login") {
+    return (
+      <SeoMeta
+        title="Log In | FarmBridge Ghana"
+        description="Log in to your FarmBridge account to manage orders, inventory, and marketplace activity."
+        canonicalPath="/login"
+      />
+    );
+  }
+
+  if (pathname === "/signup") {
+    return (
+      <SeoMeta
+        title="Create Account | FarmBridge Ghana"
+        description="Create a FarmBridge account to buy, sell, and connect with verified agents and farmers."
+        canonicalPath="/signup"
+      />
+    );
+  }
+
+  if (pathname === "/cart") {
+    return (
+      <SeoMeta
+        title="Cart | FarmBridge Ghana"
+        description="Review your selected marketplace items before checkout."
+        canonicalPath="/cart"
+      />
+    );
+  }
+
+  if (
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/agent") ||
+    pathname.startsWith("/farmer") ||
+    pathname === "/checkout" ||
+    pathname.startsWith("/orders") ||
+    pathname.startsWith("/messages") ||
+    pathname.startsWith("/profile")
+  ) {
+    return (
+      <SeoMeta
+        title="FarmBridge Ghana"
+        description="FarmBridge marketplace and agri-commerce platform."
+        canonicalPath={pathname}
+        robots="noindex,nofollow"
+      />
+    );
+  }
+
+  return (
+    <SeoMeta
+      title="FarmBridge | Ghana Agri Marketplace"
+      description="FarmBridge connects farmers, buyers, and agents to trade agricultural products across Ghana."
+      canonicalPath={pathname || "/"}
+    />
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
       <SpeedInsights />
+      <AppSeo />
       <Suspense fallback={<Loader />}>
         <Routes>
           {/* Public routes */}

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SeoMeta from "@/components/SeoMeta";
 import { Button } from "@/components/ui/button";
 import MarketplaceDetailsSkeleton from "@/components/ui/MarketplaceDetailsSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -184,6 +185,45 @@ const MarketplaceDetails = () => {
   const listingPrice = Number(
     listing?.pricePerUnit ?? listing?.price ?? listing?.amount ?? 0,
   );
+  const listingTitle = listing?.title || listing?.name || "Product";
+  const listingDescription =
+    listing?.description ||
+    `View ${listingTitle} details, pricing, and seller information on FarmBridge.`;
+  const listingCategory =
+    getCategoryName(listing?.category) || getCategoryName(listing?.categoryName);
+  const productJsonLd = useMemo(() => {
+    if (!listing) return null;
+
+    const origin =
+      typeof window !== "undefined" && window.location?.origin
+        ? window.location.origin
+        : "";
+    const listingUrl = origin && id ? `${origin}/marketplace/${id}` : undefined;
+    const imageUrl = getListingImage(listing);
+    const numericPrice = Number(
+      listing?.pricePerUnit ?? listing?.price ?? listing?.amount,
+    );
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: listingTitle,
+      description: listingDescription,
+      ...(imageUrl ? { image: [imageUrl] } : {}),
+      ...(listingCategory ? { category: listingCategory } : {}),
+      ...(listingUrl ? { url: listingUrl } : {}),
+      ...(Number.isFinite(numericPrice)
+        ? {
+            offers: {
+              "@type": "Offer",
+              priceCurrency: "GHS",
+              price: numericPrice,
+              availability: "https://schema.org/InStock",
+            },
+          }
+        : {}),
+    };
+  }, [listing, id, listingTitle, listingDescription, listingCategory]);
 
   const handleAddToCart = async () => {
     if (!id) return;
@@ -269,6 +309,12 @@ const MarketplaceDetails = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f5f6f1]">
+      <SeoMeta
+        title={`${listingTitle} | FarmBridge Ghana`}
+        description={listingDescription}
+        canonicalPath={id ? `/marketplace/${id}` : "/marketplace"}
+        jsonLd={productJsonLd}
+      />
       <Navbar minimal />
       <main className="flex-1 px-4 pb-12 pt-6 sm:px-6 lg:px-8">
         {loading ? (
