@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
@@ -58,6 +59,7 @@ function HomePage() {
 function App() {
   return (
     <AuthProvider>
+      <SpeedInsights />
       <Suspense fallback={<Loader />}>
         <Routes>
           {/* Public routes */}
