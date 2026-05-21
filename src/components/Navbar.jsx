@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.svg";
 import { transition } from "@/motionConfig";
 import { useAuth } from "@/context/AuthContext";
-import { cartService } from "@/lib";
+import { cartService, getGuestCartCount } from "@/lib";
 import VerificationBanner from "@/components/VerificationBanner";
 
 const navItems = [
@@ -60,19 +60,42 @@ const Navbar = ({ minimal = false }) => {
 
   // Fetch cart count when minimal (marketplace) mode
   useEffect(() => {
-    if (!minimal || !user) return;
-    cartService
-      .getCart()
-      .then((res) => {
-        const items =
-          res?.cart?.items ||
-          res?.items ||
-          res?.data?.items ||
-          res?.data?.cart?.items ||
-          [];
-        setCartCount(Array.isArray(items) ? items.length : 0);
-      })
-      .catch(() => {});
+    if (!minimal) return;
+
+    const syncCartCount = () => {
+      if (!user) {
+        setCartCount(getGuestCartCount());
+        return;
+      }
+
+      cartService
+        .getCart()
+        .then((res) => {
+          const items =
+            res?.cart?.items ||
+            res?.items ||
+            res?.data?.items ||
+            res?.data?.cart?.items ||
+            [];
+          setCartCount(Array.isArray(items) ? items.length : 0);
+        })
+        .catch(() => {
+          setCartCount(0);
+        });
+    };
+
+    const handleGuestCartChanged = () => {
+      if (!user) {
+        setCartCount(getGuestCartCount());
+      }
+    };
+
+    syncCartCount();
+    window.addEventListener("guest-cart:changed", handleGuestCartChanged);
+
+    return () => {
+      window.removeEventListener("guest-cart:changed", handleGuestCartChanged);
+    };
   }, [minimal, user]);
 
   // Close user menu on outside click
@@ -200,11 +223,11 @@ const Navbar = ({ minimal = false }) => {
             >
               <img
                 src={logo}
-                alt="AgriTech"
+                alt="FarmBridge"
                 className="h-7 w-7 brightness-0 invert"
               />
               <span className="hidden text-lg font-bold text-white sm:block">
-                AgriTech
+                FarmBridge
               </span>
             </Link>
 
@@ -349,8 +372,8 @@ const Navbar = ({ minimal = false }) => {
           onClick={() => scrollToSection("hero")}
           className="flex flex-1 items-center gap-1.5 text-base font-semibold text-foreground transition-colors duration-300"
         >
-          <img src={logo} alt="AgriTech logo" className="h-6 w-6 shrink-0" />
-          <span>AgriTech</span>
+          <img src={logo} alt="FarmBridge logo" className="h-6 w-6 shrink-0" />
+          <span>FarmBridge</span>
         </button>
 
         {/* Desktop nav — centered */}

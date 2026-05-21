@@ -8,8 +8,8 @@ const Footer = () => {
           type="button"
           className="flex items-center gap-2 text-sm font-semibold text-foreground"
         >
-          <img src={logo} alt="AgriTech logo" className="h-5 w-5" />
-          <span>AgriTech</span>
+          <img src={logo} alt="FarmBridge logo" className="h-5 w-5" />
+          <span>FarmBridge</span>
         </button>
 
         <div className="flex gap-6">
@@ -24,7 +24,7 @@ const Footer = () => {
           </a>
         </div>
 
-        <p className="text-muted">© 2026 AgriTech. All rights reserved.</p>
+        <p className="text-muted">© 2026 FarmBridge. All rights reserved.</p>
       </div>
     </footer>
   );

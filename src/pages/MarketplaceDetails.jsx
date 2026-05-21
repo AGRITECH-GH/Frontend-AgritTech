@@ -19,7 +19,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { cartService, listingsService } from "@/lib";
+import { addGuestCartItem, cartService, listingsService } from "@/lib";
 import {
   getPrimaryListingImageUrl,
   getListingImageGalleryUrls,
@@ -188,10 +188,14 @@ const MarketplaceDetails = () => {
     setIsAddingToCart(true);
     setMessage(null);
     try {
+      if (!user) {
+        addGuestCartItem(id, Number(quantity) || 1, listing);
+      } else {
       await cartService.addItemToCart({
         listingId: id,
         quantity: Number(quantity) || 1,
       });
+      }
       setMessage({ type: "success", text: "Item added to cart successfully." });
       setCartAdded(true);
       setTimeout(() => setCartAdded(false), 4000);

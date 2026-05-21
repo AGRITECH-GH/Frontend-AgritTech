@@ -19,10 +19,12 @@ import { Button } from "@/components/ui/button";
 import Skeleton from "@/components/ui/skeleton";
 import { transition } from "@/motionConfig";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/context/AuthContext";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 
 export default function Cart() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const {
     cart,
     validationResult,
@@ -36,6 +38,7 @@ export default function Cart() {
   const [isValidating, setIsValidating] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [selectedItemIds, setSelectedItemIds] = useState([]);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const items = cart?.items || [];
 
@@ -166,6 +169,10 @@ export default function Cart() {
   };
 
   const handleCheckout = () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
     navigate("/checkout");
   };
 
@@ -492,6 +499,44 @@ export default function Cart() {
           </motion.aside>
         </div>
       </main>
+
+      {showAuthModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 px-4">
+          <div className="w-full max-w-md rounded-2xl border border-border/60 bg-white p-5 shadow-xl sm:p-6">
+            <h3 className="text-lg font-semibold text-foreground">
+              Continue to checkout
+            </h3>
+            <p className="mt-2 text-sm text-muted">
+              Please log in or create an account to complete your order.
+            </p>
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Button
+                type="button"
+                onClick={() => navigate("/login?redirect=%2Fcheckout")}
+                className="w-full"
+              >
+                Log In
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate("/signup?redirect=%2Fcheckout")}
+                className="w-full"
+              >
+                Create Account
+              </Button>
+            </div>
+            <button
+              type="button"
+              className="mt-4 w-full text-sm font-medium text-muted transition-colors hover:text-foreground"
+              onClick={() => setShowAuthModal(false)}
+            >
+              Not now
+            </button>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );

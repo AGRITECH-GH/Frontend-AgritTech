@@ -93,8 +93,8 @@ const AdminNavContent = ({ admin, onNavigate }) => {
         }}
         className="flex items-center gap-2 px-5 py-5 text-base font-bold text-primary"
       >
-        <img src={logo} alt="AgriTech" className="h-6 w-6" />
-        <span>AgriTech</span>
+        <img src={logo} alt="FarmBridge" className="h-6 w-6" />
+        <span>FarmBridge</span>
       </button>
 
       {/* Nav links */}

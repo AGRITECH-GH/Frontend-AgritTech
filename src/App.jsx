@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
@@ -64,7 +64,7 @@ function App() {
       <Suspense fallback={<Loader />}>
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<Navigate to="/marketplace" replace />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -74,31 +74,10 @@ function App() {
           <Route path="/payments/return" element={<PaymentReturn />} />
           <Route path="/profile/:userId" element={<PublicProfile />} />
 
-          {/* Buyer routes - protected */}
-          <Route
-            path="/marketplace"
-            element={
-              <ProtectedRoute allowedRoles={["BUYER"]}>
-                <Marketplace />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/marketplace/:id"
-            element={
-              <ProtectedRoute allowedRoles={["BUYER"]}>
-                <MarketplaceDetails />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/cart"
-            element={
-              <ProtectedRoute allowedRoles={["BUYER"]}>
-                <Cart />
-              </ProtectedRoute>
-            }
-          />
+          {/* Buyer routes */}
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/marketplace/:id" element={<MarketplaceDetails />} />
+          <Route path="/cart" element={<Cart />} />
           <Route
             path="/checkout"
             element={

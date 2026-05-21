@@ -30,6 +30,7 @@ export const PRODUCT_CATEGORIES = [
   "Leafy Green",
   "Pantry",
   "Dairy",
+  "Livestock",
 ];
 
 // Units of measurement

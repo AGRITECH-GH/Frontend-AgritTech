@@ -95,7 +95,7 @@ const DashboardNavbar = ({
           onClick={() => navigate("/farmer/dashboard")}
           className="flex shrink-0 items-center gap-1.5 text-base font-semibold text-foreground"
         >
-          <img src={logo} alt="AgriTech logo" className="h-6 w-6" />
+          <img src={logo} alt="FarmBridge logo" className="h-6 w-6" />
           <span>
             Agri<span className="text-green-600">Tech</span>
           </span>

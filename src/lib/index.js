@@ -13,6 +13,16 @@ export { default as profileService } from "./profileService";
 export * as reviewsService from "./reviewsService";
 export * as disputesService from "./disputesService";
 export {
+  GUEST_CART_CHANGED_EVENT,
+  getGuestCart,
+  getGuestCartItems,
+  getGuestCartCount,
+  setGuestCartItemQuantity,
+  addGuestCartItem,
+  removeGuestCartItem,
+  clearGuestCart,
+} from "./guestCart";
+export {
   getPrimaryListingImageUrl,
   getListingImageGalleryUrls,
 } from "./listingImages";
