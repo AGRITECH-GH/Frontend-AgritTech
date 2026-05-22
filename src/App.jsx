@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 import { AuthProvider } from "@/context/AuthContext";
 import SeoMeta from "@/components/SeoMeta";
 import Loader from "@/components/ui/loader";
@@ -127,6 +128,7 @@ function App() {
   return (
     <AuthProvider>
       <SpeedInsights />
+      <Analytics />
       <AppSeo />
       <Suspense fallback={<Loader />}>
         <Routes>
