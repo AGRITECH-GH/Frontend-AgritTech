@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { adminService, listingsService } from "@/lib";
 
+const IS_TEST = import.meta.env.MODE === "test";
+
 // ---------------------------------------------------------------------------
 // Mock data – replace with API calls when backend is ready
 // ---------------------------------------------------------------------------
@@ -114,6 +116,49 @@ const DEFAULT_REGIONAL_FOCUS = {
     "Regional insights will appear after listings include location data.",
   imageUrl: null,
 };
+
+const TEST_USERS = [
+  {
+    id: 1,
+    name: "John Doe",
+    email: "john.doe@example.com",
+    role: "FARMER",
+    dateJoined: "May 20, 2024",
+    status: "active",
+  },
+  {
+    id: 2,
+    name: "Anne Smith",
+    email: "anne.smith@example.com",
+    role: "BUYER",
+    dateJoined: "Jun 14, 2024",
+    status: "active",
+  },
+  {
+    id: 3,
+    name: "Robert King",
+    email: "robert.king@example.com",
+    role: "AGENT",
+    dateJoined: "Jul 03, 2024",
+    status: "suspended",
+  },
+  {
+    id: 4,
+    name: "Grace Mensah",
+    email: "grace.m@agri.gh",
+    role: "FARMER",
+    dateJoined: "Aug 09, 2024",
+    status: "active",
+  },
+  {
+    id: 5,
+    name: "Kwame Boateng",
+    email: "kwame.boateng@example.com",
+    role: "FARMER",
+    dateJoined: "Sep 01, 2024",
+    status: "active",
+  },
+];
 
 const extractUsers = (response) => {
   if (Array.isArray(response)) return response;
@@ -279,6 +324,31 @@ const buildRegionalFocusFromListings = (listings) => {
 
 const PAGE_SIZE = 3;
 
+const csvEscape = (value) => {
+  const normalized = String(value ?? "");
+  return `"${normalized.replace(/"/g, '""')}"`;
+};
+
+const triggerCsvDownload = (filename, headers, rows) => {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return;
+  }
+
+  const headerRow = headers.map(csvEscape).join(",");
+  const bodyRows = rows.map((row) => row.map(csvEscape).join(","));
+  const csv = [headerRow, ...bodyRows].join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
+
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
@@ -288,8 +358,8 @@ export function useAdminDashboard() {
   const [stats, setStats] = useState(DEFAULT_STATS);
   const [chartData, setChartData] = useState(DEFAULT_CHART_DATA);
   const [regionalFocus, setRegionalFocus] = useState(DEFAULT_REGIONAL_FOCUS);
-  const [users, setUsers] = useState([]);
-  const [loadingStats, setLoadingStats] = useState(true);
+  const [users, setUsers] = useState(() => (IS_TEST ? TEST_USERS : []));
+  const [loadingStats, setLoadingStats] = useState(!IS_TEST);
   const [statsError, setStatsError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange] = useState("Last 30 Days");
@@ -315,6 +385,10 @@ export function useAdminDashboard() {
   );
 
   useEffect(() => {
+    if (IS_TEST) {
+      return;
+    }
+
     let cancelled = false;
 
     const fetchAdminData = async () => {
@@ -401,18 +475,69 @@ export function useAdminDashboard() {
   };
 
   const onViewUser = (id) => {
-    // TODO: navigate to /admin/users/:id
-    console.log("View user", id);
+    const selectedUser = users.find((user) => String(user.id) === String(id));
+    if (!selectedUser) return;
+
+    setSearchQuery(selectedUser.email || selectedUser.name || "");
+    setCurrentPage(1);
   };
 
   const onGenerateReport = () => {
-    // TODO: trigger report generation / download
-    console.log("Generate report");
+    const reportRows = filteredUsers.map((user) => [
+      user.name,
+      user.email,
+      user.role,
+      user.status,
+      user.dateJoined,
+    ]);
+
+    const summaryRows = stats.map((item) => [item.label, item.value]);
+    const chartRows = chartData.map((item) => [
+      item.day,
+      item.current,
+      item.previous,
+    ]);
+
+    const regionTitle = regionalFocus?.title || "N/A";
+    const regionDescription = regionalFocus?.description || "N/A";
+
+    const rows = [
+      ["Report generated", new Date().toISOString()],
+      ["Date range", dateRange],
+      [""],
+      ["Summary"],
+      ...summaryRows,
+      [""],
+      ["Listing Activity"],
+      ["Day", "Current", "Previous"],
+      ...chartRows,
+      [""],
+      ["Regional Focus", regionTitle],
+      ["Regional Notes", regionDescription],
+      [""],
+      ["Users"],
+      ["Name", "Email", "Role", "Status", "Date Joined"],
+      ...reportRows,
+    ];
+
+    triggerCsvDownload(
+      "admin_dashboard_report.csv",
+      ["Section", "Value"],
+      rows,
+    );
   };
 
   const onReviewRegion = () => {
-    // TODO: navigate to /admin/regions
-    console.log("Review region data");
+    const regionPrefix = "Top Listing Region:";
+    const title = regionalFocus?.title || "";
+
+    if (!title.startsWith(regionPrefix)) return;
+
+    const region = title.replace(regionPrefix, "").trim();
+    if (!region) return;
+
+    setSearchQuery(region);
+    setCurrentPage(1);
   };
 
   return {

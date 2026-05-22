@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { authService, api, cartService, getGuestCart, clearGuestCart } from "@/lib";
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 const normalizeUser = (nextUser) => {
   if (!nextUser || typeof nextUser !== "object") return nextUser;

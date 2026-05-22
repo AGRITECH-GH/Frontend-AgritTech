@@ -60,8 +60,16 @@ const DashboardNavbar = ({
 
   const handleSearch = (e) => {
     e.preventDefault();
-    // TODO: wire up search API / navigation
-    console.log("Search:", searchValue);
+    const query = searchValue.trim();
+    if (!query) {
+      navigate("/");
+      setMobileOpen(false);
+      return;
+    }
+
+    const params = new URLSearchParams({ search: query });
+    navigate(`/?${params.toString()}`);
+    setMobileOpen(false);
   };
 
   const handleLogout = useCallback(async () => {

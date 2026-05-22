@@ -105,6 +105,31 @@ const MOCK_FARMERS = [
   },
 ];
 
+const csvEscape = (value) => {
+  const normalized = String(value ?? "");
+  return `"${normalized.replace(/"/g, '""')}"`;
+};
+
+const triggerCsvDownload = (filename, headers, rows) => {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return;
+  }
+
+  const headerRow = headers.map(csvEscape).join(",");
+  const bodyRows = rows.map((row) => row.map(csvEscape).join(","));
+  const csv = [headerRow, ...bodyRows].join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
+
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
@@ -261,13 +286,56 @@ export function useAgentDashboard() {
   };
 
   const onExportData = () => {
-    // TODO: trigger CSV/PDF export
-    console.log("Export data");
+    const rows = filteredFarmers.map((farmer) => [
+      farmer.name,
+      farmer.location,
+      farmer.status,
+      farmer.registeredDate,
+      farmer.lastActivity,
+      farmer.totalCommission,
+    ]);
+
+    triggerCsvDownload(
+      "agent_farmers_export.csv",
+      [
+        "Farmer Name",
+        "Location",
+        "Status",
+        "Registered Date",
+        "Last Activity",
+        "Total Commission",
+      ],
+      rows,
+    );
   };
 
   const onFarmerAction = (farmerId, action) => {
-    // TODO: handle farmer row actions (view, edit, remove)
-    console.log("Farmer action", farmerId, action);
+    const selectedFarmer = farmers.find(
+      (farmer) => String(farmer.id) === String(farmerId),
+    );
+
+    if (!selectedFarmer) {
+      return {
+        success: false,
+        message: "Farmer not found.",
+      };
+    }
+
+    if (action === "remove") {
+      setFarmers((prev) =>
+        prev.filter((farmer) => String(farmer.id) !== String(farmerId)),
+      );
+      return {
+        success: true,
+        message: "Farmer removed from your current view.",
+      };
+    }
+
+    setSearchQuery(selectedFarmer.name);
+    return {
+      success: true,
+      message: `Focused on ${selectedFarmer.name}.`,
+    };
   };
 
   return {
