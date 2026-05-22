@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Sprout } from "lucide-react";
 import logo from "@/assets/logo.svg";
-import signInBg from "@/assets/SignIn.png";
+import signInBg from "@/assets/SignIn.webp";
 import { transition } from "@/motionConfig";
 import { useAuth } from "@/context/AuthContext";
 import { authService } from "@/lib";

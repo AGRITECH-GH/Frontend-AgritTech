@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { authService, api, cartService, getGuestCart, clearGuestCart } from "@/lib";
+import {
+  authService,
+  api,
+  cartService,
+  getGuestCart,
+  clearGuestCart,
+} from "@/lib";
 
 export const AuthContext = createContext(null);
 

@@ -15,5 +15,18 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: "./src/test/setup.js",
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'router': ['react-router', 'react-router-dom'],
+          'framer': ['framer-motion'],
+          'charts': ['recharts'],
+          'leaflet': ['leaflet', 'react-leaflet'],
+        },
+      },
+    },
+  },
 });
 

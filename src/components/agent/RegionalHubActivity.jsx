@@ -1,5 +1,6 @@
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import { ArrowRight } from "lucide-react";
+import "leaflet/dist/leaflet.css";
 
 /**
  * RegionalHubActivity – right-side panel showing a regional alert and
