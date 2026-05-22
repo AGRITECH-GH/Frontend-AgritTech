@@ -2,12 +2,6 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { AuthProvider } from "@/context/AuthContext";
-import Navbar from "@/components/Navbar";
-import HeroSection from "@/components/HeroSection";
-import TechnologySection from "@/components/TechnologySection";
-import StakeholdersSection from "@/components/StakeholdersSection";
-import CTASection from "@/components/CTASection";
-import Footer from "@/components/Footer";
 import SeoMeta from "@/components/SeoMeta";
 import Loader from "@/components/ui/loader";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -47,31 +41,16 @@ const Reviews = lazy(() => import("@/pages/Reviews"));
 const Disputes = lazy(() => import("@/pages/Disputes"));
 const AdminDisputes = lazy(() => import("@/pages/AdminDisputes"));
 
-function HomePage() {
-  return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
-      <main className="flex-1">
-        <HeroSection />
-        <StakeholdersSection />
-        <TechnologySection />
-        <CTASection />
-      </main>
-      <Footer />
-    </div>
-  );
-}
-
 function AppSeo() {
   const location = useLocation();
   const { pathname } = location;
 
-  if (pathname === "/marketplace") {
+  if (pathname === "/" || pathname === "/marketplace") {
     return (
       <SeoMeta
         title="Marketplace | FarmBridge Ghana"
         description="Browse fresh produce, pantry goods, dairy, and livestock from verified sellers across Ghana."
-        canonicalPath="/marketplace"
+        canonicalPath="/"
       />
     );
   }
@@ -152,7 +131,8 @@ function App() {
       <Suspense fallback={<Loader />}>
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<Navigate to="/marketplace" replace />} />
+          <Route path="/" element={<Marketplace />} />
+          <Route path="/marketplace" element={<Navigate to="/" replace />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -164,7 +144,6 @@ function App() {
           <Route path="/profile/:userId" element={<PublicProfile />} />
 
           {/* Buyer routes */}
-          <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/marketplace/:id" element={<MarketplaceDetails />} />
           <Route path="/cart" element={<Cart />} />
           <Route

@@ -165,7 +165,7 @@ const Navbar = ({ minimal = false }) => {
       params.delete("search");
     }
     params.set("page", "1");
-    navigate(`/marketplace?${params.toString()}`);
+    navigate(`/?${params.toString()}`);
     setOpen(false);
   };
 
@@ -218,7 +218,7 @@ const Navbar = ({ minimal = false }) => {
           <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:gap-4 sm:px-6 lg:px-8">
             {/* Logo */}
             <Link
-              to="/marketplace"
+              to="/"
               className="flex shrink-0 items-center gap-2"
             >
               <img

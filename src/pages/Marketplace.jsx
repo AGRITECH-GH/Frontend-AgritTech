@@ -310,7 +310,7 @@ const Marketplace = () => {
     setPage(1);
 
     // Also clear search param from URL
-    navigate("/marketplace", { replace: true });
+    navigate("/", { replace: true });
   };
 
   if (loading) {
@@ -346,7 +346,7 @@ const Marketplace = () => {
       <SeoMeta
         title="Marketplace | FarmBridge Ghana"
         description="Buy fresh produce, pantry goods, dairy, and livestock from verified sellers on FarmBridge."
-        canonicalPath="/marketplace"
+        canonicalPath="/"
         jsonLd={marketplaceJsonLd}
       />
       <Navbar minimal />

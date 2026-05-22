@@ -312,7 +312,7 @@ const MarketplaceDetails = () => {
       <SeoMeta
         title={`${listingTitle} | FarmBridge Ghana`}
         description={listingDescription}
-        canonicalPath={id ? `/marketplace/${id}` : "/marketplace"}
+        canonicalPath={id ? `/marketplace/${id}` : "/"}
         jsonLd={productJsonLd}
       />
       <Navbar minimal />
@@ -329,7 +329,7 @@ const MarketplaceDetails = () => {
               Listing not available.
             </p>
             <Link
-              to="/marketplace"
+              to="/"
               className="mt-3 inline-block text-sm font-semibold text-primary hover:underline"
             >
               Browse marketplace
@@ -340,14 +340,14 @@ const MarketplaceDetails = () => {
             {/* Breadcrumb Navigation */}
             <nav className="mb-6 flex items-center gap-2 text-sm">
               <Link
-                to="/marketplace"
+                to="/"
                 className="text-primary hover:underline font-medium"
               >
                 Marketplace
               </Link>
               <ChevronRight className="h-4 w-4 text-muted" />
               <Link
-                to={`/marketplace?category=${getCategoryName(listing?.category) || getCategoryName(listing?.categoryName)}`}
+                to={`/?category=${getCategoryName(listing?.category) || getCategoryName(listing?.categoryName)}`}
                 className="text-primary hover:underline font-medium"
               >
                 {getCategoryName(listing?.category) ||
