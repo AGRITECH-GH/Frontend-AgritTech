@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Sprout } from "lucide-react";
@@ -78,8 +78,22 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const redirectParam = new URLSearchParams(location.search).get("redirect") || "";
+  const redirectParam =
+    new URLSearchParams(location.search).get("redirect") || "";
   const redirectPath = redirectParam.startsWith("/") ? redirectParam : "";
+  const oauthErrorCode =
+    new URLSearchParams(location.search).get("error") || "";
+  const oauthErrorMessage = useMemo(() => {
+    if (oauthErrorCode === "oauth_email_conflict") {
+      return "This email is already registered with password login. Use email/password for this account.";
+    }
+
+    if (oauthErrorCode === "google_failed") {
+      return "Google sign-in failed. Please try again.";
+    }
+
+    return "";
+  }, [oauthErrorCode]);
   const signUpPath = redirectPath
     ? `/signup?redirect=${encodeURIComponent(redirectPath)}`
     : "/signup";
@@ -175,7 +189,11 @@ export default function Login() {
         {/* Brand + tagline */}
         <div className="relative z-10">
           <Link to="/" className="flex items-center gap-2 mb-6">
-            <img src={logo} alt="FarmBridge logo" className="h-7 w-7 shrink-0" />
+            <img
+              src={logo}
+              alt="FarmBridge logo"
+              className="h-7 w-7 shrink-0"
+            />
             <span className="text-white font-semibold text-lg tracking-tight">
               FarmBridge
             </span>
@@ -204,7 +222,11 @@ export default function Login() {
         {/* Minimal top bar — logo visible on mobile only */}
         <header className="flex items-center px-4 pb-2 pt-5 sm:px-8 sm:pt-6 lg:hidden">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="FarmBridge logo" className="h-6 w-6 shrink-0" />
+            <img
+              src={logo}
+              alt="FarmBridge logo"
+              className="h-6 w-6 shrink-0"
+            />
             <span className="font-semibold text-gray-900 text-base">
               FarmBridge
             </span>
@@ -261,6 +283,12 @@ export default function Login() {
                 </motion.div>
 
                 <form onSubmit={handleSubmit} noValidate className="space-y-4">
+                  {oauthErrorMessage && (
+                    <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                      {oauthErrorMessage}
+                    </div>
+                  )}
+
                   {/* ── Email ── */}
                   <motion.div variants={itemVariants}>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">

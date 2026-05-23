@@ -205,12 +205,15 @@ export const AuthProvider = ({ children }) => {
 
       api.setAccessToken(accessToken);
 
+      const responseUser = response?.user;
       const payload = decodeJwtPayload(accessToken) || {};
-      const normalizedUser = normalizeUser({
-        id: payload.id,
-        role: payload.role,
-        isVerified: payload.isVerified,
-      });
+      const normalizedUser = normalizeUser(
+        responseUser || {
+          id: payload.id,
+          role: payload.role,
+          isVerified: payload.isVerified,
+        },
+      );
 
       setUser(normalizedUser);
       localStorage.setItem("user", JSON.stringify(normalizedUser));
