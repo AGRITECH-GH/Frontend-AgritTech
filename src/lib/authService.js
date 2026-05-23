@@ -1,7 +1,9 @@
 // Authentication API Service
 import api from "./api";
 
-const GOOGLE_OAUTH_URL = import.meta.env.VITE_GOOGLE_OAUTH_URL;
+const GOOGLE_OAUTH_URL =
+  import.meta.env.VITE_GOOGLE_OAUTH_URL ||
+  `${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/auth/google`;
 
 const authService = {
   /**
