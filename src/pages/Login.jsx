@@ -119,14 +119,32 @@ export default function Login() {
       // Route based on role
       const { role } = response.user;
       setTimeout(() => {
+        if (role === "AGENT" || role === "FARMER") {
+          authService
+            .getRoleSetupStatus()
+            .then((status) => {
+              if (!status?.roleSetupComplete) {
+                navigate("/complete-role-setup");
+                return;
+              }
+
+              if (role === "AGENT") navigate("/agent/dashboard");
+              else navigate("/farmer/dashboard");
+            })
+            .catch(() => {
+              if (role === "AGENT") navigate("/agent/dashboard");
+              else navigate("/farmer/dashboard");
+            });
+          return;
+        }
+
         if (redirectPath && role === "BUYER") {
           navigate(redirectPath, { replace: true });
           return;
         }
         if (role === "ADMIN") navigate("/admin/dashboard");
-        else if (role === "AGENT") navigate("/agent/dashboard");
         else if (role === "BUYER") navigate("/marketplace");
-        else navigate("/farmer/dashboard");
+        else navigate("/marketplace");
       }, 800);
     } catch (err) {
       setErrors({

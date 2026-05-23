@@ -60,13 +60,6 @@ const GoogleIcon = () => (
   </svg>
 );
 
-/* ─── Roles ─── */
-const roles = [
-  { label: "Farmer", Icon: Sprout },
-  { label: "Agent", Icon: Handshake },
-  { label: "Buyer", Icon: ShoppingBasket },
-];
-
 /* ─── Animation helpers ─── */
 const cardVariants = {
   hidden: { opacity: 0, y: 32 },
@@ -87,7 +80,7 @@ export default function SignUp() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [selectedRole, setSelectedRole] = useState("FARMER");
+  const [selectedRole, setSelectedRole] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [form, setForm] = useState({
@@ -113,6 +106,13 @@ export default function SignUp() {
     : "/login";
 
   const handleGoogleAuth = () => {
+    if (!selectedRole) {
+      setErrors((prev) => ({
+        ...prev,
+        role: "Select a user type before continuing with Google.",
+      }));
+      return;
+    }
     authService.signInWithGoogle(selectedRole);
   };
 
@@ -126,14 +126,19 @@ export default function SignUp() {
     .toUpperCase();
   const isAgentRole = normalizedRole === "AGENT";
   const isFarmerRole = normalizedRole === "FARMER";
+  const hasSelectedRole = Boolean(selectedRole);
 
   const handleRoleSelect = (value) => {
     setSelectedRole(value);
+    if (errors.role) {
+      setErrors((prev) => ({ ...prev, role: undefined }));
+    }
   };
 
   /* ── Validation ── */
   const validate = () => {
     const e = {};
+    if (!selectedRole) e.role = "Please select a user type to continue.";
     if (!form.name.trim()) e.name = "Full name is required.";
     if (!form.email.trim()) e.email = "Email address is required.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
@@ -348,7 +353,7 @@ export default function SignUp() {
                   Create your account
                 </h1>
                 <p className="text-sm text-gray-500">
-                  Start your journey with us today
+                  Select a user type first, then continue with Google or manual sign-up.
                 </p>
               </motion.div>
 
@@ -357,7 +362,8 @@ export default function SignUp() {
                 variants={itemVariants}
                 type="button"
                 onClick={handleGoogleAuth}
-                className="mb-5 flex w-full items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50"
+                disabled={!hasSelectedRole || loading}
+                className="mb-5 flex w-full items-center justify-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <GoogleIcon />
                 Continue with Google
@@ -408,6 +414,9 @@ export default function SignUp() {
                       );
                     })}
                   </div>
+                  {errors.role && (
+                    <p className="text-xs text-red-500 mt-1.5">{errors.role}</p>
+                  )}
                 </motion.div>
 
                 {/* Full Name */}
@@ -770,7 +779,7 @@ export default function SignUp() {
                 <motion.button
                   variants={itemVariants}
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !hasSelectedRole}
                   className="w-full py-3 rounded-full bg-green-500 hover:bg-green-600 disabled:opacity-70 transition-colors text-white font-bold text-sm flex items-center justify-center gap-2"
                 >
                   {loading ? (

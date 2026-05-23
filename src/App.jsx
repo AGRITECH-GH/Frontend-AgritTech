@@ -6,6 +6,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import SeoMeta from "@/components/SeoMeta";
 import Loader from "@/components/ui/loader";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import RoleSetupRequired from "@/components/RoleSetupRequired";
 
 const SignUp = lazy(() => import("@/pages/SignUp"));
 const Login = lazy(() => import("@/pages/Login"));
@@ -14,6 +15,7 @@ const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const VerifyEmail = lazy(() => import("@/pages/VerifyEmail"));
 const VerifyEmailChange = lazy(() => import("@/pages/VerifyEmailChange"));
 const GoogleAuthSuccess = lazy(() => import("@/pages/GoogleAuthSuccess"));
+const CompleteRoleSetup = lazy(() => import("@/pages/CompleteRoleSetup"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const AgentDashboard = lazy(() => import("@/pages/AgentDashboard"));
@@ -100,6 +102,7 @@ function AppSeo() {
     pathname.startsWith("/admin") ||
     pathname.startsWith("/agent") ||
     pathname.startsWith("/farmer") ||
+    pathname === "/complete-role-setup" ||
     pathname === "/checkout" ||
     pathname.startsWith("/orders") ||
     pathname.startsWith("/messages") ||
@@ -142,6 +145,14 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/verify-email-change" element={<VerifyEmailChange />} />
           <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
+          <Route
+            path="/complete-role-setup"
+            element={
+              <ProtectedRoute allowedRoles={["AGENT", "FARMER"]}>
+                <CompleteRoleSetup />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/payments/return" element={<PaymentReturn />} />
           <Route path="/profile/:userId" element={<PublicProfile />} />
 
@@ -210,7 +221,9 @@ function App() {
             path="/farmer/dashboard"
             element={
               <ProtectedRoute allowedRoles={["FARMER"]}>
-                <Dashboard />
+                <RoleSetupRequired>
+                  <Dashboard />
+                </RoleSetupRequired>
               </ProtectedRoute>
             }
           />
@@ -218,7 +231,9 @@ function App() {
             path="/farmer/ledger"
             element={
               <ProtectedRoute allowedRoles={["FARMER"]}>
-                <Ledger />
+                <RoleSetupRequired>
+                  <Ledger />
+                </RoleSetupRequired>
               </ProtectedRoute>
             }
           />
@@ -226,7 +241,9 @@ function App() {
             path="/farmer/inventory"
             element={
               <ProtectedRoute allowedRoles={["FARMER"]}>
-                <Inventory />
+                <RoleSetupRequired>
+                  <Inventory />
+                </RoleSetupRequired>
               </ProtectedRoute>
             }
           />
@@ -234,7 +251,9 @@ function App() {
             path="/farmer/inventory/add-product"
             element={
               <ProtectedRoute allowedRoles={["FARMER"]}>
-                <AddProduct />
+                <RoleSetupRequired>
+                  <AddProduct />
+                </RoleSetupRequired>
               </ProtectedRoute>
             }
           />
@@ -242,7 +261,9 @@ function App() {
             path="/farmer/proposals"
             element={
               <ProtectedRoute allowedRoles={["FARMER"]}>
-                <BarterProposals />
+                <RoleSetupRequired>
+                  <BarterProposals />
+                </RoleSetupRequired>
               </ProtectedRoute>
             }
           />
@@ -250,7 +271,9 @@ function App() {
             path="/activity"
             element={
               <ProtectedRoute allowedRoles={["FARMER"]}>
-                <Activity />
+                <RoleSetupRequired>
+                  <Activity />
+                </RoleSetupRequired>
               </ProtectedRoute>
             }
           />
@@ -260,7 +283,9 @@ function App() {
             path="/agent/dashboard"
             element={
               <ProtectedRoute allowedRoles={["AGENT"]}>
-                <AgentDashboard />
+                <RoleSetupRequired>
+                  <AgentDashboard />
+                </RoleSetupRequired>
               </ProtectedRoute>
             }
           />
@@ -268,7 +293,9 @@ function App() {
             path="/agent/farmers"
             element={
               <ProtectedRoute allowedRoles={["AGENT"]}>
-                <AgentFarmers />
+                <RoleSetupRequired>
+                  <AgentFarmers />
+                </RoleSetupRequired>
               </ProtectedRoute>
             }
           />

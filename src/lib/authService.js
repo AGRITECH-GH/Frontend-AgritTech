@@ -51,6 +51,23 @@ const authService = {
     }),
 
   /**
+   * Get role setup completion status for authenticated user
+   * @returns {Promise} { role, roleSetupComplete, missingFields }
+   */
+  getRoleSetupStatus: () => api.apiFetch("/api/auth/role-setup-status"),
+
+  /**
+   * Complete role-specific onboarding fields
+   * @param {Object|FormData} payload
+   * @returns {Promise} { message, roleSetupComplete, missingFields, user }
+   */
+  completeRoleSetup: (payload) =>
+    api.apiFetch("/api/auth/complete-role-setup", {
+      method: "POST",
+      body: payload instanceof FormData ? payload : JSON.stringify(payload),
+    }),
+
+  /**
    * Refresh access token using httpOnly cookie
    * @returns {Promise} { accessToken }
    */
