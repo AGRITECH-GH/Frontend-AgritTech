@@ -13,6 +13,9 @@ import { transition } from "@/motionConfig";
 import { authService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
 
+// Guards against duplicate token verification requests in the same app lifecycle.
+const attemptedVerificationTokens = new Set();
+
 export default function VerifyEmail() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -40,6 +43,9 @@ export default function VerifyEmail() {
 
   useEffect(() => {
     if (!isTokenFlow) return;
+    if (attemptedVerificationTokens.has(tokenParam)) return;
+
+    attemptedVerificationTokens.add(tokenParam);
 
     let active = true;
     const runVerification = async () => {
@@ -61,6 +67,7 @@ export default function VerifyEmail() {
         }, 1000);
       } catch (err) {
         if (!active) return;
+        attemptedVerificationTokens.delete(tokenParam);
         setError(
           err?.message ||
             "Verification failed. Please request a new verification email.",
