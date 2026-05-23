@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { authService } from "@/lib";
@@ -15,6 +15,7 @@ export default function GoogleAuthSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState("");
+  const processedCodeRef = useRef("");
 
   const code = useMemo(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -24,14 +25,19 @@ export default function GoogleAuthSuccess() {
   useEffect(() => {
     let isMounted = true;
 
-    const finalizeGoogleLogin = async () => {
-      if (!code) {
-        if (isMounted) {
-          setError("Google sign-in code was not found. Please try again.");
-        }
-        return;
-      }
+    if (!code) {
+      setError("Google sign-in code was not found. Please try again.");
+      return undefined;
+    }
 
+    if (processedCodeRef.current === code) {
+      return undefined;
+    }
+
+    // Prevent duplicate exchanges (e.g., StrictMode and context re-renders).
+    processedCodeRef.current = code;
+
+    const finalizeGoogleLogin = async () => {
       try {
         const result = await completeGoogleAuth(code);
         if (!isMounted) return;
