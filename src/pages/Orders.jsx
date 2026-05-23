@@ -223,7 +223,7 @@ function OrderRow({ order, onUpdateStatus, currentRole, forceOpen = false }) {
   const StatusIcon = meta.icon;
   const orderId = order.id;
   const paymentMethod = String(order.paymentMethod || "").toUpperCase();
-  const showPaymentStatus = ["MOMO", "CREDIT"].includes(paymentMethod);
+  const showPaymentStatus = ["PAY_ONLINE"].includes(paymentMethod);
 
   useEffect(() => {
     if (forceOpen) {
