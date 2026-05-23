@@ -15,6 +15,11 @@ export default function GoogleAuthSuccess() {
   const location = useLocation();
   const [error, setError] = useState("");
   const processedCodeRef = useRef("");
+  const completeGoogleAuthRef = useRef(completeGoogleAuth);
+
+  useEffect(() => {
+    completeGoogleAuthRef.current = completeGoogleAuth;
+  }, [completeGoogleAuth]);
 
   const code = useMemo(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -38,7 +43,7 @@ export default function GoogleAuthSuccess() {
 
     const finalizeGoogleLogin = async () => {
       try {
-        const result = await completeGoogleAuth(code);
+        const result = await completeGoogleAuthRef.current(code);
         if (!isMounted) return;
 
         const targetPath = getDashboardPathByRole(result?.user?.role);
@@ -55,7 +60,7 @@ export default function GoogleAuthSuccess() {
     return () => {
       isMounted = false;
     };
-  }, [code, completeGoogleAuth, navigate]);
+  }, [code, navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
