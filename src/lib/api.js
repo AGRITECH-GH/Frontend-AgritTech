@@ -1,5 +1,6 @@
 // API Configuration and Utilities
 const API_BASE_URL = import.meta.env.VITE_API_URL;
+const DEFAULT_TIMEOUT_MS = 20000;
 
 // Get stored access token
 const getAccessToken = () => {
@@ -32,35 +33,67 @@ const getHeaders = (isFormData = false) => {
   return headers;
 };
 
+const fetchWithTimeout = async (
+  url,
+  options = {},
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: options.signal || controller.signal,
+    });
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error("Request timed out. Please try again.");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
+
 // Generic fetch wrapper with token refresh logic
 const apiFetch = async (endpoint, options = {}) => {
+  const { timeoutMs = DEFAULT_TIMEOUT_MS, ...requestOptions } = options;
   const url = `${API_BASE_URL}${endpoint}`;
-  const isFormData = options.body instanceof FormData;
+  const isFormData = requestOptions.body instanceof FormData;
 
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...getHeaders(isFormData),
-      ...options.headers,
+  const response = await fetchWithTimeout(
+    url,
+    {
+      ...requestOptions,
+      headers: {
+        ...getHeaders(isFormData),
+        ...requestOptions.headers,
+      },
+      credentials: "include", // Include cookies for httpOnly refresh token
     },
-    credentials: "include", // Include cookies for httpOnly refresh token
-  });
+    timeoutMs,
+  );
 
   // If unauthorized, try to refresh token (skip for auth endpoints to avoid loops)
   const isAuthEndpoint = endpoint.startsWith("/api/auth/");
   if (response.status === 401 && !isAuthEndpoint) {
     try {
-      const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
-      });
+      const refreshResponse = await fetchWithTimeout(
+        `${API_BASE_URL}/api/auth/refresh`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+        timeoutMs,
+      );
 
       if (refreshResponse.ok) {
         const data = await refreshResponse.json();
         setAccessToken(data.accessToken);
 
         // Retry original request with new token
-        return apiFetch(endpoint, options);
+        return apiFetch(endpoint, requestOptions);
       } else {
         // Refresh failed, clear token
         setAccessToken(null);

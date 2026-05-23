@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { authService } from "@/lib";
 
 const getDashboardPathByRole = (role) => {
   if (role === "ADMIN") return "/admin/dashboard";
@@ -41,17 +40,6 @@ export default function GoogleAuthSuccess() {
       try {
         const result = await completeGoogleAuth(code);
         if (!isMounted) return;
-
-        const role = String(result?.user?.role || "").toUpperCase();
-        if (role === "AGENT" || role === "FARMER") {
-          const setupStatus = await authService.getRoleSetupStatus();
-          if (!isMounted) return;
-
-          if (!setupStatus?.roleSetupComplete) {
-            navigate("/complete-role-setup", { replace: true });
-            return;
-          }
-        }
 
         const targetPath = getDashboardPathByRole(result?.user?.role);
         navigate(targetPath, { replace: true });
