@@ -105,7 +105,7 @@ const DashboardNavbar = ({
         >
           <img src={logo} alt="FarmBridge logo" className="h-6 w-6" />
           <span>
-            Agri<span className="text-green-600">Tech</span>
+            Farm<span className="text-green-600">Bridge</span>
           </span>
         </button>
 
@@ -137,10 +137,9 @@ const DashboardNavbar = ({
               to={to}
               end
               className={({ isActive }) =>
-                `text-sm font-medium transition-colors hover:text-primary ${
-                  isActive
-                    ? "border-b-2 border-primary pb-0.5 text-primary"
-                    : "text-foreground/70"
+                `text-sm font-medium transition-colors hover:text-primary ${isActive
+                  ? "border-b-2 border-primary pb-0.5 text-primary"
+                  : "text-foreground/70"
                 }`
               }
             >
@@ -180,9 +179,8 @@ const DashboardNavbar = ({
                 </span>
               )}
               <ChevronDown
-                className={`h-4 w-4 text-muted transition-transform ${
-                  profileMenuOpen ? "rotate-180" : ""
-                }`}
+                className={`h-4 w-4 text-muted transition-transform ${profileMenuOpen ? "rotate-180" : ""
+                  }`}
               />
             </button>
 
@@ -266,8 +264,7 @@ const DashboardNavbar = ({
                 to={to}
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
-                  `text-sm font-medium ${
-                    isActive ? "text-primary" : "text-foreground/70"
+                  `text-sm font-medium ${isActive ? "text-primary" : "text-foreground/70"
                   }`
                 }
               >
