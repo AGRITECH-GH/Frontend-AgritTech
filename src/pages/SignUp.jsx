@@ -113,7 +113,7 @@ export default function SignUp() {
     : "/login";
 
   const handleGoogleAuth = () => {
-    authService.signInWithGoogle();
+    authService.signInWithGoogle(selectedRole);
   };
 
   const roleOptions = [

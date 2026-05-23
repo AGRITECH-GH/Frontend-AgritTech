@@ -30,9 +30,13 @@ const authService = {
 
   /**
    * Start Google OAuth sign-in/sign-up flow
+   * @param {string} [role] - Optional role ('BUYER', 'FARMER', 'AGENT')
    */
-  signInWithGoogle: () => {
-    window.location.assign(GOOGLE_OAUTH_URL);
+  signInWithGoogle: (role) => {
+    const url = role
+      ? `${GOOGLE_OAUTH_URL}?role=${encodeURIComponent(role)}`
+      : GOOGLE_OAUTH_URL;
+    window.location.assign(url);
   },
 
   /**
