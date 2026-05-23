@@ -154,6 +154,7 @@ function App() {
             }
           />
           <Route path="/payments/return" element={<PaymentReturn />} />
+          <Route path="/payment/return" element={<PaymentReturn />} />
           <Route path="/profile/:userId" element={<PublicProfile />} />
 
           {/* Buyer routes */}
