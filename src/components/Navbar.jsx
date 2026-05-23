@@ -414,7 +414,7 @@ const Navbar = ({ minimal = false }) => {
         {/* Mobile toggle - only show if not minimal */}
         {!minimal && (
           <button
-            className="rounded-full border border-border/70 bg-white/70 p-2 text-foreground shadow-sm backdrop-blur md:hidden"
+            className="ml-auto rounded-full border border-border/70 bg-white/70 p-2 text-foreground shadow-sm backdrop-blur md:hidden"
             onClick={() => setOpen((prev) => !prev)}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

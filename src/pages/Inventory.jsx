@@ -279,13 +279,6 @@ const Inventory = () => {
           {/* Action Buttons */}
           <div className="flex gap-3">
             <button
-              onClick={() => setShowFilter(!showFilter)}
-              className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium transition hover:bg-surface"
-            >
-              <Filter className="h-4 w-4" />
-              Filter
-            </button>
-            <button
               onClick={handleAddProduct}
               className="flex items-center gap-2 rounded-full bg-green-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-green-700"
             >
