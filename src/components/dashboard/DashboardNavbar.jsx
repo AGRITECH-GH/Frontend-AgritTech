@@ -96,7 +96,7 @@ const DashboardNavbar = ({
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-white/95 backdrop-blur">
-      <div className="container flex h-16 items-center gap-4">
+      <div className="container flex h-16 items-center gap-2 sm:gap-4">
         {/* Logo */}
         <button
           type="button"
@@ -149,7 +149,7 @@ const DashboardNavbar = ({
         </nav>
 
         {/* Right controls */}
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           {/* Notification bell */}
           <NotificationCenter />
           {/* Avatar + User menu */}
@@ -174,7 +174,7 @@ const DashboardNavbar = ({
                 )}
               </div>
               {user?.name && (
-                <span className="text-sm font-medium text-foreground">
+                <span className="hidden sm:block max-w-[120px] truncate text-sm font-medium text-foreground">
                   {user.name}
                 </span>
               )}
@@ -244,19 +244,6 @@ const DashboardNavbar = ({
       {/* Mobile search + nav */}
       {mobileOpen && (
         <div className="border-t border-border/60 bg-white px-4 pb-4 pt-3 md:hidden">
-          <form
-            onSubmit={handleSearch}
-            className="mb-3 flex items-center rounded-xl border border-border bg-surface px-3 py-2"
-          >
-            <Search className="mr-2 h-4 w-4 shrink-0 text-muted" />
-            <input
-              type="search"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              placeholder="Search..."
-              className="w-full bg-transparent text-sm text-foreground placeholder:text-muted/60 focus:outline-none"
-            />
-          </form>
           <nav className="flex flex-col gap-3">
             {navLinks.map(({ label, to }) => (
               <NavLink

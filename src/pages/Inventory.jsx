@@ -256,7 +256,7 @@ const Inventory = () => {
         {/* ── Tabs and Controls ── */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           {/* Tabs */}
-          <div className="flex gap-6 border-b border-border pb-4 sm:pb-0">
+          <div className="flex gap-6 overflow-x-auto border-b border-border pb-4 scrollbar-hide sm:pb-0">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -290,7 +290,7 @@ const Inventory = () => {
 
         {/* ── Products Table (Scrollable on mobile) ── */}
         <div className="mb-6 overflow-x-auto rounded-lg border border-border bg-white shadow-sm">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[800px] text-sm">
             <thead className="border-b border-border bg-white">
               <tr>
                 <th className="px-4 py-3 text-left font-medium text-foreground">
@@ -437,7 +437,7 @@ const Inventory = () => {
         </div>
 
         {/* ── Pagination ── */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted">
             Showing{" "}
             {paginatedProducts.length > 0 ? (currentPage - 1) * 10 + 1 : 0} to{" "}
@@ -496,7 +496,7 @@ const Inventory = () => {
         </div>
 
         {/* ── Summary Cards ── */}
-        <div className="flex flex-col gap-4 sm:flex-row">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <StatCard
             label="Total Value"
             value={`₵${stats.totalValue}`}
