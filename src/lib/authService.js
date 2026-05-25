@@ -207,6 +207,17 @@ const authService = {
       method: "DELETE",
       body: JSON.stringify(data),
     }),
+
+  /**
+   * Resubmit KYC documents for farmers
+   * @param {FormData} payload - FormData containing nationalId, farmRegistration, and businessCertificate
+   * @returns {Promise} { message, user }
+   */
+  resubmitKYC: (payload) =>
+    api.apiFetch("/api/auth/resubmit-kyc", {
+      method: "POST",
+      body: payload,
+    }),
 };
 
 export default authService;

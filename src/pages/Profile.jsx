@@ -102,6 +102,16 @@ export default function Profile() {
     message: "",
     error: "",
   });
+  const [kycState, setKycState] = useState({
+    loading: false,
+    message: "",
+    error: "",
+  });
+  const [kycForm, setKycForm] = useState({
+    nationalId: null,
+    farmRegistration: null,
+    businessCertificate: null,
+  });
   const [isRequestAgentOpen, setIsRequestAgentOpen] = useState(false);
 
   const isAgent = String(user?.role || "").toUpperCase() === "AGENT";
@@ -428,6 +438,38 @@ export default function Profile() {
     }
   };
 
+  const handleKycSubmit = async (e) => {
+    e.preventDefault();
+    setKycState({ loading: true, message: "", error: "" });
+    try {
+      if (!kycForm.nationalId || !kycForm.farmRegistration || !kycForm.businessCertificate) {
+        setKycState({ loading: false, message: "", error: "All three documents are required." });
+        return;
+      }
+      const payload = new FormData();
+      payload.append("nationalId", kycForm.nationalId);
+      payload.append("farmRegistration", kycForm.farmRegistration);
+      payload.append("businessCertificate", kycForm.businessCertificate);
+
+      const response = await authService.resubmitKYC(payload);
+      if (response?.user) {
+        updateUser(response.user);
+      }
+      setKycState({
+        loading: false,
+        message: response?.message || "KYC documents resubmitted successfully.",
+        error: "",
+      });
+      setKycForm({ nationalId: null, farmRegistration: null, businessCertificate: null });
+    } catch (err) {
+      setKycState({
+        loading: false,
+        message: "",
+        error: err?.message || "Failed to resubmit KYC documents.",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-surface">
       <nav className="sticky top-0 z-50 border-b border-border bg-white">
@@ -515,6 +557,98 @@ export default function Profile() {
                 </p>
               )}
             </div>
+
+            {isFarmer && (
+              <div className="mb-5 rounded-2xl border border-border/60 bg-surface/50 p-4">
+                <div className="flex flex-col gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">
+                      KYC Verification
+                    </p>
+                    <p className="mt-1 text-sm text-gray-600">
+                      Status:{" "}
+                      <span
+                        className={
+                          user?.kycStatus === "APPROVED"
+                            ? "font-semibold text-green-700"
+                            : user?.kycStatus === "REJECTED"
+                            ? "font-semibold text-red-700"
+                            : "font-semibold text-amber-700"
+                        }
+                      >
+                        {user?.kycStatus || "Not submitted"}
+                      </span>
+                    </p>
+                    {user?.kycStatus === "REJECTED" && user?.kycRejectReason && (
+                      <p className="mt-2 text-sm text-red-600">
+                        Reason: {user.kycRejectReason}
+                      </p>
+                    )}
+                  </div>
+
+                  {user?.kycStatus === "REJECTED" && (
+                    <form onSubmit={handleKycSubmit} className="mt-4 border-t border-border/60 pt-4">
+                      <p className="mb-4 text-sm font-medium text-gray-700">Resubmit Documents</p>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div>
+                          <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                            National ID
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => setKycForm(p => ({ ...p, nationalId: e.target.files?.[0] || null }))}
+                            className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-primary/50"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                            Farm Registration
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => setKycForm(p => ({ ...p, farmRegistration: e.target.files?.[0] || null }))}
+                            className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-primary/50"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1.5 block text-xs font-medium text-gray-700">
+                            Business Certificate
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => setKycForm(p => ({ ...p, businessCertificate: e.target.files?.[0] || null }))}
+                            className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs outline-none focus:border-primary/50"
+                          />
+                        </div>
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={kycState.loading}
+                        className="mt-4 inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {kycState.loading ? "Submitting..." : "Resubmit KYC"}
+                      </button>
+                      
+                      {kycState.message && (
+                        <p className="mt-3 inline-flex items-center gap-1 text-xs text-green-600">
+                          <CheckCircle2 size={14} />
+                          {kycState.message}
+                        </p>
+                      )}
+                      {kycState.error && (
+                        <p className="mt-3 inline-flex items-center gap-1 text-xs text-red-600">
+                          <AlertCircle size={14} />
+                          {kycState.error}
+                        </p>
+                      )}
+                    </form>
+                  )}
+                </div>
+              </div>
+            )}
 
             {isFarmer && (
               <div className="mb-5 rounded-2xl border border-border/60 bg-surface/50 p-4">
