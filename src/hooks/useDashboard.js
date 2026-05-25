@@ -68,69 +68,13 @@ const TEST_BARTER_OFFERS = [
   },
 ];
 
-const toArray = (value) => (Array.isArray(value) ? value : []);
-const getIdentifier = (value) =>
-  value?.id || value?._id || value?.userId || value?.ownerId || null;
-
-const isOwnedByUser = (entity, userId) => {
-  if (!userId || !entity) return false;
-
-  const ownerId =
-    getIdentifier(entity.owner) ||
-    entity.ownerId ||
-    entity.farmerId ||
-    entity.sellerId ||
-    getIdentifier(entity.seller) ||
-    getIdentifier(entity.farmer) ||
-    null;
-
-  return ownerId === userId;
-};
-
-const normalizeListingForDashboard = (listing) => {
-  const quantity = Number(listing.quantity) || 0;
-  const available = Number(listing.quantityAvailable) || 0;
-  const percentRemaining = quantity > 0 ? (available / quantity) * 100 : 0;
-
-  return {
-    id: listing.id || listing._id,
-    name: listing.title || "Unnamed Product",
-    stock: `${available} ${listing.unit || "KG"}`,
-    price: `₵${(Number(listing.pricePerUnit) || 0).toFixed(2)}`,
-    trend:
-      percentRemaining >= 70
-        ? "Stable"
-        : percentRemaining >= 30
-          ? "Medium"
-          : "Low",
-    trendDir:
-      percentRemaining >= 70
-        ? "stable"
-        : percentRemaining >= 30
-          ? "down"
-          : "down",
-    imageUrl: getPrimaryListingImageUrl(listing) || null,
-  };
-};
-
-const extractBarterOffers = (response) => {
-  if (Array.isArray(response)) return response;
-  if (!response || typeof response !== "object") return [];
-
-  const candidates = [
-    response.barter,
-    response.barterRequests,
-    response.barters,
-    response.requests,
-    response.items,
-    response.data?.barterRequests,
-    response.data?.requests,
-    response.data,
-  ];
-
-  const firstArray = candidates.find(Array.isArray);
-  return firstArray || [];
-};
+import {
+  toArray,
+  getIdentifier,
+  isOwnedByUser,
+  normalizeListingForDashboard,
+  extractBarterOffers
+} from "@/lib/dashboardUtils";
 
 export function useDashboard() {
   const auth = useContext(AuthContext);

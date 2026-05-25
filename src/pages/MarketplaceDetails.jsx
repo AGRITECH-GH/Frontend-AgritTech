@@ -11,7 +11,6 @@ import {
   Gift,
   Eye,
   Shield,
-  Award,
   X,
   DollarSign,
   Loader2,
@@ -23,14 +22,12 @@ import { Button } from "@/components/ui/button";
 import MarketplaceDetailsSkeleton from "@/components/ui/MarketplaceDetailsSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { addGuestCartItem, cartService, listingsService } from "@/lib";
-import {
-  getPrimaryListingImageUrl,
-  getListingImageGalleryUrls,
-} from "@/lib/listingImages";
+import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 import * as chatService from "@/lib/chatService";
-import * as negotiationsService from "@/lib/negotiationsService";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/context/ToastContext";
+import { ProductGallery } from "@/components/marketplace/ProductGallery";
+import { MakeOfferModal } from "@/components/proposals/MakeOfferModal";
 
 const normalizeListing = (response) => {
   if (!response || typeof response !== "object") return null;
@@ -41,10 +38,6 @@ const normalizeListing = (response) => {
 
 const getListingImage = (listing) => {
   return getPrimaryListingImageUrl(listing);
-};
-
-const getAllImages = (listing) => {
-  return getListingImageGalleryUrls(listing);
 };
 
 const formatCurrency = (value) => {
@@ -74,6 +67,12 @@ const getCategoryName = (category) => {
   return "";
 };
 
+const hasMeaningfulValue = (value) => {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  return true;
+};
+
 const getListingId = (item) => String(item?.id || item?._id || "").trim();
 
 const MarketplaceDetails = () => {
@@ -87,18 +86,12 @@ const MarketplaceDetails = () => {
   const [similarLoading, setSimilarLoading] = useState(false);
   const [error, setError] = useState("");
   const [quantity, setQuantity] = useState(1);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [message, setMessage] = useState(null);
   const toast = useToast();
 
   // Negotiation offer modal
   const [offerModalOpen, setOfferModalOpen] = useState(false);
-  const [offerPrice, setOfferPrice] = useState("");
-  const [offerQty, setOfferQty] = useState("");
-  const [offerNote, setOfferNote] = useState("");
-  const [offerSubmitting, setOfferSubmitting] = useState(false);
-  const [offerSuccess, setOfferSuccess] = useState(false);
 
   // Messaging
   const [msgStarting, setMsgStarting] = useState(false);
@@ -177,12 +170,6 @@ const MarketplaceDetails = () => {
       cancelled = true;
     };
   }, [id]);
-
-  const allImages = useMemo(() => getAllImages(listing), [listing]);
-  const listingImage = useMemo(
-    () => allImages[selectedImageIndex] || getListingImage(listing),
-    [allImages, selectedImageIndex, listing],
-  );
   const listingPrice = Number(
     listing?.pricePerUnit ?? listing?.price ?? listing?.amount ?? 0,
   );
@@ -191,7 +178,54 @@ const MarketplaceDetails = () => {
     listing?.description ||
     `View ${listingTitle} details, pricing, and seller information on FarmBridge.`;
   const listingCategory =
-    getCategoryName(listing?.category) || getCategoryName(listing?.categoryName);
+    getCategoryName(listing?.category) ||
+    getCategoryName(listing?.categoryName);
+  const listingSpecifications = useMemo(() => {
+    if (!listing) return [];
+
+    const stockValue = Number(listing?.quantityAvailable ?? listing?.quantity);
+    const minimumOrderValue = Number(
+      listing?.minimumOrderQty ?? listing?.minOrder ?? listing?.min_order,
+    );
+    const categoryName =
+      getCategoryName(listing?.category) ||
+      getCategoryName(listing?.categoryName);
+
+    const specs = [
+      Number.isFinite(stockValue) && stockValue > 0
+        ? {
+            label: "Available Stock",
+            value: `${stockValue} ${listing?.unit || ""}`.trim(),
+          }
+        : null,
+      Number.isFinite(minimumOrderValue) && minimumOrderValue > 0
+        ? {
+            label: "Min Order",
+            value: `${minimumOrderValue} ${listing?.unit || ""}`.trim(),
+          }
+        : null,
+      hasMeaningfulValue(listing?.harvestDate)
+        ? { label: "Harvest Date", value: formatDate(listing.harvestDate) }
+        : null,
+      hasMeaningfulValue(categoryName)
+        ? { label: "Category", value: categoryName }
+        : null,
+      hasMeaningfulValue(listing?.location || listing?.region)
+        ? {
+            label: "Storage Location",
+            value: listing.location || listing.region,
+          }
+        : null,
+      hasMeaningfulValue(listing?.createdAt || listing?.created_at)
+        ? {
+            label: "Listed Date",
+            value: formatDate(listing?.createdAt || listing?.created_at),
+          }
+        : null,
+    ];
+
+    return specs.filter((item) => item && hasMeaningfulValue(item.value));
+  }, [listing]);
   const productJsonLd = useMemo(() => {
     if (!listing) return null;
 
@@ -241,7 +275,11 @@ const MarketplaceDetails = () => {
       }
       toast.success("Added to cart!", {
         message: "Item added successfully.",
-        action: { label: "View Cart", href: "/cart", icon: <ShoppingCart className="h-3.5 w-3.5" /> }
+        action: {
+          label: "View Cart",
+          href: "/cart",
+          icon: <ShoppingCart className="h-3.5 w-3.5" />,
+        },
       });
     } catch (err) {
       console.error("Failed to add item to cart:", err);
@@ -278,34 +316,6 @@ const MarketplaceDetails = () => {
     }
   };
 
-  const handleSubmitOffer = async (e) => {
-    e.preventDefault();
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-    const price = parseFloat(offerPrice);
-    if (isNaN(price) || price <= 0) return;
-    setOfferSubmitting(true);
-    try {
-      await negotiationsService.makeOffer({
-        listingId: id,
-        offeredPrice: price,
-        quantity: offerQty ? parseFloat(offerQty) : undefined,
-        note: offerNote.trim() || undefined,
-      });
-      setOfferSuccess(true);
-    } catch {
-      setMessage({
-        type: "error",
-        text: "Failed to submit offer. Please try again.",
-      });
-      setOfferModalOpen(false);
-    } finally {
-      setOfferSubmitting(false);
-    }
-  };
-
   return (
     <div className="flex min-h-screen flex-col bg-[#f5f6f1]">
       <SeoMeta
@@ -337,14 +347,14 @@ const MarketplaceDetails = () => {
         ) : (
           <div className="max-w-6xl mx-auto">
             {/* Breadcrumb Navigation */}
-            <nav className="mb-6 flex items-center gap-2 text-sm">
+            <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm">
               <Link
                 to="/"
-                className="text-primary hover:underline font-medium"
+                className="text-primary hover:underline font-medium shrink-0"
               >
                 Marketplace
               </Link>
-              <ChevronRight className="h-4 w-4 text-muted" />
+              <ChevronRight className="h-4 w-4 text-muted shrink-0" />
               <Link
                 to={`/?category=${getCategoryName(listing?.category) || getCategoryName(listing?.categoryName)}`}
                 className="text-primary hover:underline font-medium"
@@ -362,45 +372,7 @@ const MarketplaceDetails = () => {
             {/* Main Grid: Image Gallery + Product Info */}
             <div className="grid gap-6 rounded-3xl border border-border/60 bg-white p-4 shadow-sm sm:p-6 md:grid-cols-[1.2fr_1fr]">
               {/* Left: Image Gallery */}
-              <div className="space-y-4">
-                {/* Main Image */}
-                <div className="overflow-hidden rounded-2xl border border-border/70 bg-[#f0f2ec] aspect-square flex items-center justify-center">
-                  {listingImage ? (
-                    <img
-                      src={listingImage}
-                      alt={listing?.title || listing?.name || "Product"}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center text-sm text-muted">
-                      No image available
-                    </div>
-                  )}
-                </div>
-
-                {/* Thumbnail Gallery */}
-                {getAllImages(listing).length > 1 && (
-                  <div className="flex gap-3 overflow-x-auto">
-                    {getAllImages(listing).map((img, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedImageIndex(idx)}
-                        className={`flex-shrink-0 w-20 h-20 rounded-lg border-2 overflow-hidden transition-all ${
-                          selectedImageIndex === idx
-                            ? "border-primary"
-                            : "border-border/40 hover:border-border/60"
-                        }`}
-                      >
-                        <img
-                          src={img}
-                          alt={`Thumbnail ${idx + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <ProductGallery listing={listing} />
 
               {/* Right: Product Info */}
               <div className="space-y-6">
@@ -503,10 +475,6 @@ const MarketplaceDetails = () => {
                       type="button"
                       onClick={() => {
                         setOfferModalOpen(true);
-                        setOfferSuccess(false);
-                        setOfferPrice("");
-                        setOfferQty("");
-                        setOfferNote("");
                       }}
                       className="w-full h-12 border-2 border-amber-500 text-amber-700 font-semibold rounded-lg hover:bg-amber-50 transition flex items-center justify-center"
                     >
@@ -515,7 +483,6 @@ const MarketplaceDetails = () => {
                     </button>
                   )}
                 </div>
-
 
                 {message && message.type !== "success" && (
                   <div
@@ -530,14 +497,10 @@ const MarketplaceDetails = () => {
                 )}
 
                 {/* Trust Badges */}
-                <div className="flex gap-3 pt-4 border-t border-border/40">
-                  <div className="flex items-center gap-2 text-xs text-muted">
-                    <Shield className="h-4 w-4 text-green-600" />
+                <div className="flex flex-col gap-3 sm:flex-row pt-4 border-t border-border/40">
+                  <div className="flex flex-1 items-center gap-2 text-xs text-muted">
+                    <Shield className="h-4 w-4 text-green-600 shrink-0" />
                     Escrow Protected
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted">
-                    <Award className="h-4 w-4 text-green-600" />
-                    Lab Tested
                   </div>
                 </div>
               </div>
@@ -580,12 +543,12 @@ const MarketplaceDetails = () => {
                 </div>
               </div>
 
-              <div className="mt-4 flex gap-3">
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
                 <button
                   type="button"
                   onClick={handleMessageSeller}
                   disabled={msgStarting}
-                  className="flex h-10 flex-1 items-center justify-center rounded-lg border border-primary font-semibold text-primary transition hover:bg-[#f5f6f1] disabled:opacity-60"
+                  className="flex h-10 w-full sm:flex-1 items-center justify-center rounded-lg border border-primary font-semibold text-primary transition hover:bg-[#f5f6f1] disabled:opacity-60"
                 >
                   {msgStarting ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -598,7 +561,7 @@ const MarketplaceDetails = () => {
                   <button
                     type="button"
                     onClick={() => navigate(`/profile/${listing.seller.id}`)}
-                    className="flex h-10 flex-1 items-center justify-center rounded-lg bg-green-600 font-semibold text-white transition hover:bg-green-700"
+                    className="flex h-10 w-full sm:flex-1 items-center justify-center rounded-lg bg-green-600 font-semibold text-white transition hover:bg-green-700"
                   >
                     <Eye className="mr-2 h-4 w-4" />
                     View Profile
@@ -608,78 +571,28 @@ const MarketplaceDetails = () => {
             </div>
 
             {/* Specifications Section */}
-            <div className="mt-8 rounded-2xl border border-border/60 bg-white p-4 shadow-sm sm:p-6">
-              <h2 className="text-lg font-bold text-foreground mb-4">
-                Product Specifications
-              </h2>
-              <div className="grid gap-4 md:grid-cols-4">
-                <div className="bg-[#f5f6f1] rounded-lg p-3">
-                  <p className="text-xs uppercase tracking-wider text-muted font-semibold">
-                    Available Stock
-                  </p>
-                  <p className="text-lg font-bold text-foreground mt-1">
-                    {listing?.quantityAvailable ?? listing?.quantity ?? "-"}{" "}
-                    {listing?.unit || ""}
-                  </p>
-                </div>
-                <div className="bg-[#f5f6f1] rounded-lg p-3">
-                  <p className="text-xs uppercase tracking-wider text-muted font-semibold">
-                    Min Order
-                  </p>
-                  <p className="text-lg font-bold text-foreground mt-1">
-                    {listing?.minimumOrderQty ||
-                      listing?.minOrder ||
-                      listing?.min_order ||
-                      "1"}{" "}
-                    {listing?.unit || ""}
-                  </p>
-                </div>
-                <div className="bg-[#f5f6f1] rounded-lg p-3">
-                  <p className="text-xs uppercase tracking-wider text-muted font-semibold">
-                    Certification
-                  </p>
-                  <p className="text-lg font-bold text-foreground mt-1">
-                    {listing?.certification || "-"}
-                  </p>
-                </div>
-                <div className="bg-[#f5f6f1] rounded-lg p-3">
-                  <p className="text-xs uppercase tracking-wider text-muted font-semibold">
-                    Packaging
-                  </p>
-                  <p className="text-lg font-bold text-foreground mt-1">
-                    {listing?.packaging || "-"}
-                  </p>
-                </div>
-                <div className="bg-[#f5f6f1] rounded-lg p-3">
-                  <p className="text-xs uppercase tracking-wider text-muted font-semibold">
-                    Moisture Content
-                  </p>
-                  <p className="text-lg font-bold text-foreground mt-1">
-                    {listing?.moistureContent || "-"}
-                  </p>
-                </div>
-                <div className="bg-[#f5f6f1] rounded-lg p-3">
-                  <p className="text-xs uppercase tracking-wider text-muted font-semibold">
-                    Category
-                  </p>
-                  <p className="text-lg font-bold text-foreground mt-1">
-                    {getCategoryName(listing?.category) ||
-                      getCategoryName(listing?.categoryName) ||
-                      "-"}
-                  </p>
-                </div>
-                <div className="bg-[#f5f6f1] rounded-lg p-3">
-                  <p className="text-xs uppercase tracking-wider text-muted font-semibold">
-                    Listed
-                  </p>
-                  <p className="text-lg font-bold text-foreground mt-1">
-                    {new Date(
-                      listing?.createdAt || listing?.created_at || Date.now(),
-                    ).toLocaleDateString()}
-                  </p>
+            {listingSpecifications.length > 0 && (
+              <div className="mt-8 rounded-2xl border border-border/60 bg-white p-4 shadow-sm sm:p-6">
+                <h2 className="text-lg font-bold text-foreground mb-4">
+                  Product Specifications
+                </h2>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                  {listingSpecifications.map((spec) => (
+                    <div
+                      key={spec.label}
+                      className="bg-[#f5f6f1] rounded-lg p-3"
+                    >
+                      <p className="text-xs uppercase tracking-wider text-muted font-semibold">
+                        {spec.label}
+                      </p>
+                      <p className="text-lg font-bold text-foreground mt-1">
+                        {spec.value}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Description Section */}
             <div className="mt-8 rounded-2xl border border-border/60 bg-white p-4 shadow-sm sm:p-6">
@@ -697,7 +610,7 @@ const MarketplaceDetails = () => {
                 Similar Commodities
               </h2>
               {similarLoading ? (
-                <div className="grid gap-4 md:grid-cols-4">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                   {Array.from({ length: 4 }).map((_, index) => (
                     <div
                       key={index}
@@ -713,7 +626,7 @@ const MarketplaceDetails = () => {
                   ))}
                 </div>
               ) : similarProducts && similarProducts.length > 0 ? (
-                <div className="grid gap-4 md:grid-cols-4">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                   {similarProducts.slice(0, 4).map((product) => {
                     const img = getListingImage(product) || "/placeholder.png";
                     const price = product?.pricePerUnit ?? product?.price ?? 0;
@@ -758,114 +671,13 @@ const MarketplaceDetails = () => {
       <Footer />
 
       {/* ── Make Offer Modal ─────────────────────────────────────────── */}
-      {offerModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-foreground">
-                Make an Offer
-              </h3>
-              <button
-                type="button"
-                onClick={() => setOfferModalOpen(false)}
-                className="rounded-full p-1.5 hover:bg-muted/10"
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {offerSuccess ? (
-              <div className="flex flex-col items-center gap-3 py-6 text-center">
-                <CheckCircle2 className="h-12 w-12 text-green-500" />
-                <p className="font-semibold text-foreground">Offer Sent!</p>
-                <p className="text-sm text-muted">
-                  The seller will be notified and can accept, decline, or
-                  counter your offer.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setOfferModalOpen(false)}
-                  className="mt-2 rounded-lg bg-green-600 px-6 py-2 text-sm font-semibold text-white hover:bg-green-700"
-                >
-                  Done
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmitOffer} className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted mb-3">
-                    Listed at{" "}
-                    <span className="font-semibold text-foreground">
-                      {formatCurrency(listingPrice)}
-                    </span>{" "}
-                    per {listing?.unit || "unit"}
-                  </p>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    Your Offer Price (GHS){" "}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    required
-                    value={offerPrice}
-                    onChange={(e) => setOfferPrice(e.target.value)}
-                    placeholder={`e.g. ${(listingPrice * 0.9).toFixed(2)}`}
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    Quantity ({listing?.unit || "unit"})
-                  </label>
-                  <input
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    value={offerQty}
-                    onChange={(e) => setOfferQty(e.target.value)}
-                    placeholder="Optional"
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1">
-                    Note to Seller
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={offerNote}
-                    onChange={(e) => setOfferNote(e.target.value)}
-                    placeholder="E.g. willing to pay cash on delivery…"
-                    className="w-full resize-none rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
-                </div>
-                <div className="flex gap-3 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setOfferModalOpen(false)}
-                    className="flex-1 rounded-lg border border-border py-2 text-sm font-medium hover:bg-muted/5"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={offerSubmitting || !offerPrice}
-                    className="flex-1 rounded-lg bg-amber-500 py-2 text-sm font-semibold text-white hover:bg-amber-600 disabled:opacity-60 flex items-center justify-center gap-2"
-                  >
-                    {offerSubmitting && (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    )}
-                    Submit Offer
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+      <MakeOfferModal
+        isOpen={offerModalOpen}
+        onClose={() => setOfferModalOpen(false)}
+        listingId={id}
+        listingPrice={listingPrice}
+        unit={listing?.unit}
+      />
     </div>
   );
 };
