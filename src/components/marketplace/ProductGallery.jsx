@@ -1,5 +1,8 @@
-import { useMemo, useState } from "react";
-import { getPrimaryListingImageUrl, getListingImageGalleryUrls } from "@/lib/listingImages";
+import { useEffect, useMemo, useState } from "react";
+import {
+  getPrimaryListingImageUrl,
+  getListingImageGalleryUrls,
+} from "@/lib/listingImages";
 
 const getListingImage = (listing) => {
   return getPrimaryListingImageUrl(listing);
@@ -13,6 +16,13 @@ export const ProductGallery = ({ listing }) => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const allImages = useMemo(() => getAllImages(listing), [listing]);
+
+  useEffect(() => {
+    if (selectedImageIndex >= allImages.length) {
+      setSelectedImageIndex(0);
+    }
+  }, [allImages.length, selectedImageIndex]);
+
   const listingImage = useMemo(
     () => allImages[selectedImageIndex] || getListingImage(listing),
     [allImages, selectedImageIndex, listing],
@@ -37,12 +47,16 @@ export const ProductGallery = ({ listing }) => {
 
       {/* Thumbnail Gallery */}
       {allImages.length > 1 && (
-        <div className="flex gap-3 overflow-x-auto pb-2">
+        <div
+          className="flex gap-2 overflow-x-auto pb-2 pr-1 snap-x snap-mandatory scrollbar-hide [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
           {allImages.map((img, idx) => (
             <button
               key={idx}
               onClick={() => setSelectedImageIndex(idx)}
-              className={`flex-shrink-0 w-20 h-20 rounded-lg border-2 overflow-hidden transition-all ${
+              aria-label={`View image ${idx + 1}`}
+              className={`h-16 w-16 shrink-0 snap-start overflow-hidden rounded-lg border-2 transition-all sm:h-20 sm:w-20 ${
                 selectedImageIndex === idx
                   ? "border-primary"
                   : "border-border/40 hover:border-border/60"
