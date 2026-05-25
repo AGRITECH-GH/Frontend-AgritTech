@@ -9,6 +9,7 @@ import {
   ChevronDown,
   LogOut,
   User,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.svg";
@@ -324,6 +325,16 @@ const Navbar = ({ minimal = false }) => {
                       >
                         <ShoppingCart className="h-4 w-4 text-muted" />
                         My Orders
+                      </button>
+                      <button
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate("/messages");
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-[#f5f6f1]"
+                      >
+                        <MessageSquare className="h-4 w-4 text-muted" />
+                        Messages
                       </button>
                       <button
                         onClick={handleLogout}

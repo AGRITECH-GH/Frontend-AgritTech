@@ -194,7 +194,7 @@ export default function Messages() {
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-surface">
       {/* ── Sidebar: conversation list ── */}
-      <aside className="w-80 shrink-0 flex flex-col border-r border-border bg-white overflow-hidden">
+      <aside className={`w-full md:w-80 shrink-0 flex-col border-r border-border bg-white overflow-hidden ${conversationId ? 'hidden md:flex' : 'flex'}`}>
         <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
           <button
             type="button"
@@ -240,7 +240,7 @@ export default function Messages() {
       </aside>
 
       {/* ── Main: message thread ── */}
-      <main className="flex flex-1 flex-col overflow-hidden">
+      <main className={`flex-1 flex-col overflow-hidden ${!conversationId ? 'hidden md:flex' : 'flex'}`}>
         {!conversationId ? (
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
