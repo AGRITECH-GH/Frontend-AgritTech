@@ -27,13 +27,14 @@ const getOrderItems = (order) => {
   return list.map((item) => {
     const listing = item?.listing || item?.product || item?.productId || {};
     const unitPrice = Number(
+      item?.unitPriceAtOrder ??
       item?.unitPrice ??
         item?.price ??
         listing?.pricePerUnit ??
         listing?.price ??
         0,
     );
-    const quantity = Number(item?.quantity ?? item?.qty ?? 1);
+    const quantity = Number(item?.quantityOrdered ?? item?.quantity ?? item?.qty ?? 1);
     const image =
       getPrimaryListingImageUrl(listing) ||
       getPrimaryListingImageUrl({ images: item?.images || [] }) ||
@@ -108,6 +109,7 @@ const normalizeOrder = (order) => {
       order?.sellerName ||
       order?.farmerName ||
       order?.agentName ||
+      getEntityName(order?.items?.[0]?.listing?.seller) ||
       "",
     items,
   };

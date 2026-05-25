@@ -125,13 +125,14 @@ const getOrderItems = (order) => {
   return list.map((item) => {
     const listing = item?.listing || item?.product || item?.productId || {};
     const unitPrice = Number(
+      item?.unitPriceAtOrder ??
       item?.unitPrice ??
         item?.price ??
         listing?.pricePerUnit ??
         listing?.price ??
         0,
     );
-    const quantity = Number(item?.quantity ?? item?.qty ?? 1);
+    const quantity = Number(item?.quantityOrdered ?? item?.quantity ?? item?.qty ?? 1);
     const image =
       getPrimaryListingImageUrl(listing) ||
       getPrimaryListingImageUrl({ images: item?.images || [] }) ||
@@ -155,6 +156,7 @@ const getOrderItems = (order) => {
 };
 
 const normalizeOrder = (order) => {
+  console.log("RAW ORDER:", order);
   const items = getOrderItems(order);
 
   return {
@@ -206,6 +208,7 @@ const normalizeOrder = (order) => {
       order?.sellerName ||
       order?.farmerName ||
       order?.agentName ||
+      getEntityName(order?.items?.[0]?.listing?.seller) ||
       "",
     items,
   };
@@ -392,31 +395,31 @@ function OrderRow({ order, onUpdateStatus, currentRole, forceOpen = false }) {
 
               {/* Order info */}
               <div className="mb-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-                <div>
+                <div className="flex flex-col gap-1">
                   <span className="text-muted">Payment Method</span>
                   <p className="font-medium text-foreground capitalize">
-                    {(order.paymentMethod || "—").toLowerCase()}
+                    {(order.paymentMethod || "—").replace(/_/g, " ").toLowerCase()}
                   </p>
                 </div>
                 {showPaymentStatus && (
-                  <div>
+                  <div className="flex flex-col gap-1">
                     <span className="text-muted">Payment Status</span>
-                    <p className="inline-flex items-center gap-1.5 font-medium text-foreground">
+                    <p className="inline-flex items-center gap-1.5 font-medium text-foreground capitalize">
                       <Wallet className="h-4 w-4 text-primary" />
                       {paymentLoading
                         ? "Checking..."
-                        : paymentStatus || order.paymentStatus || "Pending"}
+                        : (paymentStatus || order.paymentStatus || "Pending").toLowerCase()}
                     </p>
                   </div>
                 )}
-                <div>
+                <div className="flex flex-col gap-1">
                   <span className="text-muted">Delivery Address</span>
                   <p className="font-medium text-foreground">
                     {order.deliveryAddress || "—"}
                   </p>
                 </div>
                 {(order.buyerName || order.sellerName) && (
-                  <div>
+                  <div className="flex flex-col gap-1">
                     <span className="text-muted">
                       {currentRole === "BUYER" ? "Seller" : "Buyer"}
                     </span>
