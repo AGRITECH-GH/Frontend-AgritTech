@@ -7,6 +7,7 @@ import signInBg from "@/assets/SignIn.webp";
 import { transition } from "@/motionConfig";
 import { useAuth } from "@/context/AuthContext";
 import { authService } from "@/lib";
+import { Alert } from "@/components/ui/Alert";
 
 /* ─── Google "G" SVG ─── */
 const GoogleIcon = () => (
@@ -284,9 +285,7 @@ export default function Login() {
 
                 <form onSubmit={handleSubmit} noValidate className="space-y-4">
                   {oauthErrorMessage && (
-                    <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                      {oauthErrorMessage}
-                    </div>
+                    <Alert type="error">{oauthErrorMessage}</Alert>
                   )}
 
                   {/* ── Email ── */}

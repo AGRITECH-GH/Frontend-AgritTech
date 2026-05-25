@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 import { AuthProvider } from "@/context/AuthContext";
+import { ToastProvider } from "@/context/ToastContext";
 import SeoMeta from "@/components/SeoMeta";
 import Loader from "@/components/ui/loader";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -130,14 +131,15 @@ function AppSeo() {
 function App() {
   return (
     <AuthProvider>
-      <SpeedInsights />
-      <Analytics />
-      <AppSeo />
-      <Suspense fallback={<Loader />}>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Marketplace />} />
-          <Route path="/marketplace" element={<Navigate to="/" replace />} />
+      <ToastProvider>
+        <SpeedInsights />
+        <Analytics />
+        <AppSeo />
+        <Suspense fallback={<Loader />}>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Marketplace />} />
+            <Route path="/marketplace" element={<Navigate to="/" replace />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -389,6 +391,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
+      </ToastProvider>
     </AuthProvider>
   );
 }
