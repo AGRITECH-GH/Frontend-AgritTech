@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { listingsService, ordersService, barterService } from "@/lib";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
+import { logger } from "@/lib/logger";
+
 
 const toArray = (value) => (Array.isArray(value) ? value : []);
 const getIdentifier = (value) =>
@@ -174,7 +176,7 @@ export function useDashboard() {
         }
         setActivity(recentActivity);
       } catch (err) {
-        console.error("Failed to fetch dashboard data:", err);
+        logger.error("Failed to fetch dashboard data:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -219,7 +221,7 @@ export function useDashboard() {
       });
       return { success: true };
     } catch (err) {
-      console.error("Failed to accept barter offer:", err);
+      logger.error("Failed to accept barter offer:", err);
       setError(err.message || "Failed to accept barter offer.");
       setActionNotice({
         type: "error",
@@ -248,7 +250,7 @@ export function useDashboard() {
       });
       return { success: true };
     } catch (err) {
-      console.error("Failed to decline barter offer:", err);
+      logger.error("Failed to decline barter offer:", err);
       setError(err.message || "Failed to decline barter offer.");
       setActionNotice({
         type: "error",

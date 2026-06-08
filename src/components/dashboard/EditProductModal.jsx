@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { X, Upload, AlertCircle } from "lucide-react";
 import { validateImageFiles } from "@/lib/utils";
+import { logger } from "@/lib/logger";
+
 
 const EditProductModal = ({
   isOpen,
@@ -118,7 +120,7 @@ const EditProductModal = ({
         try {
           await onUploadImages(uploadedFiles);
         } catch (err) {
-          console.error("Image upload failed, but product was updated:", err);
+          logger.error("Image upload failed, but product was updated:", err);
           // Don't block the save if images fail
         } finally {
           setIsUploading(false);

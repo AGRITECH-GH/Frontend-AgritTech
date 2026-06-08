@@ -5,6 +5,8 @@ import { useAuth } from "@/context/AuthContext";
 import { adminService } from "@/lib";
 import AdminLayout from "@/components/admin/AdminLayout";
 import Skeleton from "@/components/ui/skeleton";
+import { logger } from "@/lib/logger";
+
 
 const toNumber = (value, fallback = 0) => {
   const parsed = Number(value);
@@ -167,7 +169,7 @@ const AdminUsers = () => {
           getPagination(response, page, limit, normalizedUsers.length),
         );
       } catch (err) {
-        console.error("Failed to load users:", err);
+        logger.error("Failed to load users:", err);
         if (!cancelled) {
           setError(err.message || "Failed to load users.");
           setUsers([]);
@@ -220,7 +222,7 @@ const AdminUsers = () => {
           : "User account disabled successfully.",
       );
     } catch (err) {
-      console.error("Failed to update user:", err);
+      logger.error("Failed to update user:", err);
       setActionError(err.message || "Failed to update user.");
     } finally {
       setUpdatingUserId(null);
@@ -278,7 +280,7 @@ const AdminUsers = () => {
       setActionSuccess("User updated successfully.");
       closeEditModal();
     } catch (err) {
-      console.error("Failed to update user:", err);
+      logger.error("Failed to update user:", err);
       setActionError(err.message || "Failed to update user.");
     } finally {
       setUpdatingUserId(null);
@@ -306,7 +308,7 @@ const AdminUsers = () => {
       }));
       setActionSuccess("User deleted successfully.");
     } catch (err) {
-      console.error("Failed to delete user:", err);
+      logger.error("Failed to delete user:", err);
       setActionError(err.message || "Failed to delete user.");
     } finally {
       setDeletingUserId(null);

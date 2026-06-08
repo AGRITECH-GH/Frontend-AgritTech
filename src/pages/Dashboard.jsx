@@ -181,7 +181,7 @@ const Dashboard = () => {
 
         {/* ── Help Banner ── */}
         <HelpBanner
-          onCallAgent={() => console.log("Call agent")}
+          onCallAgent={() => {}}
           onKnowledgeBase={() => navigate("/help")}
         />
       </main>

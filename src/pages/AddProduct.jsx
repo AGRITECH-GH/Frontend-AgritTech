@@ -6,6 +6,8 @@ import { validateImageFiles } from "@/lib/utils";
 import StatCard from "@/components/dashboard/StatCard";
 import { ChevronLeft, Upload, X } from "lucide-react";
 import { useEffect } from "react";
+import { logger } from "@/lib/logger";
+
 
 const CSV_TEMPLATE_HEADERS = [
   "title",
@@ -88,7 +90,7 @@ const AddProduct = () => {
         const res = await categoriesService.getCategories();
         setCategories(res.categories || []);
       } catch (err) {
-        console.error("Failed to fetch categories:", err);
+        logger.error("Failed to fetch categories:", err);
       } finally {
         setLoadingCategories(false);
       }
@@ -242,9 +244,8 @@ const AddProduct = () => {
         setIsUploadingImages(true);
         try {
           await listingsService.uploadListingImages(listingId, uploadedImages);
-          console.log("Images uploaded successfully");
         } catch (err) {
-          console.error("Image upload failed:", err);
+          logger.error("Image upload failed:", err);
         } finally {
           setIsUploadingImages(false);
         }

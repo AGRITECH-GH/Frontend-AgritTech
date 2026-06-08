@@ -27,6 +27,8 @@ import {
 import * as chatService from "@/lib/chatService";
 import * as negotiationsService from "@/lib/negotiationsService";
 import { useAuth } from "@/context/AuthContext";
+import { logger } from "@/lib/logger";
+
 
 const normalizeListing = (response) => {
   if (!response || typeof response !== "object") return null;
@@ -129,19 +131,13 @@ const MarketplaceDetails = () => {
             extracted?.categoryId ||
             "";
 
-          console.log(
-            "Fetching similar products - Category ID:",
-            categoryId,
-            "Category Object:",
-            categoryObj,
-          );
+
 
           if (categoryId) {
             const similarRes = await listingsService.getListings({
               category: categoryId,
               limit: 8,
             });
-            console.log("Similar products response:", similarRes);
             const similar = Array.isArray(similarRes?.listings)
               ? similarRes.listings.filter(
                   (item) => (item.id || item._id) !== id,
@@ -152,12 +148,12 @@ const MarketplaceDetails = () => {
             setSimilarProducts([]);
           }
         } catch (err) {
-          console.error("Failed to fetch similar products:", err);
+          logger.error("Failed to fetch similar products:", err);
         } finally {
           setSimilarLoading(false);
         }
       } catch (err) {
-        console.error("Failed to fetch listing details:", err);
+        logger.error("Failed to fetch listing details:", err);
         if (!cancelled) {
           setError(err.message || "Failed to load listing details.");
           setListing(null);
@@ -200,7 +196,7 @@ const MarketplaceDetails = () => {
       setCartAdded(true);
       setTimeout(() => setCartAdded(false), 4000);
     } catch (err) {
-      console.error("Failed to add item to cart:", err);
+      logger.error("Failed to add item to cart:", err);
       setMessage({
         type: "error",
         text: err.message || "Failed to add item to cart.",

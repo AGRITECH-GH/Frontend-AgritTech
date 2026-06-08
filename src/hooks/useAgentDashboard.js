@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { agentsService } from "@/lib";
+import { logger } from "@/lib/logger";
+
 
 // ---------------------------------------------------------------------------
 // Mock data – swap fetch() calls in place of useState initialisers when ready
@@ -246,7 +248,7 @@ export function useAgentDashboard() {
         message: "Farmer registered successfully.",
       };
     } catch (err) {
-      console.error("Failed to register farmer:", err);
+      logger.error("Failed to register farmer:", err);
       const friendlyMessage =
         err?.message === "Agent profile not found"
           ? "Complete your agent profile setup before registering farmers."
@@ -262,12 +264,10 @@ export function useAgentDashboard() {
 
   const onExportData = () => {
     // TODO: trigger CSV/PDF export
-    console.log("Export data");
   };
 
   const onFarmerAction = (farmerId, action) => {
     // TODO: handle farmer row actions (view, edit, remove)
-    console.log("Farmer action", farmerId, action);
   };
 
   return {

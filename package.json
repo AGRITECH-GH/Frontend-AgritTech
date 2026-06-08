@@ -16,6 +16,7 @@
     "@clerk/react": "^6.0.1",
     "@clerk/react-router": "^3.0.1",
     "@lottiefiles/dotlottie-react": "^0.18.3",
+    "@sentry/react": "^10.56.0",
     "framer-motion": "^12.34.3",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",

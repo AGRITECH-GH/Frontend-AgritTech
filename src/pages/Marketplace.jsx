@@ -6,6 +6,8 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { categoriesService, listingsService } from "@/lib";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
+import { logger } from "@/lib/logger";
+
 
 const GHANA_REGIONS = [
   "Ahafo",
@@ -112,7 +114,7 @@ const Marketplace = () => {
         if (cancelled) return;
         setCategories(extractCategories(response));
       } catch (err) {
-        console.error("Failed to fetch categories:", err);
+        logger.error("Failed to fetch categories:", err);
       }
     };
 
@@ -175,7 +177,7 @@ const Marketplace = () => {
           totalPages,
         });
       } catch (err) {
-        console.error("Failed to fetch marketplace listings:", err);
+        logger.error("Failed to fetch marketplace listings:", err);
         if (!cancelled) {
           setError(err.message || "Failed to load marketplace listings.");
           setListings([]);

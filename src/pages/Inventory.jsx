@@ -6,6 +6,8 @@ import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import StatCard from "@/components/dashboard/StatCard";
 import EditProductModal from "@/components/dashboard/EditProductModal";
 import { listingsService } from "@/lib";
+import { logger } from "@/lib/logger";
+
 import {
   Plus,
   Filter,
@@ -111,7 +113,7 @@ const Inventory = () => {
 
       setSelectedProduct(toEditableProduct(latestListing, product));
     } catch (error) {
-      console.error("Failed to fetch latest listing details:", error);
+      logger.error("Failed to fetch latest listing details:", error);
       // Fallback to current table data so user can still proceed.
       setSelectedProduct(toEditableProduct(null, product));
     } finally {
@@ -134,7 +136,7 @@ const Inventory = () => {
           setShowEditModal(false);
         })
         .catch((error) => {
-          console.error("Error deleting product:", error);
+          logger.error("Error deleting product:", error);
           setIsSaving(false);
           alert("Failed to delete product. Please try again.");
         });
@@ -155,7 +157,7 @@ const Inventory = () => {
       setShowEditModal(false);
       setSelectedProduct(null);
     } catch (error) {
-      console.error("Error updating product:", error);
+      logger.error("Error updating product:", error);
       throw error;
     } finally {
       setIsSaving(false);
@@ -166,7 +168,7 @@ const Inventory = () => {
     try {
       await uploadProductImages(selectedProduct.id, files);
     } catch (error) {
-      console.error("Error uploading images:", error);
+      logger.error("Error uploading images:", error);
       throw error;
     }
   };

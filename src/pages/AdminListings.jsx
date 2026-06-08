@@ -5,6 +5,8 @@ import { useAuth } from "@/context/AuthContext";
 import { getPrimaryListingImageUrl, listingsService } from "@/lib";
 import AdminLayout from "@/components/admin/AdminLayout";
 import Skeleton from "@/components/ui/skeleton";
+import { logger } from "@/lib/logger";
+
 
 const toNumber = (value) => {
   const parsed = Number(value);
@@ -126,7 +128,7 @@ const AdminListings = () => {
         setListings(normalized);
         setPagination(getPagination(response, page, limit, normalized.length));
       } catch (err) {
-        console.error("Failed to load listings:", err);
+        logger.error("Failed to load listings:", err);
         if (!cancelled) {
           setError(err.message || "Failed to load listings.");
           setListings([]);
