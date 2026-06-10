@@ -217,11 +217,13 @@ const authService = {
   getMe: () =>
     api.apiFetch("/api/auth/me", {
       method: "GET",
-    })
+    }),
+
+  /**
    * Resubmit KYC documents for farmers
    * @param {FormData} payload - FormData containing nationalId, farmRegistration, and businessCertificate
    * @returns {Promise} { message, user })
-   */
+  */
   resubmitKYC: (payload) =>
     api.apiFetch("/api/auth/resubmit-kyc", {
       method: "POST",
