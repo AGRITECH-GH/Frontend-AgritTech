@@ -9,13 +9,17 @@ import ActiveProductsTable from "@/components/dashboard/ActiveProductsTable";
 import BarterOffersPanel from "@/components/dashboard/BarterOffersPanel";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import HelpBanner from "@/components/dashboard/HelpBanner";
+import DashboardSkeleton from "@/components/dashboard/DashboardSkeleton";
 import TradeDetailsModal from "@/components/proposals/TradeDetailsModal";
+import RequestAgentModal from "@/components/agent/RequestAgentModal";
 import Footer from "@/components/Footer";
+import { useAvailableAgents } from "@/hooks/useAvailableAgents";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const {
     user,
+    loading,
     weather,
     stats,
     products,
@@ -32,6 +36,25 @@ const Dashboard = () => {
   const [selectedTrade, setSelectedTrade] = useState(null);
   const [detailsError, setDetailsError] = useState("");
   const [detailsStatusPreview, setDetailsStatusPreview] = useState("");
+  const [isRequestAgentOpen, setIsRequestAgentOpen] = useState(false);
+
+  const {
+    agents,
+    loadingAgents,
+    agentsLoadError,
+    selectedRegion,
+    setSelectedRegion,
+    page,
+    setPage,
+    pagination,
+    requestingAgentId,
+    requestedAgentIds,
+    requestAgent,
+  } = useAvailableAgents({
+    initialRegion: user?.region || "",
+    limit: 6,
+    enabled: true,
+  });
 
   const handleAcceptFromDetails = async () => {
     if (!selectedTrade?.id) return;
@@ -94,6 +117,16 @@ const Dashboard = () => {
     name: displayName,
     avatarUrl: user?.profilePhotoUrl || user?.avatarUrl || null,
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-surface">
+        <DashboardNavbar user={navbarUser} />
+        <DashboardSkeleton />
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-surface">
@@ -181,7 +214,7 @@ const Dashboard = () => {
 
         {/* ── Help Banner ── */}
         <HelpBanner
-          onCallAgent={() => {}}
+          onCallAgent={() => setIsRequestAgentOpen(true)}
           onKnowledgeBase={() => navigate("/help")}
         />
       </main>
@@ -201,6 +234,23 @@ const Dashboard = () => {
         previewStatus={detailsStatusPreview}
         onAccept={handleAcceptFromDetails}
         onDecline={handleDeclineFromDetails}
+      />
+
+      <RequestAgentModal
+        isOpen={isRequestAgentOpen}
+        onClose={() => setIsRequestAgentOpen(false)}
+        agents={agents}
+        loadingAgents={loadingAgents}
+        agentsLoadError={agentsLoadError}
+        selectedRegion={selectedRegion}
+        onRegionChange={setSelectedRegion}
+        page={page}
+        totalPages={pagination.totalPages}
+        onPageChange={setPage}
+        onRequestAgent={requestAgent}
+        requestingAgentId={requestingAgentId}
+        requestedAgentIds={requestedAgentIds}
+        hasAssignedAgent={Boolean(user?.agentId)}
       />
 
       <Footer />

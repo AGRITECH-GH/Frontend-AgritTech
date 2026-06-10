@@ -1,5 +1,8 @@
 // src/lib/api.js
 import { getAccessToken, setAccessToken, clearAccessToken } from "./tokenStore";
+// API Configuration and Utilities
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+const DEFAULT_TIMEOUT_MS = 20000;
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const DEFAULT_TIMEOUT_MS = 20000;
@@ -50,9 +53,9 @@ const apiFetch = async (endpoint, options = {}) => {
         ...getHeaders(isFormData),
         ...requestOptions.headers,
       },
-      credentials: "include",
+      credentials: "include", // Include cookies for httpOnly refresh token
     },
-    timeoutMs
+    timeoutMs,
   );
 
   const isAuthEndpoint = endpoint.startsWith("/api/auth/");
@@ -68,6 +71,8 @@ const apiFetch = async (endpoint, options = {}) => {
       if (refreshResponse.ok) {
         const data = await refreshResponse.json();
         setAccessToken(data.accessToken);
+
+        // Retry original request with new token
         return apiFetch(endpoint, requestOptions);
       } else {
         clearAccessToken();

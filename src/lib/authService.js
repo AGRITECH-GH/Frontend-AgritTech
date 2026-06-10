@@ -1,16 +1,20 @@
 // Authentication API Service
 import api from "./api";
 
+const GOOGLE_OAUTH_URL =
+  import.meta.env.VITE_GOOGLE_OAUTH_URL ||
+  `${import.meta.env.VITE_API_URL || "http://localhost:8000"}/api/auth/google`;
+
 const authService = {
   /**
    * Register a new user account
-   * @param {Object} userData - { fullName, email, password, role, assignedRegion?, commissionRate?, bio? }
+   * @param {Object|FormData} userData - { fullName, email, password, role, assignedRegion?, commissionRate?, bio? } or FormData
    * @returns {Promise} { message, accessToken, user }
    */
   register: (userData) =>
     api.apiFetch("/api/auth/register", {
       method: "POST",
-      body: JSON.stringify(userData),
+      body: userData instanceof FormData ? userData : JSON.stringify(userData),
     }),
 
   /**
@@ -26,10 +30,42 @@ const authService = {
 
   /**
    * Start Google OAuth sign-in/sign-up flow
+   * @param {string} [role] - Optional role ('BUYER', 'FARMER', 'AGENT')
    */
-  signInWithGoogle: () => {
-    window.location.assign(`${api.API_BASE_URL}/api/auth/google`);
+  signInWithGoogle: (role) => {
+    const url = role
+      ? `${GOOGLE_OAUTH_URL}?role=${encodeURIComponent(role)}`
+      : GOOGLE_OAUTH_URL;
+    window.location.assign(url);
   },
+
+  /**
+   * Exchange Google OAuth code for an access token
+   * @param {string} code - OAuth authorization code
+   * @returns {Promise} { accessToken }
+   */
+  exchangeGoogleCode: (code) =>
+    api.apiFetch("/api/auth/google/exchange", {
+      method: "POST",
+      body: JSON.stringify({ code }),
+    }),
+
+  /**
+   * Get role setup completion status for authenticated user
+   * @returns {Promise} { role, roleSetupComplete, missingFields }
+   */
+  getRoleSetupStatus: () => api.apiFetch("/api/auth/role-setup-status"),
+
+  /**
+   * Complete role-specific onboarding fields
+   * @param {Object|FormData} payload
+   * @returns {Promise} { message, roleSetupComplete, missingFields, user }
+   */
+  completeRoleSetup: (payload) =>
+    api.apiFetch("/api/auth/complete-role-setup", {
+      method: "POST",
+      body: payload instanceof FormData ? payload : JSON.stringify(payload),
+    }),
 
   /**
    * Refresh access token using httpOnly cookie
@@ -181,6 +217,14 @@ const authService = {
   getMe: () =>
     api.apiFetch("/api/auth/me", {
       method: "GET",
+   * Resubmit KYC documents for farmers
+   * @param {FormData} payload - FormData containing nationalId, farmRegistration, and businessCertificate
+   * @returns {Promise} { message, user }
+   */
+  resubmitKYC: (payload) =>
+    api.apiFetch("/api/auth/resubmit-kyc", {
+      method: "POST",
+      body: payload,
     }),
 };
 

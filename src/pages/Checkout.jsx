@@ -21,10 +21,8 @@ import { useOrders } from "@/hooks/useOrders";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 
 const PAYMENT_METHODS = [
-  { value: "CASH", label: "Cash on Delivery", icon: "💵" },
-  { value: "MOMO", label: "Mobile Money (MOMO)", icon: "📱" },
-  { value: "CREDIT", label: "Credit Card", icon: "💳" },
-  { value: "BARTER", label: "Barter Exchange", icon: "🔄" },
+  { value: "CASH_ON_DELIVERY", label: "Cash on Delivery", icon: "💵" },
+  { value: "PAY_ONLINE", label: "Pay Online", icon: "💳" },
 ];
 
 export default function Checkout() {
@@ -33,7 +31,7 @@ export default function Checkout() {
   const { cart } = useCart();
   const { placeOrder } = useOrders();
 
-  const [paymentMethod, setPaymentMethod] = useState("CASH");
+  const [paymentMethod, setPaymentMethod] = useState("CASH_ON_DELIVERY");
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [isPlacing, setIsPlacing] = useState(false);
@@ -61,7 +59,7 @@ export default function Checkout() {
   const total = subtotal + tax;
 
   const formatCurrency = (amount) => `GH₵${Number(amount).toFixed(2)}`;
-  const requiresOnlinePayment = ["MOMO", "CREDIT"].includes(paymentMethod);
+  const requiresOnlinePayment = ["PAY_ONLINE"].includes(paymentMethod);
   const isEmailVerified = Boolean(
     user?.isEmailVerified ||
     user?.emailVerified ||

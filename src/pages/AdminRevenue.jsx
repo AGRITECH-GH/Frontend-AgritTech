@@ -5,6 +5,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import Skeleton from "@/components/ui/skeleton";
 import { logger } from "@/lib/logger";
 
+import AdminRevenueSkeleton from "@/components/admin/AdminRevenueSkeleton";
 
 const toNumber = (value, fallback = 0) => {
   const parsed = Number(value);
@@ -143,6 +144,16 @@ const AdminRevenue = () => {
       cancelled = true;
     };
   }, [ordersQuery, orderPage, orderLimit]);
+
+  if (ordersLoading) {
+    return (
+      <AdminLayout admin={sidebarAdmin}>
+        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <AdminRevenueSkeleton />
+        </main>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout admin={sidebarAdmin}>

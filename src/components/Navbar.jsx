@@ -9,6 +9,7 @@ import {
   ChevronDown,
   LogOut,
   User,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.svg";
@@ -165,7 +166,7 @@ const Navbar = ({ minimal = false }) => {
       params.delete("search");
     }
     params.set("page", "1");
-    navigate(`/marketplace?${params.toString()}`);
+    navigate(`/?${params.toString()}`);
     setOpen(false);
   };
 
@@ -218,7 +219,7 @@ const Navbar = ({ minimal = false }) => {
           <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:gap-4 sm:px-6 lg:px-8">
             {/* Logo */}
             <Link
-              to="/marketplace"
+              to="/"
               className="flex shrink-0 items-center gap-2"
             >
               <img
@@ -326,6 +327,16 @@ const Navbar = ({ minimal = false }) => {
                         My Orders
                       </button>
                       <button
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate("/messages");
+                        }}
+                        className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-[#f5f6f1]"
+                      >
+                        <MessageSquare className="h-4 w-4 text-muted" />
+                        Messages
+                      </button>
+                      <button
                         onClick={handleLogout}
                         className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-600 transition-colors hover:bg-red-50"
                       >
@@ -414,7 +425,7 @@ const Navbar = ({ minimal = false }) => {
         {/* Mobile toggle - only show if not minimal */}
         {!minimal && (
           <button
-            className="rounded-full border border-border/70 bg-white/70 p-2 text-foreground shadow-sm backdrop-blur md:hidden"
+            className="ml-auto rounded-full border border-border/70 bg-white/70 p-2 text-foreground shadow-sm backdrop-blur md:hidden"
             onClick={() => setOpen((prev) => !prev)}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

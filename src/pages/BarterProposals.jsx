@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import ProposalCard from "@/components/proposals/ProposalCard";
 import NewExchangeCTA from "@/components/proposals/NewExchangeCTA";
 import BarterProtocolBanner from "@/components/proposals/BarterProtocolBanner";
+import BarterProposalsSkeleton from "@/components/proposals/BarterProposalsSkeleton";
 import CreateBarterModal from "@/components/proposals/CreateBarterModal";
 import TradeDetailsModal from "@/components/proposals/TradeDetailsModal";
 import Skeleton from "@/components/ui/skeleton";
@@ -107,7 +108,23 @@ const BarterProposals = () => {
     avatarUrl: user?.profilePhotoUrl || user?.avatarUrl || null,
   };
 
-  const proposals = loading ? [] : barterRequests;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-surface">
+        <DashboardNavbar
+          user={navbarUser}
+          navLinks={NAV_LINKS}
+          showSearch={false}
+        />
+        <main className="container py-6 lg:py-8">
+          <BarterProposalsSkeleton />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  const proposals = barterRequests;
 
   const handleDetailsAction = async (newStatus) => {
     if (!selectedTrade?.id) return;
@@ -242,7 +259,7 @@ const BarterProposals = () => {
         )}
 
         {/* ── Empty State ── */}
-        {!loading && proposals.length === 0 && (
+        {proposals.length === 0 && (
           <div className="mb-8 rounded-2xl border border-border/60 bg-surface p-12 text-center">
             <p className="text-sm text-muted">No barter proposals yet.</p>
             <button
@@ -256,7 +273,7 @@ const BarterProposals = () => {
         )}
 
         {/* ── Proposals Grid ── */}
-        {!loading && proposals.length > 0 && (
+        {proposals.length > 0 && (
           <div className="mb-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
             {/* Left column */}
             <div className="flex flex-col gap-5">

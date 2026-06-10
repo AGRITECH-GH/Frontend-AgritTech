@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Keep private dashboards out of search indexes
+Disallow: /admin/
+Disallow: /agent/
+Disallow: /farmer/
+Disallow: /checkout
+Disallow: /orders
+Disallow: /messages
+Disallow: /profile
+
+Sitemap: https://farmbridgeafrica.com/sitemap.xml

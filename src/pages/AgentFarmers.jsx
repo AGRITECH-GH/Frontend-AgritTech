@@ -1,9 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { UserPlus, Users, Phone, Mail } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import AgentLayout from "@/components/agent/AgentLayout";
 import FarmersTable from "@/components/agent/FarmersTable";
+import AgentRequestsTable from "@/components/agent/AgentRequestsTable";
 import { useMyFarmers } from "@/hooks/useMyFarmers";
+import { useAgentRequests } from "@/hooks/useAgentRequests";
 import Skeleton from "@/components/ui/skeleton";
 
 const AgentFarmers = () => {
@@ -16,6 +18,17 @@ const AgentFarmers = () => {
     loadingFarmers,
     farmersLoadError,
   } = useMyFarmers();
+  const {
+    requests,
+    pendingRequestsCount,
+    loadingRequests,
+    requestsLoadError,
+    processingRequestId,
+    acceptRequest,
+    rejectRequest,
+  } = useAgentRequests();
+  const [activeTab, setActiveTab] = useState("farmers");
+  const [requestActionNotice, setRequestActionNotice] = useState("");
 
   const sidebarAgent = {
     name: authUser?.fullName || authUser?.name || authUser?.username || "Agent",
@@ -58,8 +71,23 @@ const AgentFarmers = () => {
         value: farmersWithEmail,
         Icon: Mail,
       },
+      {
+        label: "Pending Requests",
+        value: pendingRequestsCount,
+        Icon: UserPlus,
+      },
     ];
-  }, [farmers, totalFarmers]);
+  }, [farmers, totalFarmers, pendingRequestsCount]);
+
+  const handleAcceptRequest = async (requestId) => {
+    const result = await acceptRequest(requestId);
+    setRequestActionNotice(result.message || "");
+  };
+
+  const handleRejectRequest = async (requestId) => {
+    const result = await rejectRequest(requestId);
+    setRequestActionNotice(result.message || "");
+  };
 
   return (
     <AgentLayout agent={sidebarAgent}>
@@ -102,30 +130,79 @@ const AgentFarmers = () => {
           ))}
         </div>
 
-        <FarmersTable
-          farmers={farmers}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onAction={() => {}}
-        />
+        <div className="mb-5 flex gap-2 rounded-xl bg-surface p-1">
+          <button
+            type="button"
+            onClick={() => setActiveTab("farmers")}
+            className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+              activeTab === "farmers"
+                ? "bg-white text-foreground shadow-sm"
+                : "text-muted hover:bg-white/70"
+            }`}
+          >
+            Farmers
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("requests")}
+            className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+              activeTab === "requests"
+                ? "bg-white text-foreground shadow-sm"
+                : "text-muted hover:bg-white/70"
+            }`}
+          >
+            Requests ({pendingRequestsCount})
+          </button>
+        </div>
 
-        {loadingFarmers && (
-          <div className="mt-3 rounded-2xl border border-border/60 bg-white p-4 shadow-sm">
-            <div className="space-y-3">
-              {[...Array(4)].map((_, idx) => (
-                <div
-                  key={`my-farmers-skeleton-${idx}`}
-                  className="grid grid-cols-12 gap-3"
-                >
-                  <Skeleton className="col-span-3 h-4" />
-                  <Skeleton className="col-span-3 h-4" />
-                  <Skeleton className="col-span-2 h-4" />
-                  <Skeleton className="col-span-2 h-4" />
-                  <Skeleton className="col-span-2 h-4" />
-                </div>
-              ))}
-            </div>
+        {requestActionNotice && (
+          <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-800">
+            {requestActionNotice}
           </div>
+        )}
+
+        {requestsLoadError && (
+          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+            {requestsLoadError}
+          </div>
+        )}
+
+        {activeTab === "farmers" ? (
+          <>
+            <FarmersTable
+              farmers={farmers}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onAction={() => {}}
+            />
+
+            {loadingFarmers && (
+              <div className="mt-3 rounded-2xl border border-border/60 bg-white p-4 shadow-sm">
+                <div className="space-y-3">
+                  {[...Array(4)].map((_, idx) => (
+                    <div
+                      key={`my-farmers-skeleton-${idx}`}
+                      className="grid grid-cols-12 gap-3"
+                    >
+                      <Skeleton className="col-span-3 h-4" />
+                      <Skeleton className="col-span-3 h-4" />
+                      <Skeleton className="col-span-2 h-4" />
+                      <Skeleton className="col-span-2 h-4" />
+                      <Skeleton className="col-span-2 h-4" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <AgentRequestsTable
+            requests={requests}
+            loadingRequests={loadingRequests}
+            processingRequestId={processingRequestId}
+            onAccept={handleAcceptRequest}
+            onReject={handleRejectRequest}
+          />
         )}
       </main>
     </AgentLayout>

@@ -2,21 +2,82 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
-    <title>FarmBridge</title>
+    <title>FarmBridge | Ghana Agri Marketplace</title>
+    <meta name="description" content="FarmBridge connects farmers, buyers, and agents across Ghana. Browse fresh produce, livestock, and agricultural products." />
+    <meta property="og:title" content="FarmBridge — Ghana Agri Marketplace" />
+    <meta property="og:description" content="Buy and sell agricultural products from verified Ghanaian farmers." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.farmbridgeafrica.com/" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:'Space Grotesk',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;background:radial-gradient(circle at center, #ffffff 0%, #f6f8f6 100%);color:#111827;overflow:hidden;position:relative;">
+        <!-- Premium background glowing gradients -->
+        <div style="position:absolute;width:600px;height:600px;background:radial-gradient(circle, rgba(15,189,59,0.04) 0%, rgba(255,255,255,0) 70%);top:-150px;right:-150px;z-index:1;pointer-events:none;"></div>
+        <div style="position:absolute;width:600px;height:600px;background:radial-gradient(circle, rgba(5,46,22,0.03) 0%, rgba(255,255,255,0) 70%);bottom:-150px;left:-150px;z-index:1;pointer-events:none;"></div>
+
+        <div style="text-align:center;z-index:2;display:flex;flex-direction:column;align-items:center;gap:1.75rem;">
+          <!-- Premium Animated Loader Card -->
+          <div style="position:relative;width:84px;height:84px;display:flex;align-items:center;justify-content:center;background:#ffffff;border-radius:24px;box-shadow:0 20px 40px rgba(15,189,59,0.08);border:1px solid rgba(15,189,59,0.12);animation:pulse-glow 2.5s infinite ease-in-out;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17 8C17 8 14 8 11.5 10.5C9 13 9 17 9 17C9 17 13 17 15.5 14.5C18 12 18 8 17 8Z" fill="url(#loader-brand-grad)"/>
+              <path d="M7 16C7 16 9.5 15.5 11.5 13.5C13.5 11.5 14 9 14 9C14 9 11.5 9.5 9.5 11.5C7.5 13.5 7 16 7 16Z" fill="url(#loader-brand-grad)" opacity="0.75"/>
+              <defs>
+                <linearGradient id="loader-brand-grad" x1="7" y1="8" x2="17" y2="17" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#0FBD3B" />
+                  <stop offset="100%" stop-color="#052e16" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <!-- Spinning organic-like outer boundary accent -->
+            <div style="position:absolute;width:calc(100% + 12px);height:calc(100% + 12px);border-radius:28px;border:2px solid #0FBD3B;border-top-color:transparent;border-right-color:transparent;border-bottom-color:transparent;animation:spin-loader 1.2s infinite cubic-bezier(0.4, 0, 0.2, 1);box-sizing:border-box;top:-6px;left:-6px;opacity:0.85;"></div>
+          </div>
+
+          <div>
+            <h1 style="font-size:2.25rem;color:#052e16;margin:0 0 0.35rem 0;font-weight:700;letter-spacing:-0.03em;display:flex;align-items:center;justify-content:center;">
+              Farm<span style="color:#0FBD3B;">Bridge</span>
+            </h1>
+            <p style="color:#6b7280;font-size:0.9rem;font-weight:500;margin:0;letter-spacing:-0.01em;">Connecting Ghana's Agriculture</p>
+          </div>
+
+          <!-- Sleek Loading Shimmer Progress Line -->
+          <div style="width:140px;height:4px;background:rgba(15,189,59,0.08);border-radius:10px;overflow:hidden;position:relative;margin-top:0.25rem;">
+            <div style="position:absolute;height:100%;width:40%;background:linear-gradient(90deg, #0FBD3B, #052e16);border-radius:10px;animation:progress-shimmer 1.6s infinite ease-in-out;"></div>
+          </div>
+        </div>
+
+        <style>
+          @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); box-shadow: 0 20px 40px rgba(15,189,59,0.08); }
+            50% { transform: scale(1.03); box-shadow: 0 24px 48px rgba(15,189,59,0.18); }
+          }
+          @keyframes spin-loader {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes progress-shimmer {
+            0% { left: -40%; width: 30%; }
+            50% { width: 45%; }
+            100% { left: 110%; width: 30%; }
+          }
+        </style>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

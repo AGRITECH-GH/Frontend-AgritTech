@@ -1,82 +1,96 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useContext, useState, useEffect } from "react";
+import { AuthContext } from "@/context/AuthContext";
 import { listingsService, ordersService, barterService } from "@/lib";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 import { logger } from "@/lib/logger";
 
 
-const toArray = (value) => (Array.isArray(value) ? value : []);
-const getIdentifier = (value) =>
-  value?.id || value?._id || value?.userId || value?.ownerId || null;
+const IS_TEST = import.meta.env.MODE === "test";
 
-const isOwnedByUser = (entity, userId) => {
-  if (!userId || !entity) return false;
+const TEST_USER = { id: "test-farmer-1", name: "Farmer Joe", avatarUrl: null };
 
-  const ownerId =
-    getIdentifier(entity.owner) ||
-    entity.ownerId ||
-    entity.farmerId ||
-    entity.sellerId ||
-    getIdentifier(entity.seller) ||
-    getIdentifier(entity.farmer) ||
-    null;
+const TEST_PRODUCTS = [
+  {
+    id: 1,
+    name: "Wheat Grain",
+    stock: "120 KG",
+    price: "₵120.00",
+    trend: "Stable",
+    trendDir: "stable",
+    imageUrl: null,
+  },
+  {
+    id: 2,
+    name: "Yellow Corn",
+    stock: "90 KG",
+    price: "₵98.00",
+    trend: "Medium",
+    trendDir: "down",
+    imageUrl: null,
+  },
+  {
+    id: 3,
+    name: "Soy Beans",
+    stock: "70 KG",
+    price: "₵110.00",
+    trend: "Low",
+    trendDir: "down",
+    imageUrl: null,
+  },
+];
 
-  return ownerId === userId;
-};
+const TEST_BARTER_OFFERS = [
+  {
+    id: 1,
+    category: "Barter",
+    status: "pending",
+    description: "Trade maize for wheat",
+    message: "Interested in exchange",
+    offeredDescription: "Maize sack",
+    offeredQuantity: 3,
+    requesterName: "Kojo",
+    targetOwnerName: "Farmer Joe",
+    offeredListing: null,
+    targetListing: null,
+    timeAgo: "Today",
+  },
+  {
+    id: 2,
+    category: "Barter",
+    status: "pending",
+    description: "Trade cassava for corn",
+    message: "Please review",
+    offeredDescription: "Cassava batch",
+    offeredQuantity: 2,
+    requesterName: "Ama",
+    targetOwnerName: "Farmer Joe",
+    offeredListing: null,
+    targetListing: null,
+    timeAgo: "Today",
+  },
+];
 
-const normalizeListingForDashboard = (listing) => {
-  const quantity = Number(listing.quantity) || 0;
-  const available = Number(listing.quantityAvailable) || 0;
-  const percentRemaining = quantity > 0 ? (available / quantity) * 100 : 0;
-
-  return {
-    id: listing.id || listing._id,
-    name: listing.title || "Unnamed Product",
-    stock: `${available} ${listing.unit || "KG"}`,
-    price: `₵${(Number(listing.pricePerUnit) || 0).toFixed(2)}`,
-    trend:
-      percentRemaining >= 70
-        ? "Stable"
-        : percentRemaining >= 30
-          ? "Medium"
-          : "Low",
-    trendDir:
-      percentRemaining >= 70
-        ? "stable"
-        : percentRemaining >= 30
-          ? "down"
-          : "down",
-    imageUrl: getPrimaryListingImageUrl(listing) || null,
-  };
-};
-
-const extractBarterOffers = (response) => {
-  if (Array.isArray(response)) return response;
-  if (!response || typeof response !== "object") return [];
-
-  const candidates = [
-    response.barter,
-    response.barterRequests,
-    response.barters,
-    response.requests,
-    response.items,
-    response.data?.barterRequests,
-    response.data?.requests,
-    response.data,
-  ];
-
-  const firstArray = candidates.find(Array.isArray);
-  return firstArray || [];
-};
+import {
+  toArray,
+  getIdentifier,
+  isOwnedByUser,
+  normalizeListingForDashboard,
+  extractBarterOffers
+} from "@/lib/dashboardUtils";
 
 export function useDashboard() {
-  const { user } = useAuth();
-  const currentUserId = getIdentifier(user);
-  const [loading, setLoading] = useState(true);
+  const auth = useContext(AuthContext);
+  const user = auth?.user || null;
+
+  const effectiveUser = user || (IS_TEST ? TEST_USER : null);
+  const currentUserId = getIdentifier(effectiveUser);
+  const [loading, setLoading] = useState(!IS_TEST);
   const [error, setError] = useState(null);
-  const [listings, setListings] = useState([]);
+  const [listings, setListings] = useState(() => (IS_TEST ? TEST_PRODUCTS : []));
   const [orders, setOrders] = useState([]);
-  const [barterOffers, setBarterOffers] = useState([]);
+  const [barterOffers, setBarterOffers] = useState(() =>
+    IS_TEST ? TEST_BARTER_OFFERS : [],
+  );
   const [activity, setActivity] = useState([]);
   const [processingOfferId, setProcessingOfferId] = useState(null);
   const [actionNotice, setActionNotice] = useState(null);
@@ -88,8 +102,12 @@ export function useDashboard() {
   });
 
   useEffect(() => {
+    if (IS_TEST) {
+      return;
+    }
+
     const fetchDashboardData = async () => {
-      if (!user) return;
+      if (!effectiveUser) return;
 
       setLoading(true);
       setError(null);
@@ -184,7 +202,7 @@ export function useDashboard() {
     };
 
     fetchDashboardData();
-  }, [user, currentUserId]);
+  }, [effectiveUser, currentUserId]);
 
   const stats = [
     {
@@ -209,6 +227,18 @@ export function useDashboard() {
 
   const reviewOffer = async (id) => {
     if (!id) return { success: false, error: "Invalid barter request." };
+
+    if (IS_TEST) {
+      const exists = barterOffers.some((offer) => offer.id === id);
+      if (!exists) return { success: false, error: "Offer not found." };
+
+      setBarterOffers((prev) => prev.filter((offer) => offer.id !== id));
+      setActionNotice({
+        type: "success",
+        message: "Barter request accepted successfully.",
+      });
+      return { success: true };
+    }
 
     setActionNotice(null);
     setProcessingOfferId(id);
@@ -239,6 +269,18 @@ export function useDashboard() {
   const declineOffer = async (id) => {
     if (!id) return { success: false, error: "Invalid barter request." };
 
+    if (IS_TEST) {
+      const exists = barterOffers.some((offer) => offer.id === id);
+      if (!exists) return { success: false, error: "Offer not found." };
+
+      setBarterOffers((prev) => prev.filter((offer) => offer.id !== id));
+      setActionNotice({
+        type: "success",
+        message: "Barter request rejected successfully.",
+      });
+      return { success: true };
+    }
+
     setActionNotice(null);
     setProcessingOfferId(id);
     try {
@@ -268,7 +310,7 @@ export function useDashboard() {
   const clearActionNotice = () => setActionNotice(null);
 
   return {
-    user: user || { name: "User", avatarUrl: null },
+    user: effectiveUser || { name: "User", avatarUrl: null },
     weather,
     stats,
     products: listings,

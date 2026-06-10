@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   ListChecks,
+  ShieldCheck,
   Users,
   BarChart2,
   ShieldAlert,
@@ -23,6 +24,7 @@ const navItems = [
     to: "/admin/dashboard",
     icon: LayoutDashboard,
   },
+  { label: "KYC Reviews", to: "/admin/kyc", icon: ShieldCheck },
   { label: "Active Listings", to: "/admin/listings", icon: ListChecks },
   { label: "User Management", to: "/admin/users", icon: Users },
   { label: "Disputes", to: "/admin/disputes", icon: ShieldAlert },

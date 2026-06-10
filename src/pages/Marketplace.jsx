@@ -3,7 +3,9 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { SlidersHorizontal } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import SeoMeta from "@/components/SeoMeta";
 import { Button } from "@/components/ui/button";
+import MarketplaceSkeleton from "@/components/ui/MarketplaceSkeleton";
 import { categoriesService, listingsService } from "@/lib";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 import { logger } from "@/lib/logger";
@@ -223,7 +225,71 @@ const Marketplace = () => {
     return copy;
   }, [listings, sortBy]);
 
+  const marketplaceJsonLd = useMemo(() => {
+    const origin =
+      typeof window !== "undefined" && window.location?.origin
+        ? window.location.origin
+        : "";
+
+    const itemListElement = sortedListings.slice(0, 12).map((item, index) => {
+      const id = getListingId(item);
+      const url = id && origin ? `${origin}/marketplace/${id}` : undefined;
+      return {
+        "@type": "ListItem",
+        position: index + 1,
+        url,
+        name: getListingTitle(item),
+      };
+    });
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: "FarmBridge Marketplace",
+      description:
+        "Browse agricultural products from trusted sellers and farmers across Ghana.",
+      ...(origin ? { url: `${origin}/marketplace` } : {}),
+      mainEntity: {
+        "@type": "ItemList",
+        itemListElement,
+      },
+    };
+  }, [sortedListings]);
+
   const applyFilters = () => {
+    // Validate price filters
+    const minPriceNum = minPrice.trim() ? parseFloat(minPrice.trim()) : null;
+    const maxPriceNum = maxPrice.trim() ? parseFloat(maxPrice.trim()) : null;
+
+    // Check for invalid numbers
+    if (
+      (minPrice.trim() && isNaN(minPriceNum)) ||
+      (maxPrice.trim() && isNaN(maxPriceNum))
+    ) {
+      setError("Please enter valid price values");
+      return;
+    }
+
+    // Check for negative prices
+    if (
+      (minPriceNum !== null && minPriceNum < 0) ||
+      (maxPriceNum !== null && maxPriceNum < 0)
+    ) {
+      setError("Price values cannot be negative");
+      return;
+    }
+
+    // Check for logical price range
+    if (
+      minPriceNum !== null &&
+      maxPriceNum !== null &&
+      minPriceNum > maxPriceNum
+    ) {
+      setError("Minimum price cannot be greater than maximum price");
+      return;
+    }
+
+    setError("");
     setAppliedCategory(category);
     setAppliedRegion(region);
     setAppliedMinPrice(minPrice.trim());
@@ -246,11 +312,45 @@ const Marketplace = () => {
     setPage(1);
 
     // Also clear search param from URL
-    navigate("/marketplace", { replace: true });
+    navigate("/", { replace: true });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f5f6f1] text-foreground">
+        <Navbar minimal />
+        <main className="pb-12 pt-6">
+          <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="overflow-hidden rounded-3xl border border-border/60 bg-[radial-gradient(circle_at_top_left,_#eef6e3_0%,_#f8faf4_45%,_#ffffff_100%)] p-6 shadow-sm md:p-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                Buyer Marketplace
+              </p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+                Fresh Produce and Farm Goods
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm text-muted md:text-base">
+                Browse verified listings, compare offers, and buy directly from
+                trusted farmers.
+              </p>
+            </div>
+          </section>
+          <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+            <MarketplaceSkeleton />
+          </section>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f6f1] text-foreground">
+      <SeoMeta
+        title="Marketplace | FarmBridge Ghana"
+        description="Buy fresh produce, pantry goods, dairy, and livestock from verified sellers on FarmBridge."
+        canonicalPath="/"
+        jsonLd={marketplaceJsonLd}
+      />
       <Navbar minimal />
       <main className="pb-12 pt-6">
         <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -297,7 +397,7 @@ const Marketplace = () => {
                   {categories.map((item, idx) => (
                     <option
                       key={String(item?.id || item?._id || idx)}
-                      value={item?.name || ""}
+                      value={String(item?.id || item?._id || "")}
                     >
                       {item?.name || "Unknown"}
                     </option>

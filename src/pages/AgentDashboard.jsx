@@ -10,6 +10,7 @@ import RegionalHubActivity from "@/components/agent/RegionalHubActivity";
 import FarmersTable from "@/components/agent/FarmersTable";
 import RegisterFarmerModal from "@/components/agent/RegisterFarmerModal";
 import Skeleton from "@/components/ui/skeleton";
+import AgentDashboardSkeleton from "@/components/agent/AgentDashboardSkeleton";
 
 const AgentDashboard = () => {
   const navigate = useNavigate();
@@ -59,6 +60,14 @@ const AgentDashboard = () => {
     const timeoutId = setTimeout(() => setSuccessMessage(""), 3000);
     return () => clearTimeout(timeoutId);
   }, [successMessage]);
+
+  if (loadingFarmers) {
+    return (
+      <AgentLayout agent={sidebarAgent}>
+        <AgentDashboardSkeleton />
+      </AgentLayout>
+    );
+  }
 
   const handleRegisterFarmer = async (formData) => {
     const result = await registerFarmer(formData);

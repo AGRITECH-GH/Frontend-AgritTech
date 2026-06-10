@@ -1,14 +1,8 @@
 // src/context/AuthContext.jsx
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-} from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import {
   authService,
+  api,
   cartService,
   getGuestCart,
   clearGuestCart,
@@ -69,9 +63,22 @@ const mergeGuestCartIntoAccount = async (role) => {
   clearGuestCart();
 };
 
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
+const decodeJwtPayload = (token) => {
+  if (!token || typeof token !== "string") return null;
+
+  try {
+    const [, payload] = token.split(".");
+    if (!payload) return null;
+
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const base64 = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+
+    return JSON.parse(window.atob(base64));
+  } catch (error) {
+    console.error("Failed to decode JWT payload:", error);
+    return null;
+  }
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

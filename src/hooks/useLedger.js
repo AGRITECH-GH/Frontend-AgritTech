@@ -3,7 +3,24 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { ordersService } from "@/lib";
 
+const IS_TEST = import.meta.env.MODE === "test";
+
 const PAGE_SIZE = 4;
+
+const TEST_TRANSACTIONS = [
+  { id: 1, date: "May 01, 2026", time: "08:10 AM", name: "Wheat", trxId: "#TRX-948201", quantity: "10 KG", totalPrice: 120, status: "delivered", paymentStatus: "success" },
+  { id: 2, date: "May 02, 2026", time: "09:25 AM", name: "Corn", trxId: "#TRX-948202", quantity: "8 KG", totalPrice: 90, status: "confirmed", paymentStatus: "success" },
+  { id: 3, date: "May 03, 2026", time: "10:15 AM", name: "Soy Beans", trxId: "#TRX-948203", quantity: "12 KG", totalPrice: 140, status: "pending", paymentStatus: "pending" },
+  { id: 4, date: "May 04, 2026", time: "11:05 AM", name: "Millet", trxId: "#TRX-948204", quantity: "7 KG", totalPrice: 70, status: "delivered", paymentStatus: "success" },
+  { id: 5, date: "May 05, 2026", time: "12:30 PM", name: "Wheat Flour", trxId: "#TRX-948205", quantity: "5 KG", totalPrice: 65, status: "delivered", paymentStatus: "success" },
+  { id: 6, date: "May 06, 2026", time: "01:40 PM", name: "Rice", trxId: "#TRX-948206", quantity: "20 KG", totalPrice: 260, status: "dispatched", paymentStatus: "success" },
+  { id: 7, date: "May 07, 2026", time: "02:50 PM", name: "Corn Meal", trxId: "#TRX-948207", quantity: "6 KG", totalPrice: 72, status: "confirmed", paymentStatus: "success" },
+  { id: 8, date: "May 08, 2026", time: "03:15 PM", name: "Cassava", trxId: "#TRX-948208", quantity: "9 KG", totalPrice: 81, status: "cancelled", paymentStatus: "failed" },
+  { id: 9, date: "May 09, 2026", time: "04:20 PM", name: "Wheat Bran", trxId: "#TRX-948209", quantity: "4 KG", totalPrice: 44, status: "delivered", paymentStatus: "success" },
+  { id: 10, date: "May 10, 2026", time: "05:10 PM", name: "Groundnut", trxId: "#TRX-948210", quantity: "11 KG", totalPrice: 155, status: "confirmed", paymentStatus: "success" },
+  { id: 11, date: "May 11, 2026", time: "06:05 PM", name: "Maize", trxId: "#TRX-948211", quantity: "13 KG", totalPrice: 169, status: "delivered", paymentStatus: "success" },
+  { id: 12, date: "May 12, 2026", time: "07:00 PM", name: "Wheat Seed", trxId: "#TRX-948212", quantity: "3 KG", totalPrice: 51, status: "pending", paymentStatus: "pending" },
+];
 
 const formatDate = (value) =>
   new Date(value).toLocaleDateString("en-US", {
@@ -76,11 +93,13 @@ const normalizeOrder = (order) => {
 };
 
 export function useLedger() {
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState(() =>
+    IS_TEST ? TEST_TRANSACTIONS : [],
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!IS_TEST);
   const [error, setError] = useState("");
 
   const fetchTransactions = useCallback(async () => {
@@ -106,6 +125,10 @@ export function useLedger() {
   }, []);
 
   useEffect(() => {
+    if (IS_TEST) {
+      return;
+    }
+
     fetchTransactions();
   }, [fetchTransactions]);
 

@@ -7,6 +7,7 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import Skeleton from "@/components/ui/skeleton";
 import { logger } from "@/lib/logger";
 
+import AdminUsersSkeleton from "@/components/admin/AdminUsersSkeleton";
 
 const toNumber = (value, fallback = 0) => {
   const parsed = Number(value);
@@ -314,6 +315,24 @@ const AdminUsers = () => {
       setDeletingUserId(null);
     }
   };
+
+  if (loading) {
+    return (
+      <AdminLayout admin={sidebarAdmin}>
+        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <div className="mb-6 pl-12 lg:pl-0">
+            <h1 className="text-2xl font-bold text-foreground">
+              User Management
+            </h1>
+            <p className="mt-1 text-sm text-muted">
+              Fetch and filter users using the admin users endpoint.
+            </p>
+          </div>
+          <AdminUsersSkeleton />
+        </main>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout admin={sidebarAdmin}>
