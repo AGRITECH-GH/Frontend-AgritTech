@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+// src/context/AuthContext.jsx
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import {
   authService,
   api,
@@ -6,24 +7,60 @@ import {
   getGuestCart,
   clearGuestCart,
 } from "@/lib";
+import {
+  setAccessToken,
+  clearAccessToken,
+} from "@/lib/tokenStore";
 
 export const AuthContext = createContext(null);
 
-const normalizeUser = (nextUser) => {
-  if (!nextUser || typeof nextUser !== "object") return nextUser;
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-  const profilePhotoUrl =
-    nextUser.profilePhotoUrl ||
-    nextUser.avatarUrl ||
-    nextUser.profileImage ||
-    nextUser.photoUrl ||
+const normalizeUser = (user) => {
+  if (!user || typeof user !== "object") return null;
+  const photo =
+    user.profilePhotoUrl ||
+    user.avatarUrl ||
+    user.profileImage ||
+    user.photoUrl ||
     null;
+  return { ...user, profilePhotoUrl: photo, avatarUrl: photo };
+};
 
-  return {
-    ...nextUser,
-    profilePhotoUrl,
-    avatarUrl: profilePhotoUrl,
-  };
+/**
+ * After a buyer logs in, push any items they added as a guest into
+ * their server-side cart. Each item is pushed independently — a single
+ * unavailable listing will not abort the rest of the merge.
+ */
+const mergeGuestCartIntoAccount = async (role) => {
+  if (role !== "BUYER") return;
+
+  const guestItems = getGuestCart().items ?? [];
+  if (guestItems.length === 0) return;
+
+  const results = await Promise.allSettled(
+    guestItems.map((item) => {
+      const listingId = String(item?.listingId ?? "").trim();
+      const quantity = Number(item?.quantity ?? 0);
+      if (!listingId || !Number.isFinite(quantity) || quantity <= 0) {
+        return Promise.resolve(); // skip malformed items
+      }
+      return cartService.addItemToCart({ listingId, quantity });
+    })
+  );
+
+  const failed = results.filter((r) => r.status === "rejected").length;
+  if (failed > 0) {
+    console.warn(
+      `Guest cart merge: ${failed} of ${guestItems.length} items could not be added.`
+    );
+  }
+
+  // Always clear the guest cart — even if some items failed, we don't want
+  // them re-attempted on the next login.
+  clearGuestCart();
 };
 
 const decodeJwtPayload = (token) => {
@@ -45,211 +82,126 @@ const decodeJwtPayload = (token) => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  // true while we're checking the httpOnly cookie on mount
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Prevent the hydration effect from running twice in React StrictMode
+  const hydrated = useRef(false);
 
-  const mergeGuestCartIntoAccount = async (role) => {
-    if (role !== "BUYER") return;
-
-    const guestItems = getGuestCart().items || [];
-    if (guestItems.length === 0) return;
-
-    try {
-      for (const item of guestItems) {
-        const listingId = String(item?.listingId || "").trim();
-        const quantity = Number(item?.quantity || 1);
-
-        if (!listingId || !Number.isFinite(quantity) || quantity <= 0) {
-          continue;
-        }
-
-        await cartService.addItemToCart({ listingId, quantity });
-      }
-
-      clearGuestCart();
-    } catch (err) {
-      // Keep local guest cart if merge fails so user does not lose items.
-      console.error("Failed to merge guest cart after login:", err);
-    }
-  };
-
-  // Check if user is already logged in on mount
+  // ── Silent hydration on mount ──────────────────────────────────────────
+  // The access token lives only in memory and is lost on page refresh.
+  // We recover it by hitting /api/auth/refresh (uses the httpOnly cookie)
+  // then fetching the full user profile from /api/auth/me.
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const token = api.getAccessToken();
+    if (hydrated.current) return;
+    hydrated.current = true;
 
-    if (storedUser && token) {
+    const hydrate = async () => {
       try {
-        setUser(normalizeUser(JSON.parse(storedUser)));
-      } catch (err) {
-        console.error("Failed to parse stored user:", err);
-        localStorage.removeItem("user");
-        api.setAccessToken(null);
-      }
-    }
-    setLoading(false);
+        // Step 1: get a fresh access token via the cookie
+        const { accessToken } = await authService.refreshToken();
+        setAccessToken(accessToken);
 
-    // Listen for unauthorized events from API
+        // Step 2: fetch the full user profile so every field is available
+        const { user: freshUser } = await authService.getMe();
+        setUser(normalizeUser(freshUser));
+      } catch {
+        // Cookie is missing, expired, or server is down.
+        // The user is logged out — this is the normal state for guests.
+        clearAccessToken();
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    hydrate();
+
     const handleUnauthorized = () => {
-      console.log("Unauthorized event received, clearing auth state");
+      clearAccessToken();
       setUser(null);
-      setError(null);
-      api.setAccessToken(null);
-      localStorage.removeItem("user");
-      localStorage.removeItem("accessToken");
     };
 
     window.addEventListener("auth:unauthorized", handleUnauthorized);
-    return () => {
+    return () =>
       window.removeEventListener("auth:unauthorized", handleUnauthorized);
-    };
   }, []);
 
-  const login = async (email, password, rememberMe = false) => {
-    setLoading(true);
-    setError(null);
+  // ── Auth actions ────────────────────────────────────────────────────────
+
+  const register = useCallback(async (userData) => {
+    const response = await authService.register(userData);
+    setAccessToken(response.accessToken);
+    const normalized = normalizeUser(response.user);
+    setUser(normalized);
+    await mergeGuestCartIntoAccount(normalized?.role);
+    return response;
+  }, []);
+
+  const login = useCallback(async (email, password, rememberMe = false) => {
+    const response = await authService.login({ email, password, rememberMe });
+    setAccessToken(response.accessToken);
+    const normalized = normalizeUser(response.user);
+    setUser(normalized);
+    await mergeGuestCartIntoAccount(normalized?.role);
+    return response;
+  }, []);
+
+  const logout = useCallback(async () => {
     try {
-      const response = await authService.login({
-        email,
-        password,
-        rememberMe,
-      });
-
-      api.setAccessToken(response.accessToken);
-      const normalizedUser = normalizeUser(response.user);
-      setUser(normalizedUser);
-      localStorage.setItem("user", JSON.stringify(normalizedUser));
-      await mergeGuestCartIntoAccount(normalizedUser?.role);
-
-      return response;
-    } catch (err) {
-      setError(err.message);
-      throw err;
+      await authService.logout();
+    } catch {
+      // Server-side logout failed (network issue, already expired, etc.).
+      // We still clear client state — the user is logged out from their
+      // perspective regardless of whether the server acknowledged it.
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const register = async (userData) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await authService.register(userData);
-
-      api.setAccessToken(response.accessToken);
-      const normalizedUser = normalizeUser(response.user);
-      setUser(normalizedUser);
-      localStorage.setItem("user", JSON.stringify(normalizedUser));
-      await mergeGuestCartIntoAccount(normalizedUser?.role);
-
-      return response;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const logout = async () => {
-    setLoading(true);
-    try {
-      // Try to notify backend of logout, but don't let API failure prevent logout
-      try {
-        await authService.logout();
-      } catch (err) {
-        console.error("Logout API error:", err);
-        // Continue with client-side logout even if API fails
-      }
-    } finally {
-      // Clear all auth data immediately - this is the important part
-      console.log("Clearing auth state...");
+      clearAccessToken();
       setUser(null);
-      setError(null);
-      api.setAccessToken(null);
-      localStorage.removeItem("user");
-      localStorage.removeItem("accessToken");
-      setLoading(false);
     }
-  };
+  }, []);
 
-  const verifyEmail = async (token) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await authService.verifyEmail(token);
-      api.setAccessToken(response.accessToken);
-      const normalizedUser = normalizeUser(response.user);
-      setUser(normalizedUser);
-      localStorage.setItem("user", JSON.stringify(normalizedUser));
-      return response;
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
+  const verifyEmail = useCallback(async (token) => {
+    const response = await authService.verifyEmail(token);
+    setAccessToken(response.accessToken);
+    const normalized = normalizeUser(response.user);
+    setUser(normalized);
+    return response;
+  }, []);
+
+  const completeGoogleAuth = useCallback(async (code) => {
+    const response = await authService.exchangeGoogleCode(code);
+    if (!response?.accessToken) {
+      throw new Error("Google sign-in did not return an access token.");
     }
-  };
+    setAccessToken(response.accessToken);
+    const normalized = normalizeUser(response.user);
+    setUser(normalized);
+    await mergeGuestCartIntoAccount(normalized?.role);
+    return response;
+  }, []);
 
-  const completeGoogleAuth = async (code) => {
-    setLoading(true);
-    setError(null);
+  const updateUser = useCallback((userData) => {
+    setUser((prev) => normalizeUser({ ...prev, ...userData }));
+  }, []);
 
-    try {
-      const response = await authService.exchangeGoogleCode(code);
-      const accessToken = response?.accessToken;
+  // ── Context value ───────────────────────────────────────────────────────
 
-      if (!accessToken) {
-        throw new Error("Google sign-in did not return an access token.");
-      }
-
-      api.setAccessToken(accessToken);
-
-      const responseUser = response?.user;
-      const payload = decodeJwtPayload(accessToken) || {};
-      const normalizedUser = normalizeUser(
-        responseUser || {
-          id: payload.id,
-          role: payload.role,
-          isVerified: payload.isVerified,
-        },
-      );
-
-      setUser(normalizedUser);
-      localStorage.setItem("user", JSON.stringify(normalizedUser));
-
-      return {
-        accessToken,
-        user: normalizedUser,
-      };
-    } catch (err) {
-      setError(err.message);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateUser = (userData) => {
-    const updated = normalizeUser({ ...user, ...userData });
-    setUser(updated);
-    localStorage.setItem("user", JSON.stringify(updated));
-  };
-
-  const value = {
-    user,
-    loading,
-    error,
-    login,
-    register,
-    logout,
-    verifyEmail,
-    completeGoogleAuth,
-    updateUser,
-    isAuthenticated: !!user,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        isAuthenticated: !!user,
+        register,
+        login,
+        logout,
+        verifyEmail,
+        completeGoogleAuth,
+        updateUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {

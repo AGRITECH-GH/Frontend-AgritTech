@@ -9,15 +9,13 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
   useEffect(() => {
     // This ensures the component re-evaluates when auth state changes
     if (!loading && !isAuthenticated) {
-      console.log(
-        "ProtectedRoute: User not authenticated, will redirect to login",
-      );
+
     }
   }, [isAuthenticated, loading]);
 
   if (loading) return <Loader />;
   if (!isAuthenticated) {
-    console.log("ProtectedRoute: Redirecting to login");
+
     return <Navigate to="/login" replace />;
   }
 

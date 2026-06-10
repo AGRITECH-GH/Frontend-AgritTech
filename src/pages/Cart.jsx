@@ -22,6 +22,8 @@ import { transition } from "@/motionConfig";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/context/AuthContext";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
+import { logger } from "@/lib/logger";
+
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -128,7 +130,7 @@ export default function Cart() {
       }
       await addItem(listingId, nextQuantity);
     } catch (err) {
-      console.error("Failed to update quantity:", err);
+      logger.error("Failed to update quantity:", err);
     }
   };
 
@@ -136,20 +138,17 @@ export default function Cart() {
     try {
       await removeItem(listingId);
     } catch (err) {
-      console.error("Failed to remove item:", err);
+      logger.error("Failed to remove item:", err);
     }
   };
 
-  const handleClearCart = () => {
-    setShowClearCartModal(true);
-  };
-
-  const confirmClearCart = async () => {
-    try {
-      await clearCart();
-      setShowClearCartModal(false);
-    } catch (err) {
-      console.error("Failed to clear cart:", err);
+  const handleClearCart = async () => {
+    if (window.confirm("Are you sure you want to clear your entire cart?")) {
+      try {
+        await clearCart();
+      } catch (err) {
+        logger.error("Failed to clear cart:", err);
+      }
     }
   };
 

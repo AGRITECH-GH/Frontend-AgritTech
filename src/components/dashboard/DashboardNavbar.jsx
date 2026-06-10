@@ -4,6 +4,8 @@ import { Search, User, Menu, X, ChevronDown, LogOut } from "lucide-react";
 import logo from "@/assets/logo.svg";
 import { useAuth } from "@/context/AuthContext";
 import NotificationCenter from "@/components/ui/NotificationCenter";
+import { logger } from "@/lib/logger";
+
 
 const defaultNavLinks = [
   { label: "Dashboard", to: "/farmer/dashboard" },
@@ -77,12 +79,12 @@ const DashboardNavbar = ({
     setProfileMenuOpen(false);
 
     try {
-      console.log("Starting logout...");
+
       await logout();
-      console.log("Logout completed, redirecting to login");
+
       navigate("/login", { replace: true });
     } catch (error) {
-      console.error("Logout error:", error);
+      logger.error("Logout error:", error);
       navigate("/login", { replace: true });
     } finally {
       setIsLoggingOut(false);

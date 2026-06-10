@@ -12,6 +12,7 @@ import {
   Info,
 } from "lucide-react";
 import * as notificationsService from "@/lib/notificationsService";
+import { logger } from "@/lib/logger";
 
 const TYPE_ICONS = {
   MESSAGE: { icon: MessageSquare, color: "text-blue-600", bg: "bg-blue-50" },
@@ -93,8 +94,8 @@ export default function NotificationCenter() {
       const data = await notificationsService.getNotifications({ limit: 15 });
       setNotifications(data.notifications ?? []);
       setUnreadCount(data.unreadCount ?? 0);
-    } catch {
-      // silently ignore
+    } catch (err) {
+      logger.error("Failed to fetch notifications:", err);
     } finally {
       setLoading(false);
     }
@@ -111,7 +112,7 @@ export default function NotificationCenter() {
       notificationsService
         .getNotifications({ unreadOnly: true, limit: 1 })
         .then((d) => setUnreadCount(d.unreadCount ?? 0))
-        .catch(() => {});
+        .catch((err) => logger.error("Failed to poll notifications:", err));
     tick();
     const id = setInterval(tick, 60_000);
     return () => clearInterval(id);
@@ -128,7 +129,7 @@ export default function NotificationCenter() {
   }, [open]);
 
   const handleRead = async (id) => {
-    await notificationsService.markRead(id).catch(() => {});
+    await notificationsService.markRead(id).catch((err) => logger.error("Failed to mark read:", err));
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
     );
@@ -136,12 +137,12 @@ export default function NotificationCenter() {
   };
 
   const handleDelete = async (id) => {
-    await notificationsService.deleteNotification(id).catch(() => {});
+    await notificationsService.deleteNotification(id).catch((err) => logger.error("Failed to delete notification:", err));
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   };
 
   const handleMarkAllRead = async () => {
-    await notificationsService.markAllRead().catch(() => {});
+    await notificationsService.markAllRead().catch((err) => logger.error("Failed to mark all read:", err));
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     setUnreadCount(0);
   };

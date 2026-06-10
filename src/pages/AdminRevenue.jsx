@@ -3,6 +3,8 @@ import { useAuth } from "@/context/AuthContext";
 import { adminService } from "@/lib";
 import AdminLayout from "@/components/admin/AdminLayout";
 import Skeleton from "@/components/ui/skeleton";
+import { logger } from "@/lib/logger";
+
 import AdminRevenueSkeleton from "@/components/admin/AdminRevenueSkeleton";
 
 const toNumber = (value, fallback = 0) => {
@@ -118,7 +120,7 @@ const AdminRevenue = () => {
           ),
         );
       } catch (err) {
-        console.error("Failed to fetch orders:", err);
+        logger.error("Failed to fetch orders:", err);
         if (!cancelled) {
           setOrdersError(err.message || "Failed to fetch orders.");
           setOrders([]);

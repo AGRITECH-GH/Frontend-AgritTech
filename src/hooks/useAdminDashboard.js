@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { adminService, listingsService } from "@/lib";
+import { logger } from "@/lib/logger";
+
 
 const IS_TEST = import.meta.env.MODE === "test";
 
@@ -112,14 +114,14 @@ export function useAdminDashboard() {
         if (statsResult.status === "fulfilled") {
           setStats(normalizeStatsPayload(statsResult.value));
         } else {
-          console.error("Failed to fetch admin stats:", statsResult.reason);
+          logger.error("Failed to fetch admin stats:", statsResult.reason);
           setStats(DEFAULT_STATS);
         }
 
         if (usersResult.status === "fulfilled") {
           setUsers(extractUsers(usersResult.value).map(normalizeUser));
         } else {
-          console.error("Failed to fetch admin users:", usersResult.reason);
+          logger.error("Failed to fetch admin users:", usersResult.reason);
           setUsers([]);
         }
 
@@ -129,7 +131,7 @@ export function useAdminDashboard() {
             ? listingsResult.value.listings
             : [];
         if (listingsResult.status !== "fulfilled") {
-          console.error(
+          logger.error(
             "Failed to fetch listings for admin activity:",
             listingsResult.reason,
           );
@@ -146,7 +148,7 @@ export function useAdminDashboard() {
           setStatsError("Failed to load admin dashboard data.");
         }
       } catch (err) {
-        console.error("Failed to fetch admin dashboard data:", err);
+        logger.error("Failed to fetch admin dashboard data:", err);
         if (!cancelled) {
           setStatsError(err.message || "Failed to load admin dashboard data.");
           setStats(DEFAULT_STATS);

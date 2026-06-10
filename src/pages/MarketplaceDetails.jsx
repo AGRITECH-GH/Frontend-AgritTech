@@ -25,6 +25,8 @@ import { addGuestCartItem, cartService, listingsService } from "@/lib";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 import * as chatService from "@/lib/chatService";
 import { useAuth } from "@/context/AuthContext";
+import { logger } from "@/lib/logger";
+
 import { useToast } from "@/context/ToastContext";
 import { ProductGallery } from "@/components/marketplace/ProductGallery";
 import { MakeOfferModal } from "@/components/proposals/MakeOfferModal";
@@ -126,19 +128,13 @@ const MarketplaceDetails = () => {
             extracted?.categoryId ||
             "";
 
-          console.log(
-            "Fetching similar products - Category ID:",
-            categoryId,
-            "Category Object:",
-            categoryObj,
-          );
+
 
           if (categoryId) {
             const similarRes = await listingsService.getListings({
               category: categoryId,
               limit: 8,
             });
-            console.log("Similar products response:", similarRes);
             const similar = Array.isArray(similarRes?.listings)
               ? similarRes.listings.filter(
                   (item) => (item.id || item._id) !== id,
@@ -149,12 +145,12 @@ const MarketplaceDetails = () => {
             setSimilarProducts([]);
           }
         } catch (err) {
-          console.error("Failed to fetch similar products:", err);
+          logger.error("Failed to fetch similar products:", err);
         } finally {
           setSimilarLoading(false);
         }
       } catch (err) {
-        console.error("Failed to fetch listing details:", err);
+        logger.error("Failed to fetch listing details:", err);
         if (!cancelled) {
           setError(err.message || "Failed to load listing details.");
           setListing(null);
@@ -282,8 +278,11 @@ const MarketplaceDetails = () => {
         },
       });
     } catch (err) {
-      console.error("Failed to add item to cart:", err);
-      toast.error(err.message || "Failed to add item to cart.");
+      logger.error("Failed to add item to cart:", err);
+      setMessage({
+        type: "error",
+        text: err.message || "Failed to add item to cart.",
+      });
     } finally {
       setIsAddingToCart(false);
     }

@@ -209,6 +209,14 @@ const authService = {
     }),
 
   /**
+   * Fetch the full profile of the currently authenticated user.
+   * Called once after a successful token refresh to re-hydrate state
+   * after a page reload.
+   * @returns {Promise} { user }
+   */
+  getMe: () =>
+    api.apiFetch("/api/auth/me", {
+      method: "GET",
    * Resubmit KYC documents for farmers
    * @param {FormData} payload - FormData containing nationalId, farmRegistration, and businessCertificate
    * @returns {Promise} { message, user }

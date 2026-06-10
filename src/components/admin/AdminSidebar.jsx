@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import logo from "@/assets/logo.svg";
 import { useAuth } from "@/context/AuthContext";
+import { logger } from "@/lib/logger";
+
 
 const navItems = [
   {
@@ -72,12 +74,12 @@ const AdminNavContent = ({ admin, onNavigate }) => {
     setProfileMenuOpen(false);
 
     try {
-      console.log("Starting logout...");
+
       await logout();
-      console.log("Logout completed, redirecting to login");
+
       navigate("/login", { replace: true });
     } catch (error) {
-      console.error("Logout error:", error);
+      logger.error("Logout error:", error);
       navigate("/login", { replace: true });
     } finally {
       setIsLoggingOut(false);

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { barterService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
+import { logger } from "@/lib/logger";
+
 
 const getIdentifier = (value) =>
   value?.id || value?._id || value?.userId || value?.ownerId || null;
@@ -146,7 +148,7 @@ export function useBarterProposals() {
 
       setBarterRequests(normalized);
     } catch (err) {
-      console.error("Failed to fetch barter requests:", err);
+      logger.error("Failed to fetch barter requests:", err);
       setError(err.message || "Unable to load barter requests.");
       setBarterRequests([]);
     } finally {
@@ -208,7 +210,7 @@ export function useBarterProposals() {
 
       return { success: true };
     } catch (err) {
-      console.error("Failed to update barter status:", err);
+      logger.error("Failed to update barter status:", err);
       return {
         success: false,
         error: err.message || "Failed to update request status.",

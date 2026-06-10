@@ -1,46 +1,30 @@
+// src/lib/api.js
+import { getAccessToken, setAccessToken, clearAccessToken } from "./tokenStore";
 // API Configuration and Utilities
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const DEFAULT_TIMEOUT_MS = 20000;
 
-// Get stored access token
-const getAccessToken = () => {
-  return localStorage.getItem("accessToken");
-};
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+const DEFAULT_TIMEOUT_MS = 20000;
 
-// Set access token
-const setAccessToken = (token) => {
-  if (token) {
-    localStorage.setItem("accessToken", token);
-  } else {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-  }
-};
+// REMOVED: getAccessToken / setAccessToken inline functions
+// They now live in tokenStore.js
 
-// Get authorization headers
 const getHeaders = (isFormData = false) => {
   const headers = {};
-
   if (!isFormData) {
     headers["Content-Type"] = "application/json";
   }
-
   const token = getAccessToken();
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
-
   return headers;
 };
 
-const fetchWithTimeout = async (
-  url,
-  options = {},
-  timeoutMs = DEFAULT_TIMEOUT_MS,
-) => {
+const fetchWithTimeout = async (url, options = {}, timeoutMs = DEFAULT_TIMEOUT_MS) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
   try {
     return await fetch(url, {
       ...options,
@@ -56,7 +40,6 @@ const fetchWithTimeout = async (
   }
 };
 
-// Generic fetch wrapper with token refresh logic
 const apiFetch = async (endpoint, options = {}) => {
   const { timeoutMs = DEFAULT_TIMEOUT_MS, ...requestOptions } = options;
   const url = `${API_BASE_URL}${endpoint}`;
@@ -75,17 +58,14 @@ const apiFetch = async (endpoint, options = {}) => {
     timeoutMs,
   );
 
-  // If unauthorized, try to refresh token (skip for auth endpoints to avoid loops)
   const isAuthEndpoint = endpoint.startsWith("/api/auth/");
+
   if (response.status === 401 && !isAuthEndpoint) {
     try {
       const refreshResponse = await fetchWithTimeout(
         `${API_BASE_URL}/api/auth/refresh`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
-        timeoutMs,
+        { method: "POST", credentials: "include" },
+        timeoutMs
       );
 
       if (refreshResponse.ok) {
@@ -95,30 +75,14 @@ const apiFetch = async (endpoint, options = {}) => {
         // Retry original request with new token
         return apiFetch(endpoint, requestOptions);
       } else {
-        // Refresh failed, clear token
-        setAccessToken(null);
-        localStorage.removeItem("user");
-        localStorage.removeItem("accessToken");
-        // Use React Router navigation if available, otherwise fall back to hard redirect
-        const event = new CustomEvent("auth:unauthorized");
-        window.dispatchEvent(event);
-        // Hard redirect as fallback
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 100);
+        clearAccessToken();
+        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+        throw new Error("Session expired. Please log in again.");
       }
     } catch (error) {
-      console.error("Token refresh failed:", error);
-      setAccessToken(null);
-      localStorage.removeItem("user");
-      localStorage.removeItem("accessToken");
-      // Dispatch event for React to handle
-      const event = new CustomEvent("auth:unauthorized");
-      window.dispatchEvent(event);
-      // Hard redirect as fallback
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 100);
+      clearAccessToken();
+      window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+      throw new Error("Session expired. Please log in again.");
     }
   }
 
@@ -137,6 +101,7 @@ const apiFetch = async (endpoint, options = {}) => {
 export default {
   getAccessToken,
   setAccessToken,
+  clearAccessToken,
   API_BASE_URL,
   apiFetch,
 };

@@ -4,6 +4,8 @@ import { barterService, listingsService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
 import { validateImageFiles } from "@/lib/utils";
 import Skeleton from "@/components/ui/skeleton";
+import { logger } from "@/lib/logger";
+
 
 const MAX_BARTER_IMAGES = 3;
 
@@ -120,7 +122,7 @@ const CreateBarterModal = ({ isOpen, onClose, onCreated }) => {
         setOwnListings(own);
         setTargetListings(filteredTargets);
       } catch (err) {
-        console.error("Failed to fetch listings:", err);
+        logger.error("Failed to fetch listings:", err);
         setOwnListings([]);
         setTargetListings([]);
       } finally {

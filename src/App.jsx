@@ -1,12 +1,19 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { SpeedInsights } from "@vercel/speed-insights/react";
-import { Analytics } from "@vercel/analytics/react";
 import { AuthProvider } from "@/context/AuthContext";
-import { ToastProvider } from "@/context/ToastContext";
-import SeoMeta from "@/components/SeoMeta";
+import Navbar from "@/components/Navbar";
+import HeroSection from "@/components/HeroSection";
+import TechnologySection from "@/components/TechnologySection";
+import StakeholdersSection from "@/components/StakeholdersSection";
+import CTASection from "@/components/CTASection";
+import Footer from "@/components/Footer";
 import Loader from "@/components/ui/loader";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
+import { ToastProvider } from "@/context/ToastContext";
+import SeoMeta from "@/components/SeoMeta";
 import RoleSetupRequired from "@/components/RoleSetupRequired";
 
 const SignUp = lazy(() => import("@/pages/SignUp"));
@@ -128,271 +135,85 @@ function AppSeo() {
   );
 }
 
+// A wrapper to apply ErrorBoundary per route
+const RouteBoundary = ({ children }) => (
+  <ErrorBoundary>
+    {children}
+  </ErrorBoundary>
+);
+
+function AppRoutes() {
+  const { loading } = useAuth();
+
+  if (loading) {
+    return <Loader />;
+  }
+
+  return (
+    <Suspense fallback={<Loader />}>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<Navigate to="/marketplace" replace />} />
+        <Route path="/signup" element={<RouteBoundary><SignUp /></RouteBoundary>} />
+        <Route path="/login" element={<RouteBoundary><Login /></RouteBoundary>} />
+        <Route path="/forgot-password" element={<RouteBoundary><ForgotPassword /></RouteBoundary>} />
+        <Route path="/reset-password" element={<RouteBoundary><ResetPassword /></RouteBoundary>} />
+        <Route path="/verify" element={<RouteBoundary><VerifyEmail /></RouteBoundary>} />
+        <Route path="/verify-email-change" element={<RouteBoundary><VerifyEmailChange /></RouteBoundary>} />
+        <Route path="/payments/return" element={<RouteBoundary><PaymentReturn /></RouteBoundary>} />
+        <Route path="/profile/:userId" element={<RouteBoundary><PublicProfile /></RouteBoundary>} />
+
+        {/* Buyer routes */}
+        <Route path="/marketplace" element={<RouteBoundary><Marketplace /></RouteBoundary>} />
+        <Route path="/marketplace/:id" element={<RouteBoundary><MarketplaceDetails /></RouteBoundary>} />
+        <Route path="/cart" element={<RouteBoundary><Cart /></RouteBoundary>} />
+        <Route path="/checkout" element={<RouteBoundary><ProtectedRoute allowedRoles={["BUYER"]}><Checkout /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/orders" element={<RouteBoundary><ProtectedRoute><Orders /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/orders/:id" element={<RouteBoundary><ProtectedRoute><Orders /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/reviews" element={<RouteBoundary><ProtectedRoute><Reviews /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/reviews/new" element={<RouteBoundary><ProtectedRoute><Reviews /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/disputes" element={<RouteBoundary><ProtectedRoute><Disputes /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/disputes/new" element={<RouteBoundary><ProtectedRoute><Disputes /></ProtectedRoute></RouteBoundary>} />
+
+        {/* Farmer routes - protected */}
+        <Route path="/farmer/dashboard" element={<RouteBoundary><ProtectedRoute allowedRoles={["FARMER"]}><Dashboard /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/farmer/ledger" element={<RouteBoundary><ProtectedRoute allowedRoles={["FARMER"]}><Ledger /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/farmer/inventory" element={<RouteBoundary><ProtectedRoute allowedRoles={["FARMER"]}><Inventory /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/farmer/inventory/add-product" element={<RouteBoundary><ProtectedRoute allowedRoles={["FARMER"]}><AddProduct /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/farmer/proposals" element={<RouteBoundary><ProtectedRoute allowedRoles={["FARMER"]}><BarterProposals /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/activity" element={<RouteBoundary><ProtectedRoute allowedRoles={["FARMER"]}><Activity /></ProtectedRoute></RouteBoundary>} />
+
+        {/* Agent routes - protected */}
+        <Route path="/agent/dashboard" element={<RouteBoundary><ProtectedRoute allowedRoles={["AGENT"]}><AgentDashboard /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/agent/farmers" element={<RouteBoundary><ProtectedRoute allowedRoles={["AGENT"]}><AgentFarmers /></ProtectedRoute></RouteBoundary>} />
+
+        {/* Profile route - protected */}
+        <Route path="/profile" element={<RouteBoundary><ProtectedRoute><Profile /></ProtectedRoute></RouteBoundary>} />
+
+        {/* Messages / inbox routes - protected */}
+        <Route path="/messages" element={<RouteBoundary><ProtectedRoute><Messages /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/messages/:conversationId" element={<RouteBoundary><ProtectedRoute><Messages /></ProtectedRoute></RouteBoundary>} />
+
+        {/* Admin routes - protected */}
+        <Route path="/admin/dashboard" element={<RouteBoundary><ProtectedRoute allowedRoles={["ADMIN"]}><AdminDashboard /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/admin/listings" element={<RouteBoundary><ProtectedRoute allowedRoles={["ADMIN"]}><AdminListings /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/admin/users" element={<RouteBoundary><ProtectedRoute allowedRoles={["ADMIN"]}><AdminUsers /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/admin/revenue" element={<RouteBoundary><ProtectedRoute allowedRoles={["ADMIN"]}><AdminRevenue /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/admin/settings" element={<RouteBoundary><ProtectedRoute allowedRoles={["ADMIN"]}><AdminSettings /></ProtectedRoute></RouteBoundary>} />
+        <Route path="/admin/disputes" element={<RouteBoundary><ProtectedRoute allowedRoles={["ADMIN"]}><AdminDisputes /></ProtectedRoute></RouteBoundary>} />
+        <Route path="*" element={<RouteBoundary><NotFound /></RouteBoundary>} />
+      </Routes>
+    </Suspense>
+  );
+}
+
 function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <SpeedInsights />
-        <Analytics />
-        <AppSeo />
-        <Suspense fallback={<Loader />}>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Marketplace />} />
-            <Route path="/marketplace" element={<Navigate to="/" replace />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/verify-email-change" element={<VerifyEmailChange />} />
-          <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
-          <Route
-            path="/complete-role-setup"
-            element={
-              <ProtectedRoute allowedRoles={["AGENT", "FARMER"]}>
-                <CompleteRoleSetup />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/payments/return" element={<PaymentReturn />} />
-          <Route path="/payment/return" element={<PaymentReturn />} />
-          <Route path="/profile/:userId" element={<PublicProfile />} />
-
-          {/* Buyer routes */}
-          <Route path="/marketplace/:id" element={<MarketplaceDetails />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route
-            path="/checkout"
-            element={
-              <ProtectedRoute allowedRoles={["BUYER"]}>
-                <Checkout />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/orders"
-            element={
-              <ProtectedRoute>
-                <Orders />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/orders/:id"
-            element={
-              <ProtectedRoute>
-                <Orders />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/reviews"
-            element={
-              <ProtectedRoute>
-                <Reviews />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/reviews/new"
-            element={
-              <ProtectedRoute>
-                <Reviews />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/disputes"
-            element={
-              <ProtectedRoute>
-                <Disputes />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/disputes/new"
-            element={
-              <ProtectedRoute>
-                <Disputes />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Farmer routes - protected */}
-          <Route
-            path="/farmer/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["FARMER"]}>
-                <RoleSetupRequired>
-                  <Dashboard />
-                </RoleSetupRequired>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/farmer/ledger"
-            element={
-              <ProtectedRoute allowedRoles={["FARMER"]}>
-                <RoleSetupRequired>
-                  <Ledger />
-                </RoleSetupRequired>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/farmer/inventory"
-            element={
-              <ProtectedRoute allowedRoles={["FARMER"]}>
-                <RoleSetupRequired>
-                  <Inventory />
-                </RoleSetupRequired>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/farmer/inventory/add-product"
-            element={
-              <ProtectedRoute allowedRoles={["FARMER"]}>
-                <RoleSetupRequired>
-                  <AddProduct />
-                </RoleSetupRequired>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/farmer/proposals"
-            element={
-              <ProtectedRoute allowedRoles={["FARMER"]}>
-                <RoleSetupRequired>
-                  <BarterProposals />
-                </RoleSetupRequired>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/activity"
-            element={
-              <ProtectedRoute allowedRoles={["FARMER"]}>
-                <RoleSetupRequired>
-                  <Activity />
-                </RoleSetupRequired>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Agent routes - protected */}
-          <Route
-            path="/agent/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["AGENT"]}>
-                <RoleSetupRequired>
-                  <AgentDashboard />
-                </RoleSetupRequired>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/agent/farmers"
-            element={
-              <ProtectedRoute allowedRoles={["AGENT"]}>
-                <RoleSetupRequired>
-                  <AgentFarmers />
-                </RoleSetupRequired>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Profile route - protected */}
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Messages / inbox routes - protected */}
-          <Route
-            path="/messages"
-            element={
-              <ProtectedRoute>
-                <Messages />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/messages/:conversationId"
-            element={
-              <ProtectedRoute>
-                <Messages />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Admin routes - protected */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["ADMIN"]}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/listings"
-            element={
-              <ProtectedRoute allowedRoles={["ADMIN"]}>
-                <AdminListings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/users"
-            element={
-              <ProtectedRoute allowedRoles={["ADMIN"]}>
-                <AdminUsers />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/kyc"
-            element={
-              <ProtectedRoute allowedRoles={["ADMIN"]}>
-                <AdminKYC />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/revenue"
-            element={
-              <ProtectedRoute allowedRoles={["ADMIN"]}>
-                <AdminRevenue />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/settings"
-            element={
-              <ProtectedRoute allowedRoles={["ADMIN"]}>
-                <AdminSettings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/disputes"
-            element={
-              <ProtectedRoute allowedRoles={["ADMIN"]}>
-                <AdminDisputes />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
-      </ToastProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

@@ -3,6 +3,8 @@ import { listingsService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 import { validateImageFiles } from "@/lib/utils";
+import { logger } from "@/lib/logger";
+
 
 const getIdentifier = (value) =>
   value?.id || value?._id || value?.userId || value?.ownerId || null;
@@ -102,7 +104,7 @@ export const useInventory = () => {
           }));
         setProducts(listings);
       } catch (err) {
-        console.error("Failed to fetch listings:", err);
+        logger.error("Failed to fetch listings:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -234,7 +236,7 @@ export const useInventory = () => {
 
       return { success: true };
     } catch (err) {
-      console.error("Failed to update product:", err);
+      logger.error("Failed to update product:", err);
       return { success: false, error: err.message };
     }
   };
@@ -249,7 +251,7 @@ export const useInventory = () => {
 
       return { success: true };
     } catch (err) {
-      console.error("Failed to delete product:", err);
+      logger.error("Failed to delete product:", err);
       return { success: false, error: err.message };
     }
   };
@@ -272,7 +274,7 @@ export const useInventory = () => {
       );
       return { success: true, images: response.images };
     } catch (err) {
-      console.error("Failed to upload images:", err);
+      logger.error("Failed to upload images:", err);
       return { success: false, error: err.message };
     }
   };
@@ -301,7 +303,7 @@ export const useInventory = () => {
 
       return { success: true };
     } catch (err) {
-      console.error("Failed to publish draft:", err);
+      logger.error("Failed to publish draft:", err);
       return { success: false, error: err.message };
     }
   };
