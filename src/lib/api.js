@@ -4,8 +4,6 @@ import { getAccessToken, setAccessToken, clearAccessToken } from "./tokenStore";
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const DEFAULT_TIMEOUT_MS = 20000;
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
-const DEFAULT_TIMEOUT_MS = 20000;
 
 // REMOVED: getAccessToken / setAccessToken inline functions
 // They now live in tokenStore.js
