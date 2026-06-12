@@ -27,6 +27,7 @@ import {
   getStatusMeta,
   formatDate,
   formatCurrency,
+  normalizeOrder,
   LIFECYCLE,
   ALLOWED_TRANSITIONS,
   STATUS_META,

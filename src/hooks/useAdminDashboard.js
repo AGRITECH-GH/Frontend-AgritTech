@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { adminService, listingsService } from "@/lib";
 import { logger } from "@/lib/logger";
 
-
 const IS_TEST = import.meta.env.MODE === "test";
 
 // ---------------------------------------------------------------------------
@@ -50,7 +49,7 @@ import {
   buildRegionalFocusFromListings,
   triggerCsvDownload,
   DEFAULT_CHART_DATA,
-  DEFAULT_REGIONAL_FOCUS
+  DEFAULT_REGIONAL_FOCUS,
 } from "@/lib/dashboardUtils";
 
 // ---------------------------------------------------------------------------
@@ -64,7 +63,7 @@ export function useAdminDashboard() {
   const [stats, setStats] = useState(DEFAULT_STATS);
   const [chartData, setChartData] = useState(DEFAULT_CHART_DATA);
   const [regionalFocus, setRegionalFocus] = useState(DEFAULT_REGIONAL_FOCUS);
-  const [users, setUsers] = useState(() => (IS_TEST ? TEST_USERS : []));
+  const [users, setUsers] = useState([]);
   const [loadingStats, setLoadingStats] = useState(!IS_TEST);
   const [statsError, setStatsError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
