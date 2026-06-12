@@ -5,6 +5,8 @@ import {
   ShoppingBag,
   ChevronRight,
   Package,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
@@ -21,7 +23,14 @@ import { useAuth } from "@/context/AuthContext";
 import { useOrders } from "@/hooks/useOrders";
 import { OrderRow } from "@/components/orders/OrderRow";
 import { FarmerOrderTableRow } from "@/components/orders/FarmerOrderTableRow";
-import { normalizeOrder } from "@/lib/orderUtils";
+import {
+  getStatusMeta,
+  formatDate,
+  formatCurrency,
+  LIFECYCLE,
+  ALLOWED_TRANSITIONS,
+  STATUS_META,
+} from "@/lib/orderUtils";
 
 const STATUS_FILTERS = [
   { value: "", label: "All" },

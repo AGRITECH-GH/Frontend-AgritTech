@@ -1,10 +1,4 @@
-import {
-  Clock,
-  CheckCircle2,
-  Truck,
-  XCircle,
-  Package,
-} from "lucide-react";
+import { Clock, CheckCircle2, Truck, XCircle, Package } from "lucide-react";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 
 export const STATUS_META = {
@@ -103,13 +97,15 @@ export const getOrderItems = (order) => {
     const listing = item?.listing || item?.product || item?.productId || {};
     const unitPrice = Number(
       item?.unitPriceAtOrder ??
-      item?.unitPrice ??
+        item?.unitPrice ??
         item?.price ??
         listing?.pricePerUnit ??
         listing?.price ??
         0,
     );
-    const quantity = Number(item?.quantityOrdered ?? item?.quantity ?? item?.qty ?? 1);
+    const quantity = Number(
+      item?.quantityOrdered ?? item?.quantity ?? item?.qty ?? 1,
+    );
     const image =
       getPrimaryListingImageUrl(listing) ||
       getPrimaryListingImageUrl({ images: item?.images || [] }) ||
@@ -133,7 +129,6 @@ export const getOrderItems = (order) => {
 };
 
 export const normalizeOrder = (order) => {
-  console.log("RAW ORDER:", order);
   const items = getOrderItems(order);
 
   return {
