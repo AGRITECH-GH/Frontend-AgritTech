@@ -350,8 +350,8 @@ export const extractBarterOffers = (response) => {
 // Agent Dashboard
 // ---------------------------------------------------------------------------
 
-export const formatRegistrationDate = () =>
-  new Date().toLocaleDateString("en-US", {
+export const formatRegistrationDate = (date) =>
+  new Date(date || Date.now()).toLocaleDateString("en-US", {
     month: "short",
     day: "2-digit",
     year: "numeric",
@@ -396,10 +396,13 @@ export const normalizeFarmersList = (payload) => {
       id: source.id || source._id || `farmer-${Date.now()}-${index}`,
       name: source.fullName || source.name || "Unknown Farmer",
       registeredDate:
-        source.registeredDate ||
-        source.createdAt ||
-        source.created_on ||
-        formatRegistrationDate(),
+        source.registeredDate
+          ? formatRegistrationDate(source.registeredDate)
+          : source.createdAt
+            ? formatRegistrationDate(source.createdAt)
+            : source.created_on
+              ? formatRegistrationDate(source.created_on)
+              : "Unknown",
       location: source.region || source.location || "Unknown Region",
       status: ["verified", "processing", "pending"].includes(rawStatus)
         ? rawStatus

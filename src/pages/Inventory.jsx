@@ -12,7 +12,6 @@ import { logger } from "@/lib/logger";
 
 import {
   Plus,
-  Filter,
   Edit2,
   Trash2,
   ChevronLeft,
@@ -91,7 +90,6 @@ const Inventory = () => {
     publishProduct,
   } = useInventory();
 
-  const [showFilter, setShowFilter] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);

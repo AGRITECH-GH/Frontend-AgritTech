@@ -80,7 +80,7 @@ const apiFetch = async (endpoint, options = {}) => {
       throw new Error("Session expired. Please log in again.");
     }
 
-    return apiFetch(endpoint, requestOptions);
+    return apiFetch(endpoint, { ...requestOptions, timeoutMs });
   }
 
   const data = await response.json().catch(() => ({}));

@@ -140,6 +140,33 @@ export default function Messages() {
       .finally(() => setMsgsLoading(false));
   }, [conversationId, conversations]);
 
+  // Poll for new messages every 5s while a conversation is open
+  useEffect(() => {
+    if (!conversationId) return;
+    const interval = setInterval(async () => {
+      try {
+        const { messages: msgs } = await chatService.getMessages(conversationId);
+        setMessages(msgs);
+      } catch {
+        // silently skip failed polls
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [conversationId]);
+
+  // Poll conversation list every 10s to keep unread counts fresh
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const data = await chatService.getConversations();
+        setConversations(data);
+      } catch {
+        // silently skip failed polls
+      }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Scroll to bottom when messages load
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

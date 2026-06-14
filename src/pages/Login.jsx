@@ -262,6 +262,7 @@ export default function Login() {
                 </p>
                 <Link
                   to="/"
+                  onClick={() => clearTimeout(redirectTimerRef.current)}
                   className="inline-flex w-full items-center justify-center gap-2 py-3.5 rounded-full bg-green-500 hover:bg-green-600 transition-colors text-white font-bold text-sm"
                 >
                   Go to Home <ArrowRight size={16} />
