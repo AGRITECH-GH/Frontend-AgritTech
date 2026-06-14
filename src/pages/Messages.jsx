@@ -102,6 +102,7 @@ export default function Messages() {
 
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
 
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
@@ -156,6 +157,7 @@ export default function Messages() {
       const msg = await chatService.sendMessage(conversationId, text.trim());
       setMessages((prev) => [...prev, msg]);
       setText("");
+      setSendError("");
       textareaRef.current?.focus();
       // Update last message preview in conversation list
       setConversations((prev) =>
@@ -166,7 +168,7 @@ export default function Messages() {
         ),
       );
     } catch {
-      // silently ignore send failure
+      setSendError("Failed to send message. Please try again.");
     } finally {
       setSending(false);
     }
@@ -316,18 +318,23 @@ export default function Messages() {
               onSubmit={handleSend}
               className="flex items-end gap-2 border-t border-border bg-white px-4 py-3 shrink-0"
             >
-              <textarea
-                ref={textareaRef}
-                rows={1}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type a message… (Enter to send)"
-                className="flex-1 resize-none rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-green-500 max-h-32"
-                style={{
-                  overflowY: text.split("\n").length > 3 ? "auto" : "hidden",
-                }}
-              />
+              <div className="flex flex-1 flex-col">
+                <textarea
+                  ref={textareaRef}
+                  rows={1}
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type a message… (Enter to send)"
+                  className="w-full resize-none rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-green-500 max-h-32"
+                  style={{
+                    overflowY: text.split("\n").length > 3 ? "auto" : "hidden",
+                  }}
+                />
+                {sendError && (
+                  <p className="px-1 pt-1 text-xs text-red-500">{sendError}</p>
+                )}
+              </div>
               <button
                 type="submit"
                 disabled={!text.trim() || sending}

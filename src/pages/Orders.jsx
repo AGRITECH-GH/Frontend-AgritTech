@@ -13,10 +13,7 @@ import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import Skeleton from "@/components/ui/skeleton";
-import {
-  OrdersBuyerSkeleton,
-  OrdersFarmerSkeleton,
-} from "@/components/ui/OrdersSkeleton";
+import { OrdersFarmerSkeleton } from "@/components/ui/OrdersSkeleton";
 import { paymentsService } from "@/lib";
 import { transition } from "@/motionConfig";
 import { useAuth } from "@/context/AuthContext";
@@ -481,31 +478,27 @@ export default function Orders() {
         )}
 
         {/* Empty state */}
-        {loading ? (
-          <OrdersBuyerSkeleton showHeader={false} showFilters={false} />
-        ) : (
-          filteredOrders.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center rounded-3xl border border-border/60 bg-white py-16 text-center"
-            >
-              <ShoppingBag className="mb-4 h-12 w-12 text-gray-300" />
-              <h3 className="text-lg font-semibold text-foreground">
-                No orders found
-              </h3>
-              <p className="mt-2 text-sm text-muted">
-                {statusFilter
-                  ? `No ${STATUS_META[statusFilter]?.label?.toLowerCase()} orders.`
-                  : "You have no orders yet."}
-              </p>
-              {currentRole === "BUYER" && (
-                <Link to="/marketplace" className="mt-5">
-                  <Button size="sm">Browse Marketplace</Button>
-                </Link>
-              )}
-            </motion.div>
-          )
+        {!loading && filteredOrders.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center rounded-3xl border border-border/60 bg-white py-16 text-center"
+          >
+            <ShoppingBag className="mb-4 h-12 w-12 text-gray-300" />
+            <h3 className="text-lg font-semibold text-foreground">
+              No orders found
+            </h3>
+            <p className="mt-2 text-sm text-muted">
+              {statusFilter
+                ? `No ${STATUS_META[statusFilter]?.label?.toLowerCase()} orders.`
+                : "You have no orders yet."}
+            </p>
+            {currentRole === "BUYER" && (
+              <Link to="/marketplace" className="mt-5">
+                <Button size="sm">Browse Marketplace</Button>
+              </Link>
+            )}
+          </motion.div>
         )}
 
         {/* Order list */}

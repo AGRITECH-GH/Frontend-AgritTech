@@ -215,7 +215,7 @@ const Dashboard = () => {
         {/* ── Help Banner ── */}
         <HelpBanner
           onCallAgent={() => setIsRequestAgentOpen(true)}
-          onKnowledgeBase={() => navigate("/help")}
+          onKnowledgeBase={() => {}}
         />
       </main>
 

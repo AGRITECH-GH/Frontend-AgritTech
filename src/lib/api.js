@@ -58,29 +58,29 @@ const apiFetch = async (endpoint, options = {}) => {
   const isAuthEndpoint = endpoint.startsWith("/api/auth/");
 
   if (response.status === 401 && !isAuthEndpoint) {
+    let refreshSucceeded = false;
     try {
       const refreshResponse = await fetchWithTimeout(
         `${API_BASE_URL}/api/auth/refresh`,
         { method: "POST", credentials: "include" },
         timeoutMs
       );
-
       if (refreshResponse.ok) {
         const data = await refreshResponse.json();
         setAccessToken(data.accessToken);
-
-        // Retry original request with new token
-        return apiFetch(endpoint, requestOptions);
-      } else {
-        clearAccessToken();
-        window.dispatchEvent(new CustomEvent("auth:unauthorized"));
-        throw new Error("Session expired. Please log in again.");
+        refreshSucceeded = true;
       }
-    } catch (error) {
+    } catch {
+      // network error during refresh — treat as session expired
+    }
+
+    if (!refreshSucceeded) {
       clearAccessToken();
       window.dispatchEvent(new CustomEvent("auth:unauthorized"));
       throw new Error("Session expired. Please log in again.");
     }
+
+    return apiFetch(endpoint, requestOptions);
   }
 
   const data = await response.json().catch(() => ({}));
