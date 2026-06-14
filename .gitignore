@@ -14,7 +14,8 @@ dist-ssr
 test
 tests
 
-docs
+docs/*
+!docs/superpowers/
 
 # Editor directories and files
 .vscode/*
