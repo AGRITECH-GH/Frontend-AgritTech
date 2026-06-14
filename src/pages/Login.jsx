@@ -438,13 +438,12 @@ export default function Login() {
                 >
                   {["Privacy Policy", "Terms of Service", "Support"].map(
                     (item) => (
-                      <a
+                      <span
                         key={item}
-                        href="#"
-                        className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                        className="text-xs text-gray-400"
                       >
                         {item}
-                      </a>
+                      </span>
                     ),
                   )}
                 </motion.div>

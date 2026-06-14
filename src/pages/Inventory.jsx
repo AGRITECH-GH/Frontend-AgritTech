@@ -188,7 +188,7 @@ const Inventory = () => {
     setPublishingProductId("");
 
     if (!result.success) {
-      alert(result.error || "Failed to publish draft. Please try again.");
+      toast.error(result.error || "Failed to publish draft. Please try again.");
     }
   };
 
@@ -468,37 +468,36 @@ const Inventory = () => {
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
-              const pageNum = i + 1;
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => setCurrentPage(pageNum)}
-                  className={`h-8 w-8 rounded text-xs font-medium transition ${
-                    currentPage === pageNum
-                      ? "bg-primary text-white"
-                      : "text-muted hover:bg-surface"
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            })}
-            {totalPages > 5 && (
-              <>
-                <span className="text-muted">...</span>
-                <button
-                  onClick={() => setCurrentPage(totalPages)}
-                  className={`h-8 w-8 rounded text-xs font-medium transition ${
-                    currentPage === totalPages
-                      ? "bg-primary text-white"
-                      : "text-muted hover:bg-surface"
-                  }`}
-                >
-                  {totalPages}
-                </button>
-              </>
-            )}
+            {(() => {
+              const pageNums = new Set([
+                1,
+                totalPages,
+                currentPage - 1,
+                currentPage,
+                currentPage + 1,
+              ].filter((p) => p >= 1 && p <= totalPages));
+              const sorted = [...pageNums].sort((a, b) => a - b);
+              return sorted.map((pageNum, idx) => {
+                const prev = sorted[idx - 1];
+                return (
+                  <span key={pageNum} className="flex items-center gap-2">
+                    {prev && pageNum - prev > 1 && (
+                      <span className="text-muted select-none">…</span>
+                    )}
+                    <button
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`h-8 w-8 rounded text-xs font-medium transition ${
+                        currentPage === pageNum
+                          ? "bg-primary text-white"
+                          : "text-muted hover:bg-surface"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  </span>
+                );
+              });
+            })()}
             <button
               onClick={() =>
                 setCurrentPage(Math.min(totalPages, currentPage + 1))

@@ -13,15 +13,9 @@ const Footer = () => {
         </button>
 
         <div className="flex gap-6">
-          <a href="#" className="transition-colors hover:text-foreground">
-            Privacy
-          </a>
-          <a href="#" className="transition-colors hover:text-foreground">
-            Terms
-          </a>
-          <a href="#" className="transition-colors hover:text-foreground">
-            Contact
-          </a>
+          <span className="text-muted">Privacy</span>
+          <span className="text-muted">Terms</span>
+          <span className="text-muted">Contact</span>
         </div>
 
         <p className="text-muted">© 2026 FarmBridge. All rights reserved.</p>

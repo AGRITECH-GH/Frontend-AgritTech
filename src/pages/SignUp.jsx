@@ -254,13 +254,12 @@ export default function SignUp() {
           <div className="hidden md:flex items-center gap-8">
             <div className="flex items-center gap-8">
               {["Features", "Pricing", "Support"].map((label) => (
-                <a
+                <span
                   key={label}
-                  href="#"
-                  className="text-base font-medium text-foreground transition-colors hover:text-primary"
+                  className="text-base font-medium text-muted"
                 >
                   {label}
-                </a>
+                </span>
               ))}
             </div>
             <Link
@@ -297,13 +296,12 @@ export default function SignUp() {
         >
           <div className="container flex flex-col gap-4 py-4">
             {["Features", "Pricing", "Support"].map((label) => (
-              <a
+              <span
                 key={label}
-                href="#"
-                className="text-sm font-medium text-muted hover:text-foreground"
+                className="text-sm font-medium text-muted"
               >
                 {label}
-              </a>
+              </span>
             ))}
             <Link
               to={loginPath}
@@ -547,19 +545,13 @@ export default function SignUp() {
                     />
                     <span className="text-xs text-gray-600 leading-relaxed">
                       By creating an account, you agree to our{" "}
-                      <a
-                        href="#"
-                        className="text-green-500 hover:underline font-medium"
-                      >
+                      <span className="text-green-600 font-medium">
                         Terms of Service
-                      </a>{" "}
+                      </span>{" "}
                       and{" "}
-                      <a
-                        href="#"
-                        className="text-green-500 hover:underline font-medium"
-                      >
+                      <span className="text-green-600 font-medium">
                         Privacy Policy
-                      </a>
+                      </span>
                       .
                     </span>
                   </label>
