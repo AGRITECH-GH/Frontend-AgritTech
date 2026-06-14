@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 
 const ToastContext = createContext(null);
 
+let _toastCounter = 0;
+
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
@@ -14,7 +16,7 @@ export const ToastProvider = ({ children }) => {
 
   const addToast = useCallback(
     (toast) => {
-      const id = Date.now().toString();
+      const id = String(++_toastCounter);
       const newToast = { id, ...toast };
       setToasts((prev) => [...prev, newToast]);
 

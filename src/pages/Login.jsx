@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Sprout } from "lucide-react";
@@ -78,6 +78,9 @@ export default function Login() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const redirectTimerRef = useRef(null);
+
+  useEffect(() => () => clearTimeout(redirectTimerRef.current), []);
 
   const redirectParam =
     new URLSearchParams(location.search).get("redirect") || "";
@@ -133,7 +136,7 @@ export default function Login() {
 
       // Route based on role
       const { role } = response.user;
-      setTimeout(() => {
+      redirectTimerRef.current = setTimeout(() => {
         if (role === "AGENT" || role === "FARMER") {
           authService
             .getRoleSetupStatus()

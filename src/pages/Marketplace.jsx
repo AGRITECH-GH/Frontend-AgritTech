@@ -504,7 +504,7 @@ const Marketplace = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {sortedListings.map((listing) => {
+                {sortedListings.map((listing, index) => {
                   const listingId = getListingId(listing);
                   const imageUrl = getListingImage(listing);
                   const title = getListingTitle(listing);
@@ -512,7 +512,7 @@ const Marketplace = () => {
 
                   return (
                     <article
-                      key={listingId || Math.random()}
+                      key={listingId || `listing-${index}`}
                       className="group overflow-hidden rounded-2xl border border-border/70 bg-white transition-all hover:-translate-y-0.5 hover:shadow-md"
                     >
                       <button

@@ -3,6 +3,13 @@ import { AuthContext } from "@/context/AuthContext";
 import { listingsService, ordersService, barterService } from "@/lib";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 import { logger } from "@/lib/logger";
+import {
+  toArray,
+  getIdentifier,
+  isOwnedByUser,
+  normalizeListingForDashboard,
+  extractBarterOffers
+} from "@/lib/dashboardUtils";
 
 
 const IS_TEST = import.meta.env.MODE === "test";
@@ -69,14 +76,6 @@ const TEST_BARTER_OFFERS = [
     timeAgo: "Today",
   },
 ];
-
-import {
-  toArray,
-  getIdentifier,
-  isOwnedByUser,
-  normalizeListingForDashboard,
-  extractBarterOffers
-} from "@/lib/dashboardUtils";
 
 export function useDashboard() {
   const auth = useContext(AuthContext);

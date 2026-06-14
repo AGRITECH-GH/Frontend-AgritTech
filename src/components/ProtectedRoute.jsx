@@ -1,17 +1,9 @@
 import { useAuth } from "@/context/AuthContext";
 import { Navigate } from "react-router-dom";
-import { useEffect } from "react";
 import Loader from "@/components/ui/loader";
 
 export default function ProtectedRoute({ children, allowedRoles = [] }) {
   const { isAuthenticated, loading, user } = useAuth();
-
-  useEffect(() => {
-    // This ensures the component re-evaluates when auth state changes
-    if (!loading && !isAuthenticated) {
-
-    }
-  }, [isAuthenticated, loading]);
 
   if (loading) return <Loader />;
   if (!isAuthenticated) {

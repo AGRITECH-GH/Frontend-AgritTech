@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInventory } from "@/hooks/useInventory";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
 import StatCard from "@/components/dashboard/StatCard";
 import EditProductModal from "@/components/dashboard/EditProductModal";
@@ -69,6 +70,7 @@ const toEditableProduct = (listing, fallback = {}) => {
 const Inventory = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
   const {
     products,
     paginatedProducts,
@@ -90,6 +92,7 @@ const Inventory = () => {
   } = useInventory();
 
   const [showFilter, setShowFilter] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -137,24 +140,18 @@ const Inventory = () => {
   };
 
   const handleDelete = (productId) => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete this product? This action cannot be undone.",
-      )
-    ) {
-      setIsSaving(true);
-      deleteProduct(productId)
-        .then(() => {
-          setIsSaving(false);
-          setSelectedProduct(null);
-          setShowEditModal(false);
-        })
-        .catch((error) => {
-          logger.error("Error deleting product:", error);
-          setIsSaving(false);
-          alert("Failed to delete product. Please try again.");
-        });
-    }
+    setIsSaving(true);
+    deleteProduct(productId)
+      .then(() => {
+        setIsSaving(false);
+        setSelectedProduct(null);
+        setShowEditModal(false);
+      })
+      .catch((error) => {
+        logger.error("Error deleting product:", error);
+        setIsSaving(false);
+        toast.error("Failed to delete product. Please try again.");
+      });
   };
 
   const handleSaveProduct = async (updatedData) => {
@@ -392,36 +389,55 @@ const Inventory = () => {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(product)}
-                          disabled={editingProductId === product.id}
-                          className="rounded p-1 text-muted transition hover:bg-primary/10 hover:text-primary"
-                          title="Edit product"
-                        >
-                          {editingProductId === product.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Edit2 className="h-4 w-4" />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product.id)}
-                          className="rounded p-1 text-muted transition hover:bg-red-100 hover:text-red-600"
-                          title="Delete product"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                        {product.status === "draft" && (
-                          <button
-                            onClick={() => handlePublishDraft(product.id)}
-                            disabled={publishingProductId === product.id}
-                            className="rounded border border-green-200 px-2 py-1 text-xs font-medium text-green-700 transition hover:bg-green-50 disabled:opacity-50"
-                            title="Publish draft"
-                          >
-                            {publishingProductId === product.id
-                              ? "Publishing..."
-                              : "Publish"}
-                          </button>
+                        {confirmDeleteId === product.id ? (
+                          <>
+                            <button
+                              onClick={() => { handleDelete(product.id); setConfirmDeleteId(null); }}
+                              className="rounded px-2 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 transition"
+                            >
+                              Confirm
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteId(null)}
+                              className="rounded border border-border px-2 py-1 text-xs font-medium text-muted hover:bg-surface transition"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => handleEdit(product)}
+                              disabled={editingProductId === product.id}
+                              className="rounded p-1 text-muted transition hover:bg-primary/10 hover:text-primary"
+                              title="Edit product"
+                            >
+                              {editingProductId === product.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Edit2 className="h-4 w-4" />
+                              )}
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteId(product.id)}
+                              className="rounded p-1 text-muted transition hover:bg-red-100 hover:text-red-600"
+                              title="Delete product"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                            {product.status === "draft" && (
+                              <button
+                                onClick={() => handlePublishDraft(product.id)}
+                                disabled={publishingProductId === product.id}
+                                className="rounded border border-green-200 px-2 py-1 text-xs font-medium text-green-700 transition hover:bg-green-50 disabled:opacity-50"
+                                title="Publish draft"
+                              >
+                                {publishingProductId === product.id
+                                  ? "Publishing..."
+                                  : "Publish"}
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
                     </td>
