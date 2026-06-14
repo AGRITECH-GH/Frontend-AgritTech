@@ -42,6 +42,7 @@ export default function PaymentReturn() {
               : "Payment verification failed."),
         );
 
+        sessionStorage.removeItem("pendingPaymentOrderId");
         sessionStorage.removeItem("pendingPaymentReference");
         sessionStorage.removeItem("pendingPaymentMethod");
 

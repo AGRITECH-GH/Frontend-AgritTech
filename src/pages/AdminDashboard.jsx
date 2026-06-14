@@ -27,6 +27,7 @@ const AdminDashboard = () => {
     searchQuery,
     setSearchQuery,
     dateRange,
+    onDateRangeChange,
     toggleUserStatus,
     onViewUser,
     onGenerateReport,
@@ -92,6 +93,7 @@ const AdminDashboard = () => {
             {/* Date range */}
             <button
               type="button"
+              onClick={onDateRangeChange}
               className="flex items-center gap-2 rounded-xl border border-border bg-white px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-surface"
             >
               <Calendar className="h-4 w-4 text-muted" />

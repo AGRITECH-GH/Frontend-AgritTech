@@ -1,11 +1,10 @@
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInventory, PRODUCT_UNITS } from "@/hooks/useInventory";
 import { listingsService, categoriesService } from "@/lib";
 import { validateImageFiles } from "@/lib/utils";
 import StatCard from "@/components/dashboard/StatCard";
 import { ChevronLeft, Upload, X } from "lucide-react";
-import { useEffect } from "react";
 import { logger } from "@/lib/logger";
 
 
@@ -75,6 +74,14 @@ const AddProduct = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
+  const imagePreviewUrls = useMemo(
+    () => uploadedImages.map((file) => URL.createObjectURL(file)),
+    [uploadedImages],
+  );
+  useEffect(
+    () => () => imagePreviewUrls.forEach((url) => URL.revokeObjectURL(url)),
+    [imagePreviewUrls],
+  );
   const [imageErrors, setImageErrors] = useState("");
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [createdListingId, setCreatedListingId] = useState(null);
@@ -688,7 +695,7 @@ const AddProduct = () => {
                         className="relative overflow-hidden rounded-lg bg-gray-100"
                       >
                         <img
-                          src={URL.createObjectURL(file)}
+                          src={imagePreviewUrls[index]}
                           alt={`Preview ${index + 1}`}
                           className="h-20 w-full object-cover"
                         />

@@ -82,7 +82,7 @@ export function OrderRow({ order, onUpdateStatus, currentRole, forceOpen = false
     }
   };
 
-  const items = order.items;
+  const items = order.items ?? [];
 
   return (
     <motion.div

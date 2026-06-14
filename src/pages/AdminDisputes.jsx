@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 import AdminLayout from "@/components/admin/AdminLayout";
 import * as disputesService from "@/lib/disputesService";
 
@@ -9,11 +10,14 @@ const MEDIATION_ACTIONS = ["UNDER_REVIEW", "RESOLVED", "REJECTED"];
 
 export default function AdminDisputes() {
   const { user } = useAuth();
+  const toast = useToast();
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [disputes, setDisputes] = useState([]);
   const [busyId, setBusyId] = useState("");
+  const [pendingAction, setPendingAction] = useState(null);
+  const [noteInput, setNoteInput] = useState("");
 
   const sidebarAdmin = {
     name: user?.fullName || "Admin",
@@ -50,8 +54,7 @@ export default function AdminDisputes() {
     return counts;
   }, [disputes]);
 
-  const updateStatus = async (disputeId, nextStatus) => {
-    const note = window.prompt(`Optional note for ${nextStatus}:`, "") || "";
+  const updateStatus = async (disputeId, nextStatus, note) => {
     setBusyId(disputeId + nextStatus);
     try {
       await disputesService.mediateDispute(disputeId, {
@@ -61,7 +64,7 @@ export default function AdminDisputes() {
       });
       await load();
     } catch (err) {
-      window.alert(err?.message || "Failed to update dispute.");
+      toast.error(err?.message || "Failed to update dispute.");
     } finally {
       setBusyId("");
     }
@@ -149,8 +152,8 @@ export default function AdminDisputes() {
                     <button
                       key={action}
                       type="button"
-                      onClick={() => updateStatus(dispute.id, action)}
-                      disabled={busyId === dispute.id + action}
+                      onClick={() => setPendingAction({ disputeId: dispute.id, nextStatus: action })}
+                      disabled={busyId !== ""}
                       className="rounded-full border px-3 py-1.5 text-xs font-semibold hover:bg-surface disabled:opacity-60"
                     >
                       {busyId === dispute.id + action
@@ -164,6 +167,52 @@ export default function AdminDisputes() {
           </div>
         )}
       </main>
+
+      {pendingAction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-white p-5 shadow-xl">
+            <h2 className="text-base font-semibold text-foreground">
+              Set status to {pendingAction.nextStatus.replace("_", " ")}
+            </h2>
+            <p className="mt-1 text-sm text-muted">
+              Dispute #{pendingAction.disputeId.slice(-8).toUpperCase()}
+            </p>
+            <label className="mt-3 block text-sm text-foreground">
+              Resolution note (optional)
+              <textarea
+                value={noteInput}
+                onChange={(e) => setNoteInput(e.target.value)}
+                rows={3}
+                className="mt-1 w-full rounded-xl border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Add a note for this decision..."
+              />
+            </label>
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  const { disputeId, nextStatus } = pendingAction;
+                  const note = noteInput.trim();
+                  setPendingAction(null);
+                  setNoteInput("");
+                  await updateStatus(disputeId, nextStatus, note);
+                }}
+                disabled={busyId !== ""}
+                className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+              >
+                Confirm
+              </button>
+              <button
+                type="button"
+                onClick={() => { setPendingAction(null); setNoteInput(""); }}
+                className="rounded-xl border border-border px-4 py-2 text-sm font-medium text-foreground hover:bg-surface"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }

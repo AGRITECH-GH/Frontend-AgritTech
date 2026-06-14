@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
 import { barterService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
+import { getIdentifier } from "@/lib/dashboardUtils";
 import { logger } from "@/lib/logger";
-
-
-const getIdentifier = (value) =>
-  value?.id || value?._id || value?.userId || value?.ownerId || null;
 
 const normalizeId = (value) =>
   value === undefined || value === null ? null : String(value);

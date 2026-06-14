@@ -21,12 +21,14 @@ import CartSkeleton from "@/components/ui/CartSkeleton";
 import { transition } from "@/motionConfig";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 import { logger } from "@/lib/logger";
 
 export default function Cart() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const toast = useToast();
   const {
     cart,
     validationResult,
@@ -130,6 +132,7 @@ export default function Cart() {
       await addItem(listingId, nextQuantity);
     } catch (err) {
       logger.error("Failed to update quantity:", err);
+      toast.error(err?.message || "Failed to update quantity. Please try again.");
     }
   };
 
@@ -138,6 +141,7 @@ export default function Cart() {
       await removeItem(listingId);
     } catch (err) {
       logger.error("Failed to remove item:", err);
+      toast.error(err?.message || "Failed to remove item. Please try again.");
     }
   };
 

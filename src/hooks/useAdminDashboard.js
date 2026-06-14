@@ -67,7 +67,15 @@ export function useAdminDashboard() {
   const [loadingStats, setLoadingStats] = useState(!IS_TEST);
   const [statsError, setStatsError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [dateRange] = useState("Last 30 Days");
+  const [dateRange, setDateRange] = useState("Last 30 Days");
+
+  const DATE_RANGE_OPTIONS = ["Last 7 Days", "Last 30 Days", "This Month", "All Time"];
+  const onDateRangeChange = () => {
+    setDateRange((prev) => {
+      const idx = DATE_RANGE_OPTIONS.indexOf(prev);
+      return DATE_RANGE_OPTIONS[(idx + 1) % DATE_RANGE_OPTIONS.length];
+    });
+  };
 
   const filteredUsers = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -260,6 +268,7 @@ export function useAdminDashboard() {
     searchQuery,
     setSearchQuery,
     dateRange,
+    onDateRangeChange,
     toggleUserStatus,
     onViewUser,
     onGenerateReport,

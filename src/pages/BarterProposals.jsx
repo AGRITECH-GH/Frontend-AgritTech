@@ -64,6 +64,13 @@ const BarterProposals = () => {
       : null;
 
   useEffect(() => {
+    return () => {
+      clearTimeout(highlightedTimeoutRef.current);
+      clearTimeout(closeAfterStatusRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
     if (location.state?.fromDashboardReview) {
       setActiveTab("received");
     }

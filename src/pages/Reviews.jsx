@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Star, AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -31,7 +31,7 @@ export default function Reviews() {
   const [submitting, setSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
 
-  const direction = useMemo(() => "all", []);
+  const direction = "all";
 
   const loadReviews = async () => {
     setLoading(true);
@@ -89,9 +89,17 @@ export default function Reviews() {
         <section className="mb-6 rounded-2xl border border-border/60 bg-white p-5 shadow-sm">
           <h2 className="text-lg font-semibold">Leave a Review</h2>
           <p className="mt-1 text-sm text-muted">
-            {orderId
-              ? `Order: ${orderId}`
-              : "Tip: navigate here from Delivered orders to auto-fill orderId."}
+            {orderId ? (
+            `Order: ${orderId}`
+          ) : (
+            <>
+              Tip: navigate here from{" "}
+              <Link to="/orders" className="text-primary underline hover:text-green-700">
+                your Orders
+              </Link>{" "}
+              to auto-fill the order ID.
+            </>
+          )}
           </p>
 
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">

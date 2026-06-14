@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -13,9 +13,6 @@ import { transition } from "@/motionConfig";
 import { authService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
 
-// Guards against duplicate token verification requests in the same app lifecycle.
-const attemptedVerificationTokens = new Set();
-
 export default function VerifyEmail() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -25,6 +22,7 @@ export default function VerifyEmail() {
   const emailParam = (searchParams.get("email") || "").trim();
 
   const isTokenFlow = !!tokenParam;
+  const attemptedRef = useRef(false);
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [verified, setVerified] = useState(false);
@@ -43,9 +41,9 @@ export default function VerifyEmail() {
 
   useEffect(() => {
     if (!isTokenFlow) return;
-    if (attemptedVerificationTokens.has(tokenParam)) return;
+    if (attemptedRef.current) return;
 
-    attemptedVerificationTokens.add(tokenParam);
+    attemptedRef.current = true;
 
     let active = true;
     const runVerification = async () => {
@@ -67,7 +65,7 @@ export default function VerifyEmail() {
         }, 1000);
       } catch (err) {
         if (!active) return;
-        attemptedVerificationTokens.delete(tokenParam);
+        attemptedRef.current = false;
         setError(
           err?.message ||
             "Verification failed. Please request a new verification email.",

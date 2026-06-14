@@ -6,6 +6,7 @@ import logo from "@/assets/logo.svg";
 import { transition } from "@/motionConfig";
 import { authService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
+import { logger } from "@/lib/logger";
 
 export default function VerifyEmailChange() {
   const navigate = useNavigate();
@@ -44,8 +45,8 @@ export default function VerifyEmailChange() {
         // Clear auth state — the stored email is now stale
         try {
           await logout();
-        } catch {
-          // ignore
+        } catch (logoutErr) {
+          logger.error("Logout after email change failed:", logoutErr);
         }
 
         setTimeout(() => {

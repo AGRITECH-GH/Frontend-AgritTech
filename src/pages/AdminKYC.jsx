@@ -259,11 +259,11 @@ const AdminKYC = () => {
   const pendingCount = submissions.length;
   const queueDetails = queueConfig[activeQueue];
   const selectedDeliveryState = selectedSubmission
-    ? getEmailDeliveryState(selectedSubmission) ?? emailDeliveryByUser[selectedSubmission.id]
+    ? (emailDeliveryByUser[selectedSubmission.id] ?? getEmailDeliveryState(selectedSubmission))
     : undefined;
   const selectedDeliveryAction = selectedSubmission
     ? getEmailDeliveryActionLabel(
-        selectedSubmission.kycEmailLastAction || emailActionByUser[selectedSubmission.id],
+        emailActionByUser[selectedSubmission.id] || selectedSubmission.kycEmailLastAction,
       )
     : undefined;
   const submittedTodayCount = useMemo(() => {

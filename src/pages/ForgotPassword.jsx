@@ -5,6 +5,7 @@ import { Mail, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react";
 import logo from "@/assets/logo.svg";
 import { transition } from "@/motionConfig";
 import { authService } from "@/lib";
+import { isValidEmail } from "@/lib/utils";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -19,7 +20,7 @@ export default function ForgotPassword() {
       setError("Email address is required.");
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    if (!isValidEmail(trimmedEmail)) {
       setError("Enter a valid email address.");
       return;
     }

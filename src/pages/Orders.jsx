@@ -7,6 +7,7 @@ import {
   Package,
   AlertCircle,
   CheckCircle2,
+  X,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import DashboardNavbar from "@/components/dashboard/DashboardNavbar";
@@ -112,6 +113,7 @@ export default function Orders() {
         });
         sessionStorage.removeItem("pendingPaymentReference");
         await fetchOrders();
+        if (!active) return;
 
         if (urlReference) {
           searchParams.delete("reference");
@@ -413,11 +415,19 @@ export default function Orders() {
             }`}
           >
             {paymentNotice.type === "success" ? (
-              <CheckCircle2 size={18} />
+              <CheckCircle2 size={18} className="shrink-0" />
             ) : (
-              <AlertCircle size={18} />
+              <AlertCircle size={18} className="shrink-0" />
             )}
-            {paymentNotice.message}
+            <span className="flex-1">{paymentNotice.message}</span>
+            <button
+              type="button"
+              onClick={() => setPaymentNotice({ type: "", message: "" })}
+              className="ml-auto shrink-0 opacity-60 hover:opacity-100"
+              aria-label="Dismiss"
+            >
+              <X size={16} />
+            </button>
           </motion.div>
         )}
 

@@ -44,12 +44,21 @@ const PublicProfile = () => {
       setError("");
 
       try {
-        const [profileResponse, reviewsResponse] = await Promise.all([
+        const [profileResult, reviewsResult] = await Promise.allSettled([
           profileService.getPublicProfile(userId),
           profileService.getPublicReviews(userId, { page: 1, limit: 5 }),
         ]);
 
         if (cancelled) return;
+
+        if (profileResult.status === "rejected") {
+          setError(profileResult.reason?.message || "Failed to load public profile.");
+          return;
+        }
+
+        const profileResponse = profileResult.value;
+        const reviewsResponse =
+          reviewsResult.status === "fulfilled" ? reviewsResult.value : null;
 
         setProfile(profileResponse?.profile || null);
         setStats(profileResponse?.stats || null);
@@ -59,7 +68,7 @@ const PublicProfile = () => {
             : [],
         );
         setReviews(
-          Array.isArray(reviewsResponse?.reviews)
+          reviewsResponse && Array.isArray(reviewsResponse?.reviews)
             ? reviewsResponse.reviews
             : [],
         );

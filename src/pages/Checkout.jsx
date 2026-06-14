@@ -105,6 +105,9 @@ export default function Checkout() {
 
       navigate(orderId ? `/orders/${orderId}` : "/orders");
     } catch (err) {
+      sessionStorage.removeItem("pendingPaymentOrderId");
+      sessionStorage.removeItem("pendingPaymentReference");
+      sessionStorage.removeItem("pendingPaymentMethod");
       setErrorMsg(err?.message || "Failed to place order. Please try again.");
     } finally {
       setIsPlacing(false);

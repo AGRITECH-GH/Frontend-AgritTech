@@ -120,6 +120,7 @@ const AdminUsers = () => {
   const [actionSuccess, setActionSuccess] = useState("");
   const [updatingUserId, setUpdatingUserId] = useState(null);
   const [deletingUserId, setDeletingUserId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
   const [editForm, setEditForm] = useState({
     role: "BUYER",
@@ -291,11 +292,7 @@ const AdminUsers = () => {
   const handleDeleteUser = async (user) => {
     if (!user?.id) return;
 
-    const confirmed = window.confirm(
-      `Delete user ${user.name}? This action cannot be undone.`,
-    );
-    if (!confirmed) return;
-
+    setConfirmDeleteId(null);
     setActionError("");
     setActionSuccess("");
     setDeletingUserId(user.id);
@@ -537,45 +534,65 @@ const AdminUsers = () => {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(user)}
-                          disabled={
-                            updatingUserId === user.id ||
-                            deletingUserId === user.id
-                          }
-                          className="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleUserActive(user)}
-                          disabled={
-                            updatingUserId === user.id ||
-                            deletingUserId === user.id
-                          }
-                          className="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {updatingUserId === user.id
-                            ? "Saving..."
-                            : user.isActive
-                              ? "Disable"
-                              : "Enable"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteUser(user)}
-                          disabled={
-                            deletingUserId === user.id ||
-                            updatingUserId === user.id
-                          }
-                          className="rounded-md border border-red-200 px-2.5 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {deletingUserId === user.id
-                            ? "Deleting..."
-                            : "Delete"}
-                        </button>
+                        {confirmDeleteId === user.id ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteUser(user)}
+                              disabled={deletingUserId === user.id}
+                              className="rounded-md bg-red-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {deletingUserId === user.id ? "Deleting..." : "Confirm Delete"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteId(null)}
+                              className="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition hover:bg-surface"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => openEditModal(user)}
+                              disabled={
+                                updatingUserId === user.id ||
+                                deletingUserId === user.id
+                              }
+                              className="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleUserActive(user)}
+                              disabled={
+                                updatingUserId === user.id ||
+                                deletingUserId === user.id
+                              }
+                              className="rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition hover:bg-surface disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {updatingUserId === user.id
+                                ? "Saving..."
+                                : user.isActive
+                                  ? "Disable"
+                                  : "Enable"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteId(user.id)}
+                              disabled={
+                                deletingUserId === user.id ||
+                                updatingUserId === user.id
+                              }
+                              className="rounded-md border border-red-200 px-2.5 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

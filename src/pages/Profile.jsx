@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   User,
@@ -20,7 +20,7 @@ import {
 import logo from "@/assets/logo.svg";
 import { authService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
-import { validateImageFiles } from "@/lib/utils";
+import { validateImageFiles, isValidEmail } from "@/lib/utils";
 import RequestAgentModal from "@/components/agent/RequestAgentModal";
 import { useAvailableAgents } from "@/hooks/useAvailableAgents";
 import { ProfileDetailsForm } from "@/components/forms/ProfileDetailsForm";
@@ -68,6 +68,8 @@ export default function Profile() {
 
   const [deletePassword, setDeletePassword] = useState("");
   const photoInputRef = useRef(null);
+  const photoSuccessTimerRef = useRef(null);
+  useEffect(() => () => clearTimeout(photoSuccessTimerRef.current), []);
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -274,7 +276,7 @@ export default function Profile() {
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+    if (!isValidEmail(newEmail)) {
       setEmailState({
         loading: false,
         message: "",
@@ -375,6 +377,11 @@ export default function Profile() {
         message: response?.message || "Profile photo updated successfully.",
         error: "",
       });
+      clearTimeout(photoSuccessTimerRef.current);
+      photoSuccessTimerRef.current = setTimeout(
+        () => setPhotoState((p) => (p.message ? { ...p, message: "" } : p)),
+        3000,
+      );
     } catch (err) {
       setPhotoState({
         loading: false,
@@ -586,6 +593,12 @@ export default function Profile() {
                       </p>
                     )}
                   </div>
+
+                  {user?.kycStatus === "PENDING" && (
+                    <p className="mt-2 text-sm text-amber-700">
+                      Your documents are under review. Resubmission is available after a decision.
+                    </p>
+                  )}
 
                   {user?.kycStatus === "REJECTED" && (
                     <form onSubmit={handleKycSubmit} className="mt-4 border-t border-border/60 pt-4">

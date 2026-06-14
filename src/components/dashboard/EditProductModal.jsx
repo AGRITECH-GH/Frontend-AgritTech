@@ -111,26 +111,29 @@ const EditProductModal = ({
     }
 
     try {
-      // First, update product details
       await onSave(formData);
-
-      // Then, upload images if any
-      if (uploadedFiles.length > 0) {
-        setIsUploading(true);
-        try {
-          await onUploadImages(uploadedFiles);
-        } catch (err) {
-          logger.error("Image upload failed, but product was updated:", err);
-          // Don't block the save if images fail
-        } finally {
-          setIsUploading(false);
-        }
-      }
-
-      onClose();
     } catch (err) {
       setError(err.message || "Failed to save product. Please try again.");
+      return;
     }
+
+    if (uploadedFiles.length > 0) {
+      setIsUploading(true);
+      try {
+        await onUploadImages(uploadedFiles);
+      } catch (err) {
+        logger.error("Image upload failed, but product was updated:", err);
+        setUploadError(
+          err.message ||
+            "Product saved, but images failed to upload. You can retry from the inventory page.",
+        );
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    }
+
+    onClose();
   };
 
   if (!isOpen || !product) return null;

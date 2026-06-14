@@ -78,7 +78,11 @@ export default function Disputes() {
           <h1 className="text-2xl font-semibold">Disputes</h1>
           <p className="mt-1 text-sm text-muted">
             Open disputes for delivered orders within 7 days and track mediation
-            updates.
+            updates. Navigate here from{" "}
+            <Link to="/orders" className="text-primary underline hover:text-green-700">
+              your Orders
+            </Link>{" "}
+            to auto-fill the order ID.
           </p>
         </section>
 

@@ -258,15 +258,20 @@ const MarketplaceDetails = () => {
 
   const handleAddToCart = async () => {
     if (!id) return;
+    const qty = parseFloat(quantity);
+    if (!Number.isFinite(qty) || qty <= 0) {
+      setMessage({ type: "error", text: "Please enter a valid quantity greater than 0." });
+      return;
+    }
     setIsAddingToCart(true);
     setMessage(null);
     try {
       if (!user) {
-        addGuestCartItem(id, Number(quantity) || 1, listing);
+        addGuestCartItem(id, qty, listing);
       } else {
         await cartService.addItemToCart({
           listingId: id,
-          quantity: Number(quantity) || 1,
+          quantity: qty,
         });
       }
       toast.success("Added to cart!", {

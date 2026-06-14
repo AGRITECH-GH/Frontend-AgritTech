@@ -73,7 +73,7 @@ export default function CompleteRoleSetup() {
     : "Add your contact details and agent information before using agent screens.";
 
   useEffect(() => {
-    let isMounted = true;
+    let cancelled = false;
 
     const loadStatus = async () => {
       if (!isFarmer && !isAgent) {
@@ -83,7 +83,7 @@ export default function CompleteRoleSetup() {
 
       try {
         const response = await authService.getRoleSetupStatus();
-        if (!isMounted) return;
+        if (cancelled) return;
 
         const missing = Array.isArray(response?.missingFields)
           ? response.missingFields
@@ -96,17 +96,17 @@ export default function CompleteRoleSetup() {
           return;
         }
       } catch (err) {
-        if (!isMounted) return;
+        if (cancelled) return;
         setError(err?.message || "Failed to load setup status.");
       } finally {
-        if (isMounted) setStatusLoading(false);
+        if (!cancelled) setStatusLoading(false);
       }
     };
 
     loadStatus();
 
     return () => {
-      isMounted = false;
+      cancelled = true;
     };
   }, [isAgent, isFarmer, navigate, role]);
 

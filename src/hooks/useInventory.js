@@ -3,11 +3,8 @@ import { listingsService } from "@/lib";
 import { useAuth } from "@/context/AuthContext";
 import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 import { validateImageFiles } from "@/lib/utils";
+import { getIdentifier } from "@/lib/dashboardUtils";
 import { logger } from "@/lib/logger";
-
-
-const getIdentifier = (value) =>
-  value?.id || value?._id || value?.userId || value?.ownerId || null;
 
 const isOwnedByUser = (listing, userId) => {
   if (!listing || !userId) return false;
@@ -94,8 +91,8 @@ export const useInventory = () => {
             image: "📦",
             imageUrl: getPrimaryListingImageUrl(listing),
             category: listing.category?.name || "General",
-            stockLevel: parseInt(listing.quantityAvailable) || 0,
-            maxStock: parseInt(listing.quantity) || 0,
+            stockLevel: parseFloat(listing.quantityAvailable) || 0,
+            maxStock: parseFloat(listing.quantity) || 0,
             minimumOrderQty: parseFloat(listing.minimumOrderQty) || 0,
             negotiable: Boolean(listing.negotiable),
             price: parseFloat(listing.pricePerUnit) || 0,

@@ -169,7 +169,11 @@ const Activity = () => {
             ? extractBarter(barterRes.value)
             : [];
 
-        setItems(buildActivityItems(orders, barterOffers));
+        if (ordersRes.status === "rejected" && barterRes.status === "rejected") {
+          setError("Failed to load activity history.");
+        } else {
+          setItems(buildActivityItems(orders, barterOffers));
+        }
       } catch {
         setError("Failed to load activity history.");
       } finally {

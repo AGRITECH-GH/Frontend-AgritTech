@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -17,6 +17,9 @@ export default function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = (searchParams.get("token") || "").trim();
+
+  const redirectTimerRef = useRef(null);
+  useEffect(() => () => clearTimeout(redirectTimerRef.current), []);
 
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
@@ -50,7 +53,7 @@ export default function ResetPassword() {
     try {
       const response = await authService.resetPassword({ token, password });
       setStatus(response?.message || "Password reset successfully");
-      setTimeout(() => navigate("/login", { replace: true }), 1200);
+      redirectTimerRef.current = setTimeout(() => navigate("/login", { replace: true }), 1200);
     } catch (err) {
       setError(
         err?.message || "Unable to reset password. Please request a new link.",

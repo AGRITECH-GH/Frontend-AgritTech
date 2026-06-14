@@ -15,11 +15,6 @@ export default function GoogleAuthSuccess() {
   const location = useLocation();
   const [error, setError] = useState("");
   const processedCodeRef = useRef("");
-  const completeGoogleAuthRef = useRef(completeGoogleAuth);
-
-  useEffect(() => {
-    completeGoogleAuthRef.current = completeGoogleAuth;
-  }, [completeGoogleAuth]);
 
   const code = useMemo(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -38,12 +33,11 @@ export default function GoogleAuthSuccess() {
       return undefined;
     }
 
-    // Prevent duplicate exchanges (e.g., StrictMode and context re-renders).
     processedCodeRef.current = code;
 
     const finalizeGoogleLogin = async () => {
       try {
-        const result = await completeGoogleAuthRef.current(code);
+        const result = await completeGoogleAuth(code);
         if (!isMounted) return;
 
         const targetPath = getDashboardPathByRole(result?.user?.role);
@@ -60,7 +54,7 @@ export default function GoogleAuthSuccess() {
     return () => {
       isMounted = false;
     };
-  }, [code, navigate]);
+  }, [code, navigate, completeGoogleAuth]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">

@@ -1,3 +1,6 @@
+export const isValidEmail = (email) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
+
 export function cn(...values) {
   return values
     .flatMap((v) => {
