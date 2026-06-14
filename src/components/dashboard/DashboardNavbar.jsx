@@ -64,13 +64,13 @@ const DashboardNavbar = ({
     e.preventDefault();
     const query = searchValue.trim();
     if (!query) {
-      navigate("/");
+      navigate("/marketplace");
       setMobileOpen(false);
       return;
     }
 
     const params = new URLSearchParams({ search: query });
-    navigate(`/?${params.toString()}`);
+    navigate(`/marketplace?${params.toString()}`);
     setMobileOpen(false);
   };
 

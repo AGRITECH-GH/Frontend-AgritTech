@@ -312,7 +312,7 @@ const Marketplace = () => {
     setPage(1);
 
     // Also clear search param from URL
-    navigate("/", { replace: true });
+    navigate("/marketplace", { replace: true });
   };
 
   if (loading) {
