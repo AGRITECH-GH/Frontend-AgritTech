@@ -12,8 +12,15 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: "jsdom",
-    setupFiles: "./src/test/setup.js",
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.js',
+    env: {
+      VITE_API_URL: 'http://localhost:8000',
+    },
+    coverage: {
+      provider: 'v8',
+      include: ['src/lib/**', 'src/hooks/**'],
+    },
   },
   build: {
     rollupOptions: {
