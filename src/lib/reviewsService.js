@@ -1,10 +1,16 @@
+// Reviews API Service
+// OWASP A03:2021 — Schema validation prevents oversized or malformed review
+// payloads from reaching the network layer.
 import api from "./api";
+import { validateOrThrow, SCHEMAS } from "./validation";
 
-export const createReview = (data) =>
-  api.apiFetch("/api/reviews", {
+export const createReview = (data) => {
+  const clean = validateOrThrow(data, SCHEMAS.createReview);
+  return api.apiFetch("/api/reviews", {
     method: "POST",
-    body: JSON.stringify(data),
+    body: JSON.stringify(clean),
   });
+};
 
 export const getReviews = (params = {}) => {
   const query = new URLSearchParams();
@@ -13,12 +19,18 @@ export const getReviews = (params = {}) => {
       query.append(key, value);
     }
   });
-
   const endpoint = query.toString()
     ? `/api/reviews?${query.toString()}`
     : "/api/reviews";
   return api.apiFetch(endpoint, { method: "GET" });
 };
 
-export const getReviewForOrder = (orderId) =>
-  api.apiFetch(`/api/reviews/order/${orderId}`, { method: "GET" });
+export const getReviewForOrder = (orderId) => {
+  if (typeof orderId !== "string" || orderId.trim().length === 0) {
+    throw new Error("A valid order ID is required.");
+  }
+  return api.apiFetch(
+    `/api/reviews/order/${encodeURIComponent(orderId.trim())}`,
+    { method: "GET" }
+  );
+};
