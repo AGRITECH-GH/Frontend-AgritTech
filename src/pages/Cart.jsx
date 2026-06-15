@@ -41,6 +41,7 @@ export default function Cart() {
   } = useCart();
   const [isValidating, setIsValidating] = useState(false);
   const [validationError, setValidationError] = useState("");
+  const [updatingItemId, setUpdatingItemId] = useState(null);
   const [selectedItemIds, setSelectedItemIds] = useState([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showClearCartModal, setShowClearCartModal] = useState(false);
@@ -122,8 +123,9 @@ export default function Cart() {
 
   const handleQuantityChange = async (item, nextQuantity) => {
     const listingId = getListingId(item);
-    if (!listingId) return;
+    if (!listingId || updatingItemId === listingId) return;
 
+    setUpdatingItemId(listingId);
     try {
       if (nextQuantity <= 0) {
         await removeItem(listingId);
@@ -133,6 +135,8 @@ export default function Cart() {
     } catch (err) {
       logger.error("Failed to update quantity:", err);
       toast.error(err?.message || "Failed to update quantity. Please try again.");
+    } finally {
+      setUpdatingItemId(null);
     }
   };
 
@@ -439,20 +443,22 @@ export default function Cart() {
                                   onClick={() =>
                                     handleQuantityChange(item, quantity - 1)
                                   }
-                                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted transition-colors hover:bg-[#f5f6f1] hover:text-foreground"
+                                  disabled={updatingItemId === itemId}
+                                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted transition-colors hover:bg-[#f5f6f1] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
                                   aria-label="Decrease quantity"
                                 >
                                   <Minus className="h-3.5 w-3.5" />
                                 </button>
                                 <span className="min-w-5 text-center text-sm font-semibold text-foreground">
-                                  {quantity}
+                                  {updatingItemId === itemId ? "…" : quantity}
                                 </span>
                                 <button
                                   type="button"
                                   onClick={() =>
                                     handleQuantityChange(item, quantity + 1)
                                   }
-                                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted transition-colors hover:bg-[#f5f6f1] hover:text-foreground"
+                                  disabled={updatingItemId === itemId}
+                                  className="flex h-7 w-7 items-center justify-center rounded-full text-muted transition-colors hover:bg-[#f5f6f1] hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
                                   aria-label="Increase quantity"
                                 >
                                   <Plus className="h-3.5 w-3.5" />

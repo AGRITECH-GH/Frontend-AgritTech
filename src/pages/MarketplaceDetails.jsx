@@ -382,10 +382,12 @@ const MarketplaceDetails = () => {
               <div className="space-y-6">
                 {/* Badge + Title + Location */}
                 <div>
-                  <div className="inline-block rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 mb-2">
-                    <CheckCircle2 className="inline mr-1 h-3 w-3" />
-                    Verified Organic
-                  </div>
+                  {(listing?.quantityAvailable ?? listing?.quantity) > 0 && (
+                    <div className="inline-block rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 mb-2">
+                      <CheckCircle2 className="inline mr-1 h-3 w-3" />
+                      In Stock
+                    </div>
+                  )}
                   <h1 className="text-3xl font-bold text-foreground mt-3">
                     {listing?.title || listing?.name || "Untitled"}
                   </h1>

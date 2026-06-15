@@ -482,11 +482,7 @@ const Marketplace = () => {
               </div>
             )}
 
-            {loading ? (
-              <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted">
-                Loading marketplace listings...
-              </div>
-            ) : sortedListings.length === 0 ? (
+            {sortedListings.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border p-12 text-center">
                 <p className="text-base font-medium text-foreground">
                   No products match your filters.
