@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Star, AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Skeleton from "@/components/ui/skeleton";
 import { useAuth } from "@/context/AuthContext";
 import * as reviewsService from "@/lib/reviewsService";
 
@@ -16,6 +17,31 @@ const Stars = ({ value }) => (
     ))}
   </div>
 );
+
+const InteractiveStars = ({ value, onChange }) => {
+  const [hovered, setHovered] = useState(0);
+  return (
+    <div className="flex items-center gap-1" role="group" aria-label="Star rating">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onChange(n)}
+          onMouseEnter={() => setHovered(n)}
+          onMouseLeave={() => setHovered(0)}
+          aria-label={`${n} star${n > 1 ? "s" : ""}`}
+          className="p-0.5 transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 rounded"
+        >
+          <Star
+            className={`h-6 w-6 transition-colors ${
+              n <= (hovered || value) ? "fill-amber-400 text-amber-500" : "text-gray-300"
+            }`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+};
 
 export default function Reviews() {
   const { user } = useAuth();
@@ -105,17 +131,7 @@ export default function Reviews() {
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div>
               <label className="mb-1 block text-sm font-medium">Rating</label>
-              <select
-                value={rating}
-                onChange={(e) => setRating(Number(e.target.value))}
-                className="w-full rounded-lg border border-border px-3 py-2 text-sm"
-              >
-                {[5, 4, 3, 2, 1].map((r) => (
-                  <option key={r} value={r}>
-                    {r} star{r > 1 ? "s" : ""}
-                  </option>
-                ))}
-              </select>
+              <InteractiveStars value={rating} onChange={setRating} />
             </div>
 
             <div>
@@ -140,7 +156,9 @@ export default function Reviews() {
             </button>
 
             {submitMessage && (
-              <p className="text-sm text-muted">{submitMessage}</p>
+              <p className={`text-sm ${submitMessage.toLowerCase().includes("success") ? "text-green-600" : "text-red-600"}`}>
+                {submitMessage}
+              </p>
             )}
           </form>
         </section>
@@ -154,7 +172,14 @@ export default function Reviews() {
           </div>
 
           {loading ? (
-            <p className="text-sm text-muted">Loading reviews...</p>
+            <div className="space-y-3" aria-busy="true" aria-label="Loading reviews">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="rounded-xl border border-border/60 p-4 space-y-2">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              ))}
+            </div>
           ) : error ? (
             <div className="flex items-center gap-2 text-sm text-red-600">
               <AlertCircle className="h-4 w-4" /> {error}

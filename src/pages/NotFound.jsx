@@ -34,12 +34,12 @@ export default function NotFound() {
           It looks like you took a wrong turn. Don&apos;t worry, it happens to
           the best of us.
           <br />
-          Try searching for what you need or head back to the safety of your{" "}
+          Try searching for what you need or head back to the{" "}
           <Link
             to="/"
             className="font-medium text-green-500 underline underline-offset-2 hover:text-green-600 transition-colors"
           >
-            dashboard
+            home page
           </Link>
           .
         </p>

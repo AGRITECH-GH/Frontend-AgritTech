@@ -3,9 +3,17 @@ import { Link, useSearchParams } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Skeleton from "@/components/ui/skeleton";
 import * as disputesService from "@/lib/disputesService";
 
 const STATUSES = ["OPEN", "UNDER_REVIEW", "RESOLVED", "REJECTED"];
+
+const STATUS_STYLES = {
+  OPEN: "border-amber-200 bg-amber-50 text-amber-700",
+  UNDER_REVIEW: "border-blue-200 bg-blue-50 text-blue-700",
+  RESOLVED: "border-green-200 bg-green-50 text-green-700",
+  REJECTED: "border-red-200 bg-red-50 text-red-700",
+};
 
 export default function Disputes() {
   const [searchParams] = useSearchParams();
@@ -144,7 +152,9 @@ export default function Disputes() {
             </button>
 
             {submitMessage && (
-              <p className="text-sm text-muted">{submitMessage}</p>
+              <p className={`text-sm ${submitMessage.toLowerCase().includes("success") ? "text-green-600" : "text-red-600"}`}>
+                {submitMessage}
+              </p>
             )}
           </form>
         </section>
@@ -158,7 +168,14 @@ export default function Disputes() {
           </div>
 
           {loading ? (
-            <p className="text-sm text-muted">Loading disputes...</p>
+            <div className="space-y-3" aria-busy="true" aria-label="Loading disputes">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="rounded-xl border border-border/60 p-4 space-y-2">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-3 w-2/3" />
+                </div>
+              ))}
+            </div>
           ) : error ? (
             <div className="flex items-center gap-2 text-sm text-red-600">
               <AlertCircle className="h-4 w-4" /> {error}
@@ -176,9 +193,9 @@ export default function Disputes() {
                     <p className="text-sm font-semibold">
                       Dispute #{dispute.id.slice(-8).toUpperCase()}
                     </p>
-                    <span className="rounded-full border border-border px-2 py-0.5 text-xs font-semibold">
+                    <span className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${STATUS_STYLES[dispute.status] || "border-border text-foreground"}`}>
                       {STATUSES.includes(dispute.status)
-                        ? dispute.status.replace("_", " ")
+                        ? dispute.status.replaceAll("_", " ")
                         : dispute.status}
                     </span>
                   </div>

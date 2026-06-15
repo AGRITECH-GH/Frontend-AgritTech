@@ -139,12 +139,20 @@ export default function VerifyEmail() {
           <div className="mb-4 flex justify-center">
             <span
               className={`rounded-full p-4 ${
-                verified
+                error
+                  ? "bg-red-100 text-red-600"
+                  : verified
                   ? "bg-green-100 text-green-600"
                   : "bg-green-100 text-green-600"
               }`}
             >
-              {verified ? <CheckCircle2 size={30} /> : <MailCheck size={30} />}
+              {error ? (
+                <AlertCircle size={30} />
+              ) : verified ? (
+                <CheckCircle2 size={30} />
+              ) : (
+                <MailCheck size={30} />
+              )}
             </span>
           </div>
 

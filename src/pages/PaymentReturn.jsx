@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle2, AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -88,9 +88,27 @@ export default function PaymentReturn() {
             )}
           </div>
           <h1 className="text-xl font-semibold text-foreground">
-            Payment Status
+            {status === "success" ? "Payment Confirmed" : status === "error" ? "Payment Issue" : "Verifying Payment"}
           </h1>
           <p className="mt-3 text-sm text-muted">{message}</p>
+          {status === "success" && (
+            <p className="mt-4 text-xs text-muted">
+              Not redirecting?{" "}
+              <Link to="/orders" className="text-primary underline hover:text-green-600 transition-colors">
+                Go to My Orders
+              </Link>
+            </p>
+          )}
+          {status === "error" && (
+            <div className="mt-5">
+              <Link
+                to="/orders"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-green-600"
+              >
+                Go to My Orders
+              </Link>
+            </div>
+          )}
         </div>
       </main>
       <Footer />
