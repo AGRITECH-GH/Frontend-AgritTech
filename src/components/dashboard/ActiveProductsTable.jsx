@@ -79,6 +79,8 @@ const ActiveProductsTable = ({ products, onViewAll }) => (
                   <img
                     src={product.imageUrl}
                     alt={product.name}
+                    width={28}
+                    height={28}
                     className="h-7 w-7 rounded object-cover"
                   />
                 ) : (

@@ -277,6 +277,7 @@ export default function Cart() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            role="alert"
             className="mb-6 flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
           >
             <AlertCircle size={18} />
@@ -288,6 +289,7 @@ export default function Cart() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
+            role="alert"
             className="mb-6 flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
           >
             <AlertCircle size={18} />
@@ -390,6 +392,7 @@ export default function Cart() {
                             type="checkbox"
                             checked={checked}
                             onChange={() => toggleSelectOne(itemId)}
+                            aria-label={`Select ${listing?.name || listing?.title || "item"}`}
                             className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                           />
 
@@ -398,6 +401,8 @@ export default function Cart() {
                               <img
                                 src={image}
                                 alt={listing?.name}
+                                width={48}
+                                height={48}
                                 className="h-full w-full object-cover"
                               />
                             </div>
@@ -563,8 +568,14 @@ export default function Cart() {
 
       {showAuthModal && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-border/60 bg-white p-5 shadow-xl sm:p-6">
-            <h3 className="text-lg font-semibold text-foreground">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="auth-modal-heading"
+            style={{ overscrollBehavior: "contain" }}
+            className="w-full max-w-md rounded-2xl border border-border/60 bg-white p-5 shadow-xl sm:p-6"
+          >
+            <h3 id="auth-modal-heading" className="text-lg font-semibold text-foreground">
               Continue to checkout
             </h3>
             <p className="mt-2 text-sm text-muted">
@@ -600,8 +611,14 @@ export default function Cart() {
 
       {showClearCartModal && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-border/60 bg-white p-5 shadow-xl sm:p-6">
-            <h3 className="text-lg font-semibold text-foreground">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="clear-cart-modal-heading"
+            style={{ overscrollBehavior: "contain" }}
+            className="w-full max-w-md rounded-2xl border border-border/60 bg-white p-5 shadow-xl sm:p-6"
+          >
+            <h3 id="clear-cart-modal-heading" className="text-lg font-semibold text-foreground">
               Clear your cart?
             </h3>
             <p className="mt-2 text-sm text-muted">

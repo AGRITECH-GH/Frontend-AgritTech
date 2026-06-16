@@ -496,6 +496,7 @@ export default function Profile() {
           <button
             type="button"
             onClick={() => navigate(-1)}
+            aria-label="Go back"
             className="rounded-full bg-gray-200 px-5 py-2 text-sm font-bold text-gray-900 transition-colors hover:bg-gray-300"
           >
             <X size={18} />
@@ -740,6 +741,8 @@ export default function Profile() {
                               newEmail: e.target.value,
                             }))
                           }
+                          autoComplete="email"
+                          spellCheck={false}
                           className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-primary/50"
                         />
                       </div>
@@ -756,7 +759,8 @@ export default function Profile() {
                             password: e.target.value,
                           }))
                         }
-                        className="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm outline-none focus:border-primary/50"
+                        autoComplete="current-password"
+                        className="mt-1 w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1 focus:border-primary/50"
                       />
                     </label>
                   </div>
@@ -810,13 +814,15 @@ export default function Profile() {
                               currentPassword: e.target.value,
                             }))
                           }
-                          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm outline-none focus:border-primary/50"
+                          autoComplete="current-password"
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1 focus:border-primary/50"
                         />
                         <button
                           type="button"
                           onClick={() =>
                             setShowCurrentPassword(!showCurrentPassword)
                           }
+                          aria-label={showCurrentPassword ? "Hide password" : "Show password"}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
                           {showCurrentPassword ? (
@@ -840,11 +846,13 @@ export default function Profile() {
                               newPassword: e.target.value,
                             }))
                           }
-                          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm outline-none focus:border-primary/50"
+                          autoComplete="new-password"
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1 focus:border-primary/50"
                         />
                         <button
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
+                          aria-label={showNewPassword ? "Hide password" : "Show password"}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
                           {showNewPassword ? (
@@ -868,13 +876,15 @@ export default function Profile() {
                               confirmNewPassword: e.target.value,
                             }))
                           }
-                          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm outline-none focus:border-primary/50"
+                          autoComplete="new-password"
+                          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 pr-10 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1 focus:border-primary/50"
                         />
                         <button
                           type="button"
                           onClick={() =>
                             setShowConfirmPassword(!showConfirmPassword)
                           }
+                          aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
                           {showConfirmPassword ? (
@@ -928,7 +938,8 @@ export default function Profile() {
                       type="password"
                       value={deletePassword}
                       onChange={(e) => setDeletePassword(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm outline-none focus:border-red-400"
+                      autoComplete="current-password"
+                      className="mt-1 w-full rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1 focus:border-red-400"
                     />
                   </label>
 

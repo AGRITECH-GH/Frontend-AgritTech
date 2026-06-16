@@ -48,9 +48,15 @@ export const MakeOfferModal = ({ isOpen, onClose, listingId, listingPrice, unit 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl p-6">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="make-offer-title"
+        style={{ overscrollBehavior: "contain" }}
+        className="w-full max-w-md rounded-2xl bg-white shadow-xl p-6"
+      >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-foreground">Make an Offer</h3>
+          <h3 id="make-offer-title" className="text-lg font-bold text-foreground">Make an Offer</h3>
           <button
             type="button"
             onClick={onClose}
@@ -87,10 +93,13 @@ export const MakeOfferModal = ({ isOpen, onClose, listingId, listingPrice, unit 
                 </span>{" "}
                 per {unit || "unit"}
               </p>
-              <label className="block text-sm font-medium text-foreground mb-1">
+              <label htmlFor="offer-price" className="block text-sm font-medium text-foreground mb-1">
                 Your Offer Price (GHS) <span className="text-red-500">*</span>
               </label>
               <input
+                id="offer-price"
+                name="price"
+                autoComplete="off"
                 type="number"
                 min="0.01"
                 step="0.01"
@@ -102,10 +111,12 @@ export const MakeOfferModal = ({ isOpen, onClose, listingId, listingPrice, unit 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
+              <label htmlFor="offer-quantity" className="block text-sm font-medium text-foreground mb-1">
                 Quantity ({unit || "unit"})
               </label>
               <input
+                id="offer-quantity"
+                name="quantity"
                 type="number"
                 min="0.01"
                 step="0.01"
@@ -116,10 +127,12 @@ export const MakeOfferModal = ({ isOpen, onClose, listingId, listingPrice, unit 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
+              <label htmlFor="offer-note" className="block text-sm font-medium text-foreground mb-1">
                 Note to Seller
               </label>
               <textarea
+                id="offer-note"
+                name="note"
                 rows={3}
                 value={offerNote}
                 onChange={(e) => setOfferNote(e.target.value)}

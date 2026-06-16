@@ -75,6 +75,7 @@ const TransactionsTable = ({
             value={searchQuery}
             onChange={(e) => onSearch(e.target.value)}
             placeholder="Search by item or transaction ID..."
+            aria-label="Search transactions"
             className="w-full bg-transparent text-sm text-foreground placeholder:text-muted/60 focus:outline-none sm:w-72"
           />
         </div>
@@ -91,12 +92,14 @@ const TransactionsTable = ({
                 type="date"
                 value={dateRange.from}
                 onChange={(e) => onDateChange("from", e.target.value)}
+                aria-label="Start date"
                 className="w-1/2 cursor-pointer"
               />
               <input
                 type="date"
                 value={dateRange.to}
                 onChange={(e) => onDateChange("to", e.target.value)}
+                aria-label="End date"
                 className="w-1/2 cursor-pointer"
               />
             </div>

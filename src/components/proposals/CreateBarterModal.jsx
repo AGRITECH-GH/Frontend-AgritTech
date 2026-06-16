@@ -294,12 +294,13 @@ const CreateBarterModal = ({ isOpen, onClose, onCreated }) => {
         {formStep === 1 && (
           <div className="space-y-4">
             <div>
-              <label className="mb-2 block text-sm font-medium text-foreground">
+              <label htmlFor="barter-search" className="mb-2 block text-sm font-medium text-foreground">
                 Search for an item to barter for
               </label>
               <input
+                id="barter-search"
                 type="text"
-                placeholder="Search listings..."
+                placeholder="Search listings…"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
@@ -385,10 +386,11 @@ const CreateBarterModal = ({ isOpen, onClose, onCreated }) => {
 
             {/* Offering listing + quantity */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-foreground">
+              <label htmlFor="barter-offered-listing" className="mb-2 block text-sm font-medium text-foreground">
                 Listing you are offering
               </label>
               <select
+                id="barter-offered-listing"
                 value={formData.offeredListingId}
                 onChange={(e) =>
                   handleInputChange("offeredListingId", e.target.value)
@@ -415,14 +417,15 @@ const CreateBarterModal = ({ isOpen, onClose, onCreated }) => {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-foreground">
+              <label htmlFor="barter-offered-qty" className="mb-2 block text-sm font-medium text-foreground">
                 Offered quantity
               </label>
               <input
+                id="barter-offered-qty"
                 type="number"
                 min="0"
                 step="0.01"
-                placeholder="Enter quantity from your offered listing"
+                placeholder="Enter quantity from your offered listing…"
                 value={formData.offeredQuantity}
                 onChange={(e) =>
                   handleInputChange("offeredQuantity", e.target.value)
@@ -438,11 +441,12 @@ const CreateBarterModal = ({ isOpen, onClose, onCreated }) => {
 
             {/* Message */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-foreground">
+              <label htmlFor="barter-message" className="mb-2 block text-sm font-medium text-foreground">
                 Message (optional)
               </label>
               <textarea
-                placeholder="Add a message to your barter request..."
+                id="barter-message"
+                placeholder="Add a message to your barter request…"
                 value={formData.message}
                 onChange={(e) => handleInputChange("message", e.target.value)}
                 rows={3}
@@ -451,10 +455,11 @@ const CreateBarterModal = ({ isOpen, onClose, onCreated }) => {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-foreground">
+              <label htmlFor="barter-images" className="mb-2 block text-sm font-medium text-foreground">
                 Offer images (optional)
               </label>
               <input
+                id="barter-images"
                 type="file"
                 accept="image/jpeg,image/jpg,image/png,image/webp"
                 multiple

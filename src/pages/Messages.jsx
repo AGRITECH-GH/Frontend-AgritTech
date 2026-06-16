@@ -10,12 +10,13 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import * as chatService from "@/lib/chatService";
 
-const timeAgo = (dateStr) => {
-  const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
-  if (diff < 60) return "just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+const timeAgo = (d) => {
+  const diff = Math.round((new Date(d) - Date.now()) / 1000);
+  const fmt = new Intl.RelativeTimeFormat("en-GH", { numeric: "auto" });
+  if (Math.abs(diff) < 60) return fmt.format(Math.round(diff), "second");
+  if (Math.abs(diff) < 3600) return fmt.format(Math.round(diff / 60), "minute");
+  if (Math.abs(diff) < 86400) return fmt.format(Math.round(diff / 3600), "hour");
+  return fmt.format(Math.round(diff / 86400), "day");
 };
 
 // ─── Conversation list item ──────────────────────────────────────────────────
@@ -33,6 +34,8 @@ const ConversationItem = ({ conv, isActive, onClick }) => (
           <img
             src={conv.otherUser.profilePhotoUrl}
             alt=""
+            width={40}
+            height={40}
             className="h-full w-full object-cover"
           />
         ) : (
@@ -298,6 +301,8 @@ export default function Messages() {
                       <img
                         src={activeConv.otherUser.profilePhotoUrl}
                         alt=""
+                        width={36}
+                        height={36}
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -353,6 +358,7 @@ export default function Messages() {
                   onChange={(e) => setText(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Type a message… (Enter to send)"
+                  aria-label="Type a message"
                   className="w-full resize-none rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-green-500 max-h-32"
                   style={{
                     overflowY: text.split("\n").length > 3 ? "auto" : "hidden",

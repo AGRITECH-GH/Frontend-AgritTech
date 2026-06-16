@@ -391,7 +391,7 @@ const Marketplace = () => {
                 <select
                   value={category}
                   onChange={(event) => setCategory(event.target.value)}
-                  className="w-full rounded-xl border border-border px-3 py-2 text-sm focus:outline-none"
+                  className="w-full rounded-xl border border-border px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1"
                 >
                   <option value="">All categories</option>
                   {categories.map((item, idx) => (
@@ -412,7 +412,7 @@ const Marketplace = () => {
                 <select
                   value={region}
                   onChange={(event) => setRegion(event.target.value)}
-                  className="w-full rounded-xl border border-border px-3 py-2 text-sm focus:outline-none"
+                  className="w-full rounded-xl border border-border px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1"
                 >
                   <option value="">All regions</option>
                   {GHANA_REGIONS.map((regionOption) => (
@@ -433,7 +433,7 @@ const Marketplace = () => {
                     min="0"
                     value={minPrice}
                     onChange={(event) => setMinPrice(event.target.value)}
-                    className="w-full rounded-xl border border-border px-3 py-2 text-sm focus:outline-none"
+                    className="w-full rounded-xl border border-border px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1"
                   />
                 </label>
                 <label className="block">
@@ -445,7 +445,7 @@ const Marketplace = () => {
                     min="0"
                     value={maxPrice}
                     onChange={(event) => setMaxPrice(event.target.value)}
-                    className="w-full rounded-xl border border-border px-3 py-2 text-sm focus:outline-none"
+                    className="w-full rounded-xl border border-border px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1"
                   />
                 </label>
               </div>
@@ -467,7 +467,7 @@ const Marketplace = () => {
                 <select
                   value={sortBy}
                   onChange={(event) => setSortBy(event.target.value)}
-                  className="rounded-xl border border-border px-3 py-2 text-sm text-foreground focus:outline-none"
+                  className="rounded-xl border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1"
                 >
                   <option value="newest">Newest</option>
                   <option value="price-asc">Price: Low to High</option>
@@ -507,20 +507,19 @@ const Marketplace = () => {
                   const price = getListingPrice(listing);
 
                   return (
-                    <article
+                    <Link
                       key={listingId || `listing-${index}`}
+                      to={`/marketplace/${listingId}`}
                       className="group overflow-hidden rounded-2xl border border-border/70 bg-white transition-all hover:-translate-y-0.5 hover:shadow-md"
                     >
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/marketplace/${listingId}`)}
-                        className="w-full text-left"
-                      >
+                      <article>
                         <div className="h-52 bg-[#f0f2ec]">
                           {imageUrl ? (
                             <img
                               src={imageUrl}
                               alt={title}
+                              width={300}
+                              height={200}
                               className="h-full w-full object-cover"
                               loading="lazy"
                             />
@@ -557,8 +556,8 @@ const Marketplace = () => {
                             )}
                           </div>
                         </div>
-                      </button>
-                    </article>
+                      </article>
+                    </Link>
                   );
                 })}
               </div>

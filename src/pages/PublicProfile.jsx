@@ -19,7 +19,7 @@ const formatDate = (dateString) => {
   const date = new Date(dateString);
   if (Number.isNaN(date.getTime())) return "-";
 
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString("en-GH", {
     year: "numeric",
     month: "short",
     day: "2-digit",
@@ -115,6 +115,8 @@ const PublicProfile = () => {
                   <img
                     src={profile.profilePhotoUrl}
                     alt={profile.fullName}
+                    width={96}
+                    height={96}
                     className="h-20 w-20 rounded-full object-cover"
                   />
                 ) : (
@@ -194,6 +196,8 @@ const PublicProfile = () => {
                           <img
                             src={getPrimaryListingImageUrl(item)}
                             alt={item.title}
+                            width={200}
+                            height={150}
                             className="h-full w-full object-cover"
                           />
                         ) : (

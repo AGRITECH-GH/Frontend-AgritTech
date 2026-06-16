@@ -42,6 +42,7 @@ const FarmersTable = ({ farmers, searchQuery, onSearchChange, onAction }) => (
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search farmer name..."
+            aria-label="Search farmers"
             className="w-40 bg-transparent text-sm text-foreground placeholder:text-muted/60 focus:outline-none sm:w-52"
           />
         </div>

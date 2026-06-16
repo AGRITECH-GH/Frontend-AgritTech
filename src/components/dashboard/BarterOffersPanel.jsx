@@ -29,10 +29,11 @@ const BarterOffersPanel = ({
     {/* Offer cards */}
     <div className="flex flex-col gap-3">
       {(Array.isArray(offers) ? offers : []).map((offer, index) => (
-        <div
+        <button
+          type="button"
           key={offer?.id ?? index}
           onClick={() => onReview?.(offer)}
-          className="cursor-pointer rounded-xl border border-border/60 bg-surface p-4"
+          className="w-full text-left cursor-pointer rounded-xl border border-border/60 bg-surface p-4"
         >
           {(() => {
             const isProcessing = processingOfferId === offer?.id;
@@ -81,7 +82,7 @@ const BarterOffersPanel = ({
               </>
             );
           })()}
-        </div>
+        </button>
       ))}
 
       {(Array.isArray(offers) ? offers : []).length === 0 && (

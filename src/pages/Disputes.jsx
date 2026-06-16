@@ -98,48 +98,56 @@ export default function Disputes() {
           <h2 className="text-lg font-semibold">Open a Dispute</h2>
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium">Order ID</label>
+              <label htmlFor="dispute-order-id" className="mb-1 block text-sm font-medium">Order ID</label>
               <input
+                id="dispute-order-id"
+                name="orderId"
                 value={orderId}
                 onChange={(e) => setOrderId(e.target.value)}
                 className="w-full rounded-lg border border-border px-3 py-2 text-sm"
-                placeholder="Paste order id"
+                placeholder="Paste order id…"
                 required
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium">Reason</label>
+              <label htmlFor="dispute-reason" className="mb-1 block text-sm font-medium">Reason</label>
               <input
+                id="dispute-reason"
+                name="reason"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 className="w-full rounded-lg border border-border px-3 py-2 text-sm"
-                placeholder="e.g. Damaged produce"
+                placeholder="e.g. Damaged produce…"
                 required
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium">Details</label>
+              <label htmlFor="dispute-details" className="mb-1 block text-sm font-medium">Details</label>
               <textarea
+                id="dispute-details"
+                name="details"
                 value={details}
                 onChange={(e) => setDetails(e.target.value)}
                 rows={4}
                 className="w-full rounded-lg border border-border px-3 py-2 text-sm"
-                placeholder="Describe the issue"
+                placeholder="Describe the issue…"
               />
             </div>
 
             <div>
-              <label className="mb-1 block text-sm font-medium">
+              <label htmlFor="dispute-evidence" className="mb-1 block text-sm font-medium">
                 Evidence URLs (optional, one per line)
               </label>
               <textarea
+                id="dispute-evidence"
+                name="evidence"
                 value={evidence}
                 onChange={(e) => setEvidence(e.target.value)}
                 rows={3}
                 className="w-full rounded-lg border border-border px-3 py-2 text-sm"
-                placeholder="https://..."
+                placeholder="https://…"
               />
             </div>
 
@@ -207,7 +215,7 @@ export default function Disputes() {
                   )}
                   <p className="mt-2 text-xs text-muted">
                     Order: {dispute.orderId} • Opened:{" "}
-                    {new Date(dispute.createdAt).toLocaleString()}
+                    {new Intl.DateTimeFormat("en-GH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(dispute.createdAt))}
                   </p>
                 </article>
               ))}

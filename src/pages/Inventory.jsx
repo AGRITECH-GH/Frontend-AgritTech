@@ -256,6 +256,7 @@ const Inventory = () => {
           <div className="flex gap-6 overflow-x-auto border-b border-border pb-4 scrollbar-hide sm:pb-0">
             {tabs.map((tab) => (
               <button
+                type="button"
                 key={tab.id}
                 onClick={() => {
                   setTabFilter(tab.id);
@@ -276,6 +277,7 @@ const Inventory = () => {
           {/* Action Buttons */}
           <div className="flex gap-3">
             <button
+              type="button"
               onClick={handleAddProduct}
               className="flex items-center gap-2 rounded-full bg-green-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-green-700"
             >
@@ -325,6 +327,8 @@ const Inventory = () => {
                         <img
                           src={product.imageUrl}
                           alt={product.name}
+                          width={40}
+                          height={40}
                           className="h-10 w-10 rounded-lg object-cover"
                         />
                       ) : (
@@ -390,12 +394,14 @@ const Inventory = () => {
                         {confirmDeleteId === product.id ? (
                           <>
                             <button
+                              type="button"
                               onClick={() => { handleDelete(product.id); setConfirmDeleteId(null); }}
                               className="rounded px-2 py-1 text-xs font-medium text-white bg-red-600 hover:bg-red-700 transition"
                             >
                               Confirm
                             </button>
                             <button
+                              type="button"
                               onClick={() => setConfirmDeleteId(null)}
                               className="rounded border border-border px-2 py-1 text-xs font-medium text-muted hover:bg-surface transition"
                             >
@@ -405,10 +411,11 @@ const Inventory = () => {
                         ) : (
                           <>
                             <button
+                              type="button"
                               onClick={() => handleEdit(product)}
                               disabled={editingProductId === product.id}
                               className="rounded p-1 text-muted transition hover:bg-primary/10 hover:text-primary"
-                              title="Edit product"
+                              aria-label="Edit product"
                             >
                               {editingProductId === product.id ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -417,14 +424,16 @@ const Inventory = () => {
                               )}
                             </button>
                             <button
+                              type="button"
                               onClick={() => setConfirmDeleteId(product.id)}
                               className="rounded p-1 text-muted transition hover:bg-red-100 hover:text-red-600"
-                              title="Delete product"
+                              aria-label="Delete product"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
                             {product.status === "draft" && (
                               <button
+                                type="button"
                                 onClick={() => handlePublishDraft(product.id)}
                                 disabled={publishingProductId === product.id}
                                 className="rounded border border-green-200 px-2 py-1 text-xs font-medium text-green-700 transition hover:bg-green-50 disabled:opacity-50"
@@ -462,6 +471,7 @@ const Inventory = () => {
           </p>
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               className="rounded p-2 text-muted transition disabled:opacity-50 hover:bg-surface"
@@ -485,6 +495,7 @@ const Inventory = () => {
                       <span className="text-muted select-none">…</span>
                     )}
                     <button
+                      type="button"
                       onClick={() => setCurrentPage(pageNum)}
                       className={`h-8 w-8 rounded text-xs font-medium transition ${
                         currentPage === pageNum
@@ -499,6 +510,7 @@ const Inventory = () => {
               });
             })()}
             <button
+              type="button"
               onClick={() =>
                 setCurrentPage(Math.min(totalPages, currentPage + 1))
               }

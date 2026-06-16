@@ -86,6 +86,7 @@ const AdminDashboard = () => {
                   setCurrentPage(1);
                 }}
                 placeholder="Search data..."
+                aria-label="Search users or listings"
                 className="w-32 bg-transparent text-sm text-foreground placeholder:text-muted/60 focus:outline-none sm:w-44"
               />
             </div>

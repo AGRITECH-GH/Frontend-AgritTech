@@ -89,7 +89,7 @@ export default function ForgotPassword() {
 
           <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+              <label htmlFor="forgot-email" className="mb-1.5 block text-sm font-medium text-gray-700">
                 Email Address
               </label>
               <div className="relative">
@@ -97,12 +97,15 @@ export default function ForgotPassword() {
                   <Mail size={16} />
                 </span>
                 <input
+                  id="forgot-email"
+                  name="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
                   autoComplete="email"
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-gray-400 focus:border-green-400"
+                  spellCheck={false}
+                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-3 pl-10 pr-4 text-sm transition-colors placeholder:text-gray-400 focus:border-green-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1"
                 />
               </div>
             </div>

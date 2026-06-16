@@ -358,7 +358,7 @@ const MarketplaceDetails = () => {
               >
                 Marketplace
               </Link>
-              <ChevronRight className="h-4 w-4 text-muted shrink-0" />
+              <ChevronRight className="h-4 w-4 text-muted shrink-0" aria-hidden="true" />
               <Link
                 to={`/?category=${getCategoryName(listing?.category) || getCategoryName(listing?.categoryName)}`}
                 className="text-primary hover:underline font-medium"
@@ -367,7 +367,7 @@ const MarketplaceDetails = () => {
                   getCategoryName(listing?.categoryName) ||
                   "Products"}
               </Link>
-              <ChevronRight className="h-4 w-4 text-muted" />
+              <ChevronRight className="h-4 w-4 text-muted" aria-hidden="true" />
               <span className="text-foreground font-medium">
                 {listing?.title || listing?.name || "Product"}
               </span>
@@ -384,7 +384,7 @@ const MarketplaceDetails = () => {
                 <div>
                   {(listing?.quantityAvailable ?? listing?.quantity) > 0 && (
                     <div className="inline-block rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 mb-2">
-                      <CheckCircle2 className="inline mr-1 h-3 w-3" />
+                      <CheckCircle2 className="inline mr-1 h-3 w-3" aria-hidden="true" />
                       In Stock
                     </div>
                   )}
@@ -392,7 +392,7 @@ const MarketplaceDetails = () => {
                     {listing?.title || listing?.name || "Untitled"}
                   </h1>
                   <div className="flex items-center gap-1 text-sm text-muted mt-2">
-                    <MapPin className="h-4 w-4" />
+                    <MapPin className="h-4 w-4" aria-hidden="true" />
                     {listing?.location || listing?.region || "Ghana"}
                   </div>
                 </div>
@@ -432,6 +432,7 @@ const MarketplaceDetails = () => {
                   </label>
                   <div className="flex items-center gap-2">
                     <button
+                      aria-label="Decrease quantity"
                       onClick={() =>
                         setQuantity(Math.max(1, Number(quantity) - 1))
                       }
@@ -444,9 +445,10 @@ const MarketplaceDetails = () => {
                       min="1"
                       value={quantity}
                       onChange={(e) => setQuantity(e.target.value)}
-                      className="w-20 text-center rounded-lg border border-border px-2 py-2 text-sm focus:outline-none focus:border-primary"
+                      className="w-20 text-center rounded-lg border border-border px-2 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1 focus:border-primary"
                     />
                     <button
+                      aria-label="Increase quantity"
                       onClick={() => setQuantity(Number(quantity) + 1)}
                       className="w-10 h-10 rounded-lg border border-border flex items-center justify-center hover:bg-[#f5f6f1] transition"
                     >
@@ -505,7 +507,7 @@ const MarketplaceDetails = () => {
                 {/* Trust Badges */}
                 <div className="flex flex-col gap-3 sm:flex-row pt-4 border-t border-border/40">
                   <div className="flex flex-1 items-center gap-2 text-xs text-muted">
-                    <Shield className="h-4 w-4 text-green-600 shrink-0" />
+                    <Shield className="h-4 w-4 text-green-600 shrink-0" aria-hidden="true" />
                     Escrow Protected
                   </div>
                 </div>
@@ -524,6 +526,8 @@ const MarketplaceDetails = () => {
                   <img
                     src={listing.seller.profilePhotoUrl}
                     alt={listing.seller.fullName}
+                    width={56}
+                    height={56}
                     className="h-14 w-14 rounded-full object-cover"
                   />
                 ) : (
@@ -542,7 +546,7 @@ const MarketplaceDetails = () => {
                   )}
                   {(listing?.location || listing?.region) && (
                     <p className="mt-0.5 flex items-center gap-1 text-xs text-muted">
-                      <MapPin className="h-3 w-3 shrink-0" />
+                      <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
                       {listing.location || listing.region}
                     </p>
                   )}
@@ -564,14 +568,13 @@ const MarketplaceDetails = () => {
                   Contact Seller
                 </button>
                 {listing?.seller?.id && (
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/profile/${listing.seller.id}`)}
+                  <Link
+                    to={`/profile/${listing.seller.id}`}
                     className="flex h-10 w-full sm:flex-1 items-center justify-center rounded-lg bg-green-600 font-semibold text-white transition hover:bg-green-700"
                   >
-                    <Eye className="mr-2 h-4 w-4" />
+                    <Eye className="mr-2 h-4 w-4" aria-hidden="true" />
                     View Profile
-                  </button>
+                  </Link>
                 )}
               </div>
             </div>
@@ -649,6 +652,8 @@ const MarketplaceDetails = () => {
                           <img
                             src={img}
                             alt={title}
+                            width={200}
+                            height={200}
                             className="w-full h-full object-cover group-hover:scale-105 transition"
                           />
                         </div>

@@ -130,7 +130,7 @@ export default function Reviews() {
 
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
             <div>
-              <label className="mb-1 block text-sm font-medium">Rating</label>
+              <p className="mb-1 block text-sm font-medium">Rating</p>
               <InteractiveStars value={rating} onChange={setRating} />
             </div>
 
@@ -200,7 +200,7 @@ export default function Reviews() {
                       </p>
                       <p className="text-xs text-muted">
                         by {review.reviewer?.fullName || "Reviewer"} •{" "}
-                        {new Date(review.createdAt).toLocaleString()}
+                        {new Intl.DateTimeFormat("en-GH", { dateStyle: "medium" }).format(new Date(review.createdAt))}
                       </p>
                     </div>
                     <Stars value={review.rating} />

@@ -287,11 +287,12 @@ const BarterProposals = () => {
               {proposals
                 .slice(0, Math.ceil(proposals.length / 2))
                 .map((proposal) => (
-                  <div
+                  <button
+                    type="button"
                     key={proposal.id}
                     data-barter-id={String(proposal.id)}
                     onClick={() => setSelectedTrade(proposal)}
-                    className={`rounded-2xl transition-shadow duration-300 ${
+                    className={`w-full text-left block rounded-2xl transition-shadow duration-300 ${
                       highlightedBarterId === String(proposal.id)
                         ? "ring-2 ring-primary/60 shadow-lg"
                         : ""
@@ -304,7 +305,7 @@ const BarterProposals = () => {
                         updateBarterStatus(proposal.id, newStatus)
                       }
                     />
-                  </div>
+                  </button>
                 ))}
             </div>
 
@@ -313,11 +314,12 @@ const BarterProposals = () => {
               {proposals
                 .slice(Math.ceil(proposals.length / 2))
                 .map((proposal) => (
-                  <div
+                  <button
+                    type="button"
                     key={proposal.id}
                     data-barter-id={String(proposal.id)}
                     onClick={() => setSelectedTrade(proposal)}
-                    className={`rounded-2xl transition-shadow duration-300 ${
+                    className={`w-full text-left block rounded-2xl transition-shadow duration-300 ${
                       highlightedBarterId === String(proposal.id)
                         ? "ring-2 ring-primary/60 shadow-lg"
                         : ""
@@ -330,7 +332,7 @@ const BarterProposals = () => {
                         updateBarterStatus(proposal.id, newStatus)
                       }
                     />
-                  </div>
+                  </button>
                 ))}
               <NewExchangeCTA />
             </div>
