@@ -158,6 +158,7 @@ export default function Checkout() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-6 flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+            role="alert"
           >
             <AlertCircle size={18} />
             {errorMsg}
@@ -188,7 +189,7 @@ export default function Checkout() {
                     onChange={(e) => setDeliveryAddress(e.target.value)}
                     placeholder="e.g. 12 Nkrumah Ave, Accra, Ghana"
                     required
-                    className="mt-1 w-full rounded-xl border border-border bg-[#f8faf4] px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
+                    className="mt-1 w-full rounded-xl border border-border bg-[#f8faf4] px-3 py-2.5 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus:border-primary"
                   />
                 </label>
 
@@ -201,7 +202,7 @@ export default function Checkout() {
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                       placeholder="e.g. Please call before delivery"
-                      className="w-full rounded-xl border border-border bg-[#f8faf4] py-2.5 pl-10 pr-3 text-sm text-foreground outline-none focus:border-primary"
+                      className="w-full rounded-xl border border-border bg-[#f8faf4] py-2.5 pl-10 pr-3 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus:border-primary"
                     />
                   </div>
                 </label>

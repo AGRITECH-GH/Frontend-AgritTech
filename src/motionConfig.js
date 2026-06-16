@@ -1,5 +1,11 @@
+const prefersReduced =
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+export const reducedMotion = prefersReduced;
+
 export const transition = {
-  duration: 0.6,
+  duration: prefersReduced ? 0 : 0.6,
   ease: "easeOut",
 };
 
@@ -17,7 +23,7 @@ export const staggerContainer = {
     y: 0,
     transition: {
       ...transition,
-      staggerChildren: 0.12,
+      staggerChildren: prefersReduced ? 0 : 0.12,
     },
   },
 };

@@ -138,10 +138,11 @@ const EditProductModal = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Product Name */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">
+            <label htmlFor="edit-product-name" className="mb-1.5 block text-sm font-medium text-foreground">
               Product Name
             </label>
             <input
+              id="edit-product-name"
               type="text"
               value={formData.title}
               onChange={(e) => handleInputChange("title", e.target.value)}
@@ -156,10 +157,11 @@ const EditProductModal = ({
           {/* Price and Quantity */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">
+              <label htmlFor="edit-price-per-unit" className="mb-1.5 block text-sm font-medium text-foreground">
                 Price per Unit
               </label>
               <input
+                id="edit-price-per-unit"
                 type="number"
                 step="0.01"
                 value={formData.pricePerUnit}
@@ -177,10 +179,11 @@ const EditProductModal = ({
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground">
+              <label htmlFor="edit-qty-available" className="mb-1.5 block text-sm font-medium text-foreground">
                 Available Qty
               </label>
               <input
+                id="edit-qty-available"
                 type="number"
                 value={formData.quantityAvailable}
                 onChange={(e) =>
@@ -222,7 +225,7 @@ const EditProductModal = ({
 
           {/* Image Upload */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">
+            <label htmlFor="edit-image-upload" className="mb-1.5 block text-sm font-medium text-foreground">
               Upload Images (max 5)
             </label>
             <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-border bg-surface px-4 py-3 transition hover:border-primary hover:bg-primary/5">
@@ -231,6 +234,7 @@ const EditProductModal = ({
                 {uploadingImages ? "Uploading..." : "Click to upload"}
               </span>
               <input
+                id="edit-image-upload"
                 type="file"
                 multiple
                 accept="image/*"

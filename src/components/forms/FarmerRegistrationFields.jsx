@@ -11,8 +11,9 @@ export const FarmerRegistrationFields = ({ form, setForm, errors, setErrors, reg
       transition={transition}
     >
       <motion.div className="mb-4 mt-4">
-        <label className="block text-sm text-gray-700 mb-1.5">Region</label>
+        <label htmlFor="farmer-region" className="block text-sm text-gray-700 mb-1.5">Region</label>
         <select
+          id="farmer-region"
           value={form.assignedRegion}
           onChange={(e) => {
             setForm((prev) => ({ ...prev, assignedRegion: e.target.value }));
@@ -40,10 +41,11 @@ export const FarmerRegistrationFields = ({ form, setForm, errors, setErrors, reg
       </motion.div>
 
       <motion.div className="mb-4">
-        <label className="block text-sm text-gray-700 mb-1.5">
+        <label htmlFor="farmer-national-id" className="block text-sm text-gray-700 mb-1.5">
           National ID Image
         </label>
         <input
+          id="farmer-national-id"
           type="file"
           accept="image/*,.pdf"
           onChange={(e) => {
@@ -78,10 +80,11 @@ export const FarmerRegistrationFields = ({ form, setForm, errors, setErrors, reg
       </motion.div>
 
       <motion.div className="mb-4">
-        <label className="block text-sm text-gray-700 mb-1.5">
+        <label htmlFor="farmer-farm-registration" className="block text-sm text-gray-700 mb-1.5">
           Farm Registration Image
         </label>
         <input
+          id="farmer-farm-registration"
           type="file"
           accept="image/*,.pdf"
           onChange={(e) => {
@@ -116,10 +119,11 @@ export const FarmerRegistrationFields = ({ form, setForm, errors, setErrors, reg
       </motion.div>
 
       <motion.div className="mb-2">
-        <label className="block text-sm text-gray-700 mb-1.5">
+        <label htmlFor="farmer-business-cert" className="block text-sm text-gray-700 mb-1.5">
           Business Certificate Image
         </label>
         <input
+          id="farmer-business-cert"
           type="file"
           accept="image/*,.pdf"
           onChange={(e) => {

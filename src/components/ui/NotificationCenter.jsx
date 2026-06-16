@@ -61,7 +61,7 @@ const NotifItem = ({ notif, onRead, onDelete }) => {
           <button
             type="button"
             onClick={() => onRead(notif.id)}
-            title="Mark read"
+            aria-label="Mark as read"
             className="rounded p-1 hover:bg-green-100 text-green-600"
           >
             <Check className="h-3.5 w-3.5" />
@@ -70,7 +70,7 @@ const NotifItem = ({ notif, onRead, onDelete }) => {
         <button
           type="button"
           onClick={() => onDelete(notif.id)}
-          title="Delete"
+          aria-label="Delete notification"
           className="rounded p-1 hover:bg-red-50 text-muted hover:text-red-500"
         >
           <Trash2 className="h-3.5 w-3.5" />
@@ -167,7 +167,7 @@ export default function NotificationCenter() {
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-border bg-white shadow-lg z-50">
+        <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-border bg-white shadow-lg z-50" aria-live="polite" aria-label="Notifications">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <span className="text-sm font-semibold text-foreground">
               Notifications

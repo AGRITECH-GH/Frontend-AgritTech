@@ -144,9 +144,10 @@ function AppRoutes() {
   return (
     <>
       <AppSeo />
-      <Suspense fallback={<Loader />}>
-        <ErrorBoundary>
-          <Routes>
+      <div id="main-content" tabIndex={-1}>
+        <Suspense fallback={<Loader />}>
+          <ErrorBoundary>
+            <Routes>
           {/* Public routes */}
             <Route path="/" element={<Navigate to="/marketplace" replace />} />
           <Route
@@ -546,6 +547,7 @@ function AppRoutes() {
         <SpeedInsights />
         <Analytics />
       </Suspense>
+      </div>
     </>
   );
 }

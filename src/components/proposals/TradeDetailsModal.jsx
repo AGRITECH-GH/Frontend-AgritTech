@@ -113,10 +113,10 @@ const TradeDetailsModal = ({
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 p-4">
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
 
-      <div className="relative z-[121] w-full max-w-3xl rounded-2xl border border-border/60 bg-white p-5 shadow-xl sm:p-6">
+      <div className="relative z-[121] w-full max-w-3xl rounded-2xl border border-border/60 bg-white p-5 shadow-xl sm:p-6" role="dialog" aria-modal="true" aria-labelledby="trade-details-title" style={{ overscrollBehavior: "contain" }}>
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-bold text-foreground">Trade Details</h2>
+            <h2 id="trade-details-title" className="text-lg font-bold text-foreground">Trade Details</h2>
             <p className="mt-1 text-sm text-muted">
               Review items, quantity, and request message before taking action.
             </p>

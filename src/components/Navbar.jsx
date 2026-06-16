@@ -259,8 +259,8 @@ const Navbar = ({ minimal = false }) => {
             {/* Right actions */}
             <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
               {/* Cart */}
-              <button
-                onClick={() => navigate("/cart")}
+              <Link
+                to="/cart"
                 className="relative flex h-9 w-9 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10"
                 aria-label="Cart"
               >
@@ -270,7 +270,7 @@ const Navbar = ({ minimal = false }) => {
                     {cartCount > 99 ? "99+" : cartCount}
                   </span>
                 )}
-              </button>
+              </Link>
 
               {/* User menu */}
               {user ? (
@@ -306,36 +306,30 @@ const Navbar = ({ minimal = false }) => {
                           {user?.email}
                         </p>
                       </div>
-                      <button
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          navigate("/profile");
-                        }}
+                      <Link
+                        to="/profile"
+                        onClick={() => setUserMenuOpen(false)}
                         className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-[#f5f6f1]"
                       >
                         <User className="h-4 w-4 text-muted" />
                         My Account
-                      </button>
-                      <button
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          navigate("/orders");
-                        }}
+                      </Link>
+                      <Link
+                        to="/orders"
+                        onClick={() => setUserMenuOpen(false)}
                         className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-[#f5f6f1]"
                       >
                         <ShoppingCart className="h-4 w-4 text-muted" />
                         My Orders
-                      </button>
-                      <button
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          navigate("/messages");
-                        }}
+                      </Link>
+                      <Link
+                        to="/messages"
+                        onClick={() => setUserMenuOpen(false)}
                         className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-[#f5f6f1]"
                       >
                         <MessageSquare className="h-4 w-4 text-muted" />
                         Messages
-                      </button>
+                      </Link>
                       <button
                         onClick={handleLogout}
                         className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-600 transition-colors hover:bg-red-50"
@@ -427,6 +421,8 @@ const Navbar = ({ minimal = false }) => {
           <button
             className="ml-auto rounded-full border border-border/70 bg-white/70 p-2 text-foreground shadow-sm backdrop-blur md:hidden"
             onClick={() => setOpen((prev) => !prev)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={open}
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>

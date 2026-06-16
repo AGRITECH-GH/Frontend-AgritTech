@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate, NavLink, Link } from "react-router-dom";
 import { Search, User, Menu, X, ChevronDown, LogOut } from "lucide-react";
 import logo from "@/assets/logo.svg";
 import { useAuth } from "@/context/AuthContext";
@@ -100,16 +100,15 @@ const DashboardNavbar = ({
     <header className="sticky top-0 z-50 border-b border-border/60 bg-white/95 backdrop-blur">
       <div className="container flex h-16 items-center gap-2 sm:gap-4">
         {/* Logo */}
-        <button
-          type="button"
-          onClick={() => navigate("/farmer/dashboard")}
+        <Link
+          to="/farmer/dashboard"
           className="flex shrink-0 items-center gap-1.5 text-base font-semibold text-foreground"
         >
           <img src={logo} alt="FarmBridge logo" className="h-6 w-6" />
           <span>
             Farm<span className="text-green-600">Bridge</span>
           </span>
-        </button>
+        </Link>
 
         {/* Search */}
         {showSearch && (
@@ -123,6 +122,7 @@ const DashboardNavbar = ({
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               placeholder={searchPlaceholder}
+              aria-label="Search marketplace"
               className="w-full bg-transparent text-sm text-foreground placeholder:text-muted/60 focus:outline-none"
             />
           </form>
@@ -201,18 +201,15 @@ const DashboardNavbar = ({
                   <User className="h-4 w-4" />
                   View Profile
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setProfileMenuOpen(false);
-                    navigate("/orders");
-                  }}
+                <Link
+                  to="/orders"
+                  onClick={() => setProfileMenuOpen(false)}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-surface"
                   role="menuitem"
                 >
                   <Search className="h-4 w-4" />
                   My Orders
-                </button>
+                </Link>
                 <button
                   type="button"
                   onClick={handleLogout}

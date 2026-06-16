@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useInventory, PRODUCT_UNITS } from "@/hooks/useInventory";
 import { listingsService, categoriesService } from "@/lib";
 import { validateImageFiles } from "@/lib/utils";
@@ -335,13 +335,13 @@ const AddProduct = () => {
     <div className="min-h-screen bg-surface">
       <main className="container py-6 lg:py-8">
         {/* Back Link */}
-        <button
-          onClick={() => navigate("/farmer/inventory")}
+        <Link
+          to="/farmer/inventory"
           className="mb-6 flex items-center gap-1 text-sm font-medium text-primary transition hover:text-primary/80"
         >
           <ChevronLeft className="h-4 w-4" />
           Back to Inventory
-        </button>
+        </Link>
 
         {/* Page Header */}
         <div className="mb-6">
@@ -365,7 +365,9 @@ const AddProduct = () => {
               minimumOrderQty, negotiable, isDraft.
             </p>
             <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <label htmlFor="csv-upload" className="sr-only">Upload CSV file</label>
               <input
+                id="csv-upload"
                 type="file"
                 accept=".csv,text/csv"
                 onChange={handleCsvFileChange}
@@ -435,10 +437,11 @@ const AddProduct = () => {
           <form onSubmit={handleSubmit}>
             {/* Row 1: Product Name */}
             <div className="mb-6">
-              <label className="mb-2 block text-sm font-medium text-foreground">
+              <label htmlFor="product-name" className="mb-2 block text-sm font-medium text-foreground">
                 Product Name
               </label>
               <input
+                id="product-name"
                 type="text"
                 name="productName"
                 value={formData.productName}
@@ -460,10 +463,11 @@ const AddProduct = () => {
             {/* Row 2: Category & Price */}
             <div className="mb-6 grid gap-6 md:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-foreground">
+                <label htmlFor="product-category" className="mb-2 block text-sm font-medium text-foreground">
                   Category
                 </label>
                 <select
+                  id="product-category"
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
@@ -489,7 +493,7 @@ const AddProduct = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-foreground">
+                <label htmlFor="product-price" className="mb-2 block text-sm font-medium text-foreground">
                   Price per Unit (GHC)
                 </label>
                 <div className="relative">
@@ -497,6 +501,7 @@ const AddProduct = () => {
                     GHC
                   </span>
                   <input
+                    id="product-price"
                     type="number"
                     name="pricePerUnit"
                     value={formData.pricePerUnit}
@@ -522,10 +527,11 @@ const AddProduct = () => {
             {/* Row 3: Quantity, Unit & Storage */}
             <div className="mb-6 grid gap-6 md:grid-cols-3">
               <div>
-                <label className="mb-2 block text-sm font-medium text-foreground">
+                <label htmlFor="product-quantity" className="mb-2 block text-sm font-medium text-foreground">
                   Quantity
                 </label>
                 <input
+                  id="product-quantity"
                   type="number"
                   name="quantity"
                   value={formData.quantity}
@@ -545,10 +551,11 @@ const AddProduct = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-foreground">
+                <label htmlFor="product-unit" className="mb-2 block text-sm font-medium text-foreground">
                   Unit
                 </label>
                 <select
+                  id="product-unit"
                   name="unit"
                   value={formData.unit}
                   onChange={handleInputChange}
@@ -570,10 +577,11 @@ const AddProduct = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-foreground">
+                <label htmlFor="product-storage" className="mb-2 block text-sm font-medium text-foreground">
                   Storage Location
                 </label>
                 <input
+                  id="product-storage"
                   type="text"
                   name="storageLocation"
                   value={formData.storageLocation}
@@ -596,10 +604,11 @@ const AddProduct = () => {
             {/* Row 4: MOQ, Harvest Date, Negotiable */}
             <div className="mb-6 grid gap-6 md:grid-cols-3">
               <div>
-                <label className="mb-2 block text-sm font-medium text-foreground">
+                <label htmlFor="product-moq" className="mb-2 block text-sm font-medium text-foreground">
                   Minimum Order Quantity
                 </label>
                 <input
+                  id="product-moq"
                   type="number"
                   name="minimumOrderQty"
                   value={formData.minimumOrderQty}
@@ -612,10 +621,11 @@ const AddProduct = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-foreground">
+                <label htmlFor="product-harvest-date" className="mb-2 block text-sm font-medium text-foreground">
                   Harvest Date
                 </label>
                 <input
+                  id="product-harvest-date"
                   type="date"
                   name="harvestDate"
                   value={formData.harvestDate}
@@ -625,9 +635,9 @@ const AddProduct = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-foreground">
+                <p className="mb-2 block text-sm font-medium text-foreground">
                   Price Negotiable
-                </label>
+                </p>
                 <label className="mt-1 inline-flex items-center gap-2 text-sm text-foreground">
                   <input
                     type="checkbox"
@@ -643,11 +653,11 @@ const AddProduct = () => {
 
             {/* Photo Upload */}
             <div className="mb-6">
-              <label className="mb-2 block text-sm font-medium text-foreground">
+              <p className="mb-2 block text-sm font-medium text-foreground">
                 Upload Photos
-              </label>
-              <div
-                onClick={() => fileInputRef.current?.click()}
+              </p>
+              <label
+                htmlFor="product-photos-upload"
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -667,6 +677,7 @@ const AddProduct = () => {
                   </p>
                 </div>
                 <input
+                  id="product-photos-upload"
                   ref={fileInputRef}
                   type="file"
                   multiple
@@ -675,7 +686,7 @@ const AddProduct = () => {
                   disabled={isSubmitting || isUploadingImages}
                   className="hidden"
                 />
-              </div>
+              </label>
 
               {imageErrors && (
                 <p className="mt-2 text-xs text-red-500">{imageErrors}</p>
@@ -703,6 +714,7 @@ const AddProduct = () => {
                           type="button"
                           onClick={() => removeImage(index)}
                           disabled={isSubmitting || isUploadingImages}
+                          aria-label={`Remove image ${index + 1}`}
                           className="absolute right-1 top-1 rounded bg-red-500 p-1 text-white hover:bg-red-600 disabled:opacity-50"
                         >
                           <X className="h-3 w-3" />

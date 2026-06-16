@@ -274,6 +274,8 @@ export default function SignUp() {
           <button
             className="rounded-full border border-border/70 bg-white p-2 text-foreground shadow-sm md:hidden"
             onClick={() => setMenuOpen((prev) => !prev)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={menuOpen}
           >
             {menuOpen ? (
               <X className="h-5 w-5" />
@@ -425,7 +427,7 @@ export default function SignUp() {
 
                 {/* Full Name */}
                 <motion.div variants={itemVariants} className="mb-4">
-                  <label className="block text-sm text-gray-700 mb-1.5">
+                  <label htmlFor="signup-name" className="block text-sm text-gray-700 mb-1.5">
                     Full Name
                   </label>
                   <div className="relative">
@@ -433,12 +435,14 @@ export default function SignUp() {
                       <User size={16} />
                     </span>
                     <input
+                      id="signup-name"
                       type="text"
                       value={form.name}
                       onChange={handleChange("name")}
                       placeholder="Enter your full name"
+                      autoComplete="name"
                       className={[
-                        "w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm bg-white outline-none transition-colors",
+                        "w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1 transition-colors",
                         errors.name
                           ? "border-red-400 focus:border-red-500"
                           : "border-gray-200 focus:border-green-400",
@@ -446,13 +450,13 @@ export default function SignUp() {
                     />
                   </div>
                   {errors.name && (
-                    <p className="text-xs text-red-500 mt-1">{errors.name}</p>
+                    <p role="alert" className="text-xs text-red-500 mt-1">{errors.name}</p>
                   )}
                 </motion.div>
 
                 {/* Email */}
                 <motion.div variants={itemVariants} className="mb-4">
-                  <label className="block text-sm text-gray-700 mb-1.5">
+                  <label htmlFor="signup-email" className="block text-sm text-gray-700 mb-1.5">
                     Email Address
                   </label>
                   <div className="relative">
@@ -460,12 +464,15 @@ export default function SignUp() {
                       <Mail size={16} />
                     </span>
                     <input
+                      id="signup-email"
                       type="email"
                       value={form.email}
                       onChange={handleChange("email")}
                       placeholder="name@example.com"
+                      autoComplete="email"
+                      spellCheck={false}
                       className={[
-                        "w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm bg-white outline-none transition-colors",
+                        "w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1 transition-colors",
                         errors.email
                           ? "border-red-400 focus:border-red-500"
                           : "border-gray-200 focus:border-green-400",
@@ -473,7 +480,7 @@ export default function SignUp() {
                     />
                   </div>
                   {errors.email && (
-                    <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+                    <p role="alert" className="text-xs text-red-500 mt-1">{errors.email}</p>
                   )}
                 </motion.div>
 
@@ -489,7 +496,7 @@ export default function SignUp() {
 
                 {/* Password */}
                 <motion.div variants={itemVariants} className="mb-2">
-                  <label className="block text-sm text-gray-700 mb-1.5">
+                  <label htmlFor="signup-password" className="block text-sm text-gray-700 mb-1.5">
                     Password
                   </label>
                   <div className="relative">
@@ -497,12 +504,14 @@ export default function SignUp() {
                       <Lock size={16} />
                     </span>
                     <input
+                      id="signup-password"
                       type={showPassword ? "text" : "password"}
                       value={form.password}
                       onChange={handleChange("password")}
                       placeholder="••••••••"
+                      autoComplete="new-password"
                       className={[
-                        "w-full pl-10 pr-10 py-2.5 rounded-xl border text-sm bg-white outline-none transition-colors",
+                        "w-full pl-10 pr-10 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1 transition-colors",
                         errors.password
                           ? "border-red-400 focus:border-red-500"
                           : "border-gray-200 focus:border-green-400",
@@ -520,7 +529,7 @@ export default function SignUp() {
                     </button>
                   </div>
                   {errors.password ? (
-                    <p className="text-xs text-red-500 mt-1">
+                    <p role="alert" className="text-xs text-red-500 mt-1">
                       {errors.password}
                     </p>
                   ) : (

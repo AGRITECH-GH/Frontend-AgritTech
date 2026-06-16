@@ -288,13 +288,15 @@ export default function Login() {
                 </motion.div>
 
                 <form onSubmit={handleSubmit} noValidate className="space-y-4">
-                  {oauthErrorMessage && (
-                    <Alert type="error">{oauthErrorMessage}</Alert>
-                  )}
+                  <div role="alert" aria-live="polite">
+                    {oauthErrorMessage && (
+                      <Alert type="error">{oauthErrorMessage}</Alert>
+                    )}
+                  </div>
 
                   {/* ── Email ── */}
                   <motion.div variants={itemVariants}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1.5">
                       Email Address
                     </label>
                     <div className="relative">
@@ -302,13 +304,15 @@ export default function Login() {
                         <Mail size={16} />
                       </span>
                       <input
+                        id="login-email"
                         type="email"
                         value={form.email}
                         onChange={handleChange("email")}
                         placeholder="name@company.com"
                         autoComplete="email"
+                        spellCheck={false}
                         className={[
-                          "w-full pl-10 pr-4 py-3 rounded-2xl border text-sm bg-gray-50 outline-none transition-colors placeholder:text-gray-400",
+                          "w-full pl-10 pr-4 py-3 rounded-2xl border text-sm bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1 transition-colors placeholder:text-gray-400",
                           errors.email
                             ? "border-red-400 focus:border-red-500 bg-red-50"
                             : "border-gray-200 focus:border-green-400",
@@ -316,7 +320,7 @@ export default function Login() {
                       />
                     </div>
                     {errors.email && (
-                      <p className="text-xs text-red-500 mt-1.5">
+                      <p role="alert" className="text-xs text-red-500 mt-1.5">
                         {errors.email}
                       </p>
                     )}
@@ -325,7 +329,7 @@ export default function Login() {
                   {/* ── Password ── */}
                   <motion.div variants={itemVariants}>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-sm font-medium text-gray-700">
+                      <label htmlFor="login-password" className="text-sm font-medium text-gray-700">
                         Password
                       </label>
                       <Link
@@ -340,13 +344,15 @@ export default function Login() {
                         <Lock size={16} />
                       </span>
                       <input
+                        id="login-password"
                         type={showPassword ? "text" : "password"}
                         value={form.password}
                         onChange={handleChange("password")}
                         placeholder="••••••••"
                         autoComplete="current-password"
+                        spellCheck={false}
                         className={[
-                          "w-full pl-10 pr-10 py-3 rounded-2xl border text-sm bg-gray-50 outline-none transition-colors placeholder:text-gray-400",
+                          "w-full pl-10 pr-10 py-3 rounded-2xl border text-sm bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-1 transition-colors placeholder:text-gray-400",
                           errors.password
                             ? "border-red-400 focus:border-red-500 bg-red-50"
                             : "border-gray-200 focus:border-green-400",
@@ -368,7 +374,7 @@ export default function Login() {
                       </button>
                     </div>
                     {errors.password && (
-                      <p className="text-xs text-red-500 mt-1.5">
+                      <p role="alert" className="text-xs text-red-500 mt-1.5">
                         {errors.password}
                       </p>
                     )}
@@ -438,12 +444,13 @@ export default function Login() {
                 >
                   {["Privacy Policy", "Terms of Service", "Support"].map(
                     (item) => (
-                      <span
+                      <a
                         key={item}
-                        className="text-xs text-gray-400"
+                        href="#"
+                        className="text-xs text-gray-400 hover:underline"
                       >
                         {item}
-                      </span>
+                      </a>
                     ),
                   )}
                 </motion.div>
