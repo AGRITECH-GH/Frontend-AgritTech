@@ -50,7 +50,17 @@ function AppSeo() {
   const location = useLocation();
   const { pathname } = location;
 
-  if (pathname === "/" || pathname === "/marketplace") {
+  if (pathname === "/marketplace") {
+    return (
+      <SeoMeta
+        title="Marketplace | FarmBridge Ghana"
+        description="Browse fresh produce, pantry goods, dairy, and livestock from verified sellers across Ghana."
+        canonicalPath="/marketplace"
+      />
+    );
+  }
+
+  if (pathname === "/") {
     return (
       <SeoMeta
         title="Marketplace | FarmBridge Ghana"

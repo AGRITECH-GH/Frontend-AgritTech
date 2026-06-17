@@ -348,7 +348,7 @@ const Marketplace = () => {
       <SeoMeta
         title="Marketplace | FarmBridge Ghana"
         description="Buy fresh produce, pantry goods, dairy, and livestock from verified sellers on FarmBridge."
-        canonicalPath="/"
+        canonicalPath="/marketplace"
         jsonLd={marketplaceJsonLd}
       />
       <Navbar minimal />
