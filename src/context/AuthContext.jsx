@@ -15,6 +15,17 @@ import {
 export const AuthContext = createContext(null);
 
 // ---------------------------------------------------------------------------
+// Session hint
+// ---------------------------------------------------------------------------
+// The refresh token lives in an httpOnly cookie — JS can't inspect it.
+// This flag lets us skip the /api/auth/refresh call entirely for guests
+// who have never logged in, avoiding a guaranteed 401 on every page load.
+const SESSION_HINT = "fb_has_session";
+const markSession = () => localStorage.setItem(SESSION_HINT, "1");
+const clearSession = () => localStorage.removeItem(SESSION_HINT);
+const hasSession = () => !!localStorage.getItem(SESSION_HINT);
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
@@ -79,6 +90,10 @@ export const AuthProvider = ({ children }) => {
     hydrated.current = true;
 
     const hydrate = async () => {
+      if (!hasSession()) {
+        setLoading(false);
+        return;
+      }
       try {
         // Step 1: get a fresh access token via the cookie
         const { accessToken } = await authService.refreshToken();
@@ -88,9 +103,10 @@ export const AuthProvider = ({ children }) => {
         const { user: freshUser } = await authService.getMe();
         setUser(normalizeUser(freshUser));
       } catch {
-        // Cookie is missing, expired, or server is down.
-        // The user is logged out — this is the normal state for guests.
+        // Cookie is missing or expired — clear the hint so we don't retry
+        // on the next page load.
         clearAccessToken();
+        clearSession();
         setUser(null);
       } finally {
         setLoading(false);
@@ -114,6 +130,7 @@ export const AuthProvider = ({ children }) => {
   const register = useCallback(async (userData) => {
     const response = await authService.register(userData);
     setAccessToken(response.accessToken);
+    markSession();
     const normalized = normalizeUser(response.user);
     setUser(normalized);
     await mergeGuestCartIntoAccount(normalized?.role);
@@ -123,6 +140,7 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (email, password, rememberMe = false) => {
     const response = await authService.login({ email, password, rememberMe });
     setAccessToken(response.accessToken);
+    markSession();
     const normalized = normalizeUser(response.user);
     setUser(normalized);
     await mergeGuestCartIntoAccount(normalized?.role);
@@ -138,6 +156,7 @@ export const AuthProvider = ({ children }) => {
       // perspective regardless of whether the server acknowledged it.
     } finally {
       clearAccessToken();
+      clearSession();
       setUser(null);
     }
   }, []);
@@ -145,6 +164,7 @@ export const AuthProvider = ({ children }) => {
   const verifyEmail = useCallback(async (token) => {
     const response = await authService.verifyEmail(token);
     setAccessToken(response.accessToken);
+    markSession();
     const normalized = normalizeUser(response.user);
     setUser(normalized);
     return response;
@@ -156,6 +176,7 @@ export const AuthProvider = ({ children }) => {
       throw new Error("Google sign-in did not return an access token.");
     }
     setAccessToken(response.accessToken);
+    markSession();
     const normalized = normalizeUser(response.user);
     setUser(normalized);
     await mergeGuestCartIntoAccount(normalized?.role);
