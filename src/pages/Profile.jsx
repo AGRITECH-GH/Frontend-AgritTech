@@ -651,7 +651,7 @@ export default function Profile() {
                       >
                         {kycState.loading ? "Submitting..." : "Resubmit KYC"}
                       </button>
-                      
+
                       {kycState.message && (
                         <p className="mt-3 inline-flex items-center gap-1 text-xs text-green-600">
                           <CheckCircle2 size={14} />
@@ -700,7 +700,7 @@ export default function Profile() {
 
             <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.5fr_1fr]">
               <div className="space-y-5">
-                <ProfileDetailsForm 
+                <ProfileDetailsForm
                   user={user}
                   profileForm={profileForm}
                   setProfileForm={setProfileForm}
