@@ -4,8 +4,9 @@ import { getAccessToken, setAccessToken, clearAccessToken } from "./tokenStore";
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const DEFAULT_TIMEOUT_MS = 20000;
 
-// REMOVED: getAccessToken / setAccessToken inline functions
-// They now live in tokenStore.js
+// One refresh at a time: concurrent 401s share the same in-flight request so
+// a rotating refresh token is not spent twice (which would log the user out).
+let refreshPromise = null;
 
 const getHeaders = (isFormData = false) => {
   const headers = {};
@@ -37,8 +38,36 @@ const fetchWithTimeout = async (url, options = {}, timeoutMs = DEFAULT_TIMEOUT_M
   }
 };
 
+const refreshAccessToken = (timeoutMs) => {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      try {
+        const refreshResponse = await fetchWithTimeout(
+          `${API_BASE_URL}/api/auth/refresh`,
+          { method: "POST", credentials: "include" },
+          timeoutMs,
+        );
+        if (!refreshResponse.ok) return false;
+        const data = await refreshResponse.json();
+        setAccessToken(data.accessToken);
+        return true;
+      } catch {
+        // Network error during refresh — treat as session expired.
+        return false;
+      } finally {
+        refreshPromise = null;
+      }
+    })();
+  }
+  return refreshPromise;
+};
+
 const apiFetch = async (endpoint, options = {}) => {
-  const { timeoutMs = DEFAULT_TIMEOUT_MS, ...requestOptions } = options;
+  const {
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+    _retried = false,
+    ...requestOptions
+  } = options;
   const url = `${API_BASE_URL}${endpoint}`;
   const isFormData = requestOptions.body instanceof FormData;
 
@@ -57,22 +86,10 @@ const apiFetch = async (endpoint, options = {}) => {
 
   const isAuthEndpoint = endpoint.startsWith("/api/auth/");
 
-  if (response.status === 401 && !isAuthEndpoint) {
-    let refreshSucceeded = false;
-    try {
-      const refreshResponse = await fetchWithTimeout(
-        `${API_BASE_URL}/api/auth/refresh`,
-        { method: "POST", credentials: "include" },
-        timeoutMs
-      );
-      if (refreshResponse.ok) {
-        const data = await refreshResponse.json();
-        setAccessToken(data.accessToken);
-        refreshSucceeded = true;
-      }
-    } catch {
-      // network error during refresh — treat as session expired
-    }
+  // Retry at most once: if the request is still 401 after a successful
+  // refresh, fall through and surface the error instead of looping.
+  if (response.status === 401 && !isAuthEndpoint && !_retried) {
+    const refreshSucceeded = await refreshAccessToken(timeoutMs);
 
     if (!refreshSucceeded) {
       clearAccessToken();
@@ -80,7 +97,7 @@ const apiFetch = async (endpoint, options = {}) => {
       throw new Error("Session expired. Please log in again.");
     }
 
-    return apiFetch(endpoint, { ...requestOptions, timeoutMs });
+    return apiFetch(endpoint, { ...requestOptions, timeoutMs, _retried: true });
   }
 
   const data = await response.json().catch(() => ({}));

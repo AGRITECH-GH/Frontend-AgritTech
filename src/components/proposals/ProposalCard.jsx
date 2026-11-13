@@ -75,7 +75,6 @@ const ItemBox = ({ label, emoji, name, strikethrough = false }) => (
 
 const ProposalCard = ({ proposal, updating = false, onStatusChange }) => {
   const {
-    id,
     status,
     requesterName,
     requesterAvatar,

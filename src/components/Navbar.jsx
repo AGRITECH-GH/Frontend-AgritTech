@@ -12,6 +12,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 import logo from "@/assets/logo.svg";
 import { transition } from "@/motionConfig";
 import { useAuth } from "@/context/AuthContext";
@@ -45,7 +46,6 @@ const Navbar = ({ minimal = false }) => {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isLight, setIsLight] = useState(false);
 
   // Marketplace-specific state
   const [search, setSearch] = useState(() => {
@@ -120,38 +120,6 @@ const Navbar = ({ minimal = false }) => {
     return () => window.removeEventListener("scroll", onScroll);
   }, [minimal]);
 
-  // Landing page: switch logo color over light sections
-  useEffect(() => {
-    if (minimal) return;
-    const lightSections = ["solutions", "innovation"];
-    const navHeight = 80;
-    const observers = lightSections.map((id) => {
-      const el = document.getElementById(id);
-      if (!el) return null;
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) setIsLight(true);
-          else {
-            const anyLight = lightSections.some((sid) => {
-              const s = document.getElementById(sid);
-              if (!s) return false;
-              const rect = s.getBoundingClientRect();
-              return rect.top < navHeight && rect.bottom > 0;
-            });
-            setIsLight(anyLight);
-          }
-        },
-        {
-          rootMargin: `-0px 0px -${window.innerHeight - navHeight}px 0px`,
-          threshold: 0,
-        },
-      );
-      observer.observe(el);
-      return observer;
-    });
-    return () => observers.forEach((o) => o?.disconnect());
-  }, [minimal]);
-
   const handleNavClick = (id) => {
     setOpen(false);
     scrollToSection(id);
@@ -174,7 +142,11 @@ const Navbar = ({ minimal = false }) => {
     setUserMenuOpen(false);
     try {
       await logout();
-    } catch {}
+    } catch (err) {
+      // Local session is cleared regardless; a failed server-side logout
+      // must not trap the user on the page.
+      logger.warn("Logout request failed:", err);
+    }
     navigate("/login");
   };
 

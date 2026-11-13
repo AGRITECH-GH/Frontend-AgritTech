@@ -23,7 +23,13 @@ export default defineConfig([
       },
     },
     rules: {
-      "no-unused-vars": ["warn", { varsIgnorePattern: "^[A-Z_]" }],
+      // ESLint 9 does not count JSX usage (<motion.div>, <Icon />) as a
+      // reference, so capitalised names and framer-motion's `motion` are
+      // exempt here. Revisit when upgrading to ESLint 10, which tracks JSX.
+      "no-unused-vars": [
+        "warn",
+        { varsIgnorePattern: "^([A-Z_]|motion$)", argsIgnorePattern: "^[A-Z_]" },
+      ],
       "no-empty": "warn",
       "react-hooks/set-state-in-effect": "warn",
       "react-refresh/only-export-components": "warn",

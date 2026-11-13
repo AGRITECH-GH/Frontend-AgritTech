@@ -396,20 +396,6 @@ const AdminKYC = () => {
     }));
   };
 
-  const removeSubmissionFromQueue = (userId) => {
-    setSubmissions((current) => {
-      const next = current.filter((item) => item.id !== userId);
-      setSelectedId(next[0]?.id || null);
-      return next;
-    });
-    setSelectedSubmission(null);
-    setRejectReason("");
-    setPagination((current) => ({
-      ...current,
-      total: Math.max(0, current.total - 1),
-    }));
-  };
-
   const handleApprove = async () => {
     if (!selectedSubmission?.id) return;
 

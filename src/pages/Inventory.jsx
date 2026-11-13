@@ -71,14 +71,11 @@ const Inventory = () => {
   const { user } = useAuth();
   const toast = useToast();
   const {
-    products,
     paginatedProducts,
     loading,
     tabs,
     tabFilter,
     setTabFilter,
-    searchQuery,
-    setSearchQuery,
     currentPage,
     setCurrentPage,
     totalPages,

@@ -22,9 +22,6 @@ import { useOrders } from "@/hooks/useOrders";
 import { OrderRow } from "@/components/orders/OrderRow";
 import { FarmerOrderTableRow } from "@/components/orders/FarmerOrderTableRow";
 import {
-  getStatusMeta,
-  formatDate,
-  formatCurrency,
   normalizeOrder,
   LIFECYCLE,
   ALLOWED_TRANSITIONS,

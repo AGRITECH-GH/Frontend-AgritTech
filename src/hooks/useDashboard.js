@@ -1,7 +1,6 @@
 import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { listingsService, ordersService, barterService } from "@/lib";
-import { getPrimaryListingImageUrl } from "@/lib/listingImages";
 import { logger } from "@/lib/logger";
 import {
   toArray,

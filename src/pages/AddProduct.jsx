@@ -84,7 +84,6 @@ const AddProduct = () => {
   );
   const [imageErrors, setImageErrors] = useState("");
   const [isUploadingImages, setIsUploadingImages] = useState(false);
-  const [createdListingId, setCreatedListingId] = useState(null);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [csvFile, setCsvFile] = useState(null);
   const [csvUploadResult, setCsvUploadResult] = useState(null);
@@ -245,7 +244,6 @@ const AddProduct = () => {
         : await listingsService.createListing(payload);
 
       const listingId = res.listing?.id;
-      setCreatedListingId(listingId);
 
       if (!saveAsDraft && uploadedImages.length > 0 && listingId) {
         setIsUploadingImages(true);

@@ -43,7 +43,6 @@ const TransactionsTable = ({
   currentPage,
   totalPages,
   onPageChange,
-  totalFiltered,
 }) => {
   // Build page numbers to show: always show 1, last, current ± 1, with ellipsis
   const pageNumbers = (() => {

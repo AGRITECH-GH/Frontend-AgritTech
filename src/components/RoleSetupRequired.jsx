@@ -27,7 +27,7 @@ export default function RoleSetupRequired({ children }) {
         const status = await authService.getRoleSetupStatus();
         if (!isMounted) return;
         setIsComplete(Boolean(status?.roleSetupComplete));
-      } catch (error) {
+      } catch {
         // Do not block routes on transient API errors.
         if (isMounted) setIsComplete(true);
       } finally {

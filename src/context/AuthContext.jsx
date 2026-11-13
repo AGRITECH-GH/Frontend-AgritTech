@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import {
   authService,
-  api,
   cartService,
   getGuestCart,
   clearGuestCart,
