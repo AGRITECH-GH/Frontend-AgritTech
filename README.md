@@ -51,7 +51,7 @@ App runs on Vite default dev port unless overridden.
 - src/hooks/: Feature-level state and orchestration hooks
 - src/pages/: Route-level screens
 - src/components/: Shared and domain components
-- src/test/: Hook/page tests
+- src/test/: Vitest unit tests for the lib/ layer (API client, token store, guest cart, order/dashboard/image utils)
 
 ## Main Product Areas
 
